@@ -1,0 +1,18 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+import os.path
+
+def build(bld):
+
+  module = bld.create_ns3_module('run', ['core', 'applications', 'internet', 'network', 'point-to-point', 'traffic-control'])
+  module.source = ['file-transfer-application.cc',
+                   'file-transfer-helper.cc',
+                   'mp-onoff-application.cc']
+
+  headers = bld(features='ns3header')
+  headers.module = 'run'
+  headers.source = ['file-transfer-application.h',
+                    'file-transfer-helper.h',
+                    'mp-onoff-application.h']
+
+  obj = bld.create_ns3_program('mptcp-test', ['run', 'core', 'applications', 'internet', 'network', 'point-to-point', 'traffic-control'])
+  obj.source = 'mptcp-test.cc'
