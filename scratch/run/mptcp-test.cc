@@ -431,21 +431,16 @@ int main(int argc, char* argv[])
   Ipv4Address remoteClient;
 
   /*
-   * Server has two possible paths to client.
-   * Note that two switches are necessary to make
+   * Server has multiple possible paths to client.
+   * Note that two routers are necessary to make
    * this work without the ADD_ADDR capabilities implemented
    * Also the packet sink bound endpoint has Ipv4Address::GetAny()
    *
-   ------           ------           ------
-  |      | ------  |      | ------  |      |
-  |      |         |      |         |      |
-  |      |          ------          |      |
-  |      |          Switch1         |      |
-  |      |          ------          |      |
-  |      | ------  |      | ------  |      |
-  |      |         |      |         |      |
-   ------           ------           ------
-   Server           Switch2          Client
+   *           router 0  ----  router 1
+   *         /           \  /          \
+   * client 0             /            router 4 -- server 0
+   *        \           /  \          /
+   *          router 2  ---- router 3
    *
    */
   CreateMultipleFlowsNoBottleneck(segmentSizeWithoutHeaders,
