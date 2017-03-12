@@ -35,6 +35,188 @@ void CheckAndCreateDirectory(string path)
   }
 }
 
+void PrintRoutingTable(Ptr<Node> aNode, const string& outputDir, const string& filePrefix)
+{
+  //Print the node's routing table
+  Ptr<Ipv4> switchIpv4 = aNode->GetObject<Ipv4> ();
+  Ptr<Ipv4RoutingProtocol> routingProtocol = switchIpv4->GetRoutingProtocol();
+  Ptr<Ipv4ListRouting> listRouting = DynamicCast<Ipv4ListRouting>(routingProtocol);
+  int16_t priority;
+  //Ptr<Ipv4GlobalRouting> routing = DynamicCast<Ipv4GlobalRouting>(listRouting->GetRoutingProtocol(0, priority));
+
+  Ptr<Ipv4StaticRouting> routing = DynamicCast<Ipv4StaticRouting>(listRouting->GetRoutingProtocol(0, priority));
+
+  stringstream rtablePath;
+  rtablePath << outputDir << "/mptcp_" << filePrefix << "_routing_table";
+  Ptr<OutputStreamWrapper> rtableFile = Create<OutputStreamWrapper>(rtablePath.str(), std::ios::out);
+
+  routing->PrintRoutingTable(rtableFile);
+}
+
+void TraceMacRx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
+{
+  PppHeader pppHeader;
+  Ipv4Header ipheader;
+  TcpHeader tcpHeader;
+
+  Ptr<Packet> copy = packet->Copy();
+  copy->RemoveHeader(pppHeader);
+
+  if (pppHeader.GetProtocol() == 0x0021)
+  {
+    copy->RemoveHeader(ipheader);
+
+    if (ipheader.GetProtocol() == TcpL4Protocol::PROT_NUMBER)
+    {
+      copy->RemoveHeader(tcpHeader);
+
+      MpTcpSubflowTag subflowTag;
+      bool found = copy->PeekPacketTag(subflowTag);
+
+      int subflowId = -1;
+      if (found){
+        subflowId =  subflowTag.GetSubflowId();
+      }
+
+      //Figure out if this is a FIN packet, or SYN packet
+      bool isFin = tcpHeader.GetFlags() & TcpHeader::FIN;
+      bool isSyn = tcpHeader.GetFlags() & TcpHeader::SYN;
+
+      (*stream->GetStream()) << Simulator::Now().GetNanoSeconds() << "\t 0 1 \t\t\t"
+      << subflowId << " \t\t"
+      << tcpHeader.GetSequenceNumber() << " \t\t" << tcpHeader.GetAckNumber()
+      << " \t\t" << copy->GetSize() << " \t\t" << packet->GetSize()
+      << " \t\t" << isSyn << " \t\t" << isFin << endl;
+
+    }
+  }
+}
+
+void TraceMacTx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
+{
+  PppHeader pppHeader;
+  Ipv4Header ipheader;
+  TcpHeader tcpHeader;
+
+  Ptr<Packet> copy = packet->Copy();
+  copy->RemoveHeader(pppHeader);
+
+  if (pppHeader.GetProtocol() == 0x0021)
+  {
+    copy->RemoveHeader(ipheader);
+
+    if (ipheader.GetProtocol() == TcpL4Protocol::PROT_NUMBER)
+    {
+      copy->RemoveHeader(tcpHeader);
+
+      MpTcpSubflowTag subflowTag;
+      bool found = copy->PeekPacketTag(subflowTag);
+
+      int subflowId = -1;
+      if (found){
+        subflowId =  subflowTag.GetSubflowId();
+      }
+
+
+      //Figure out if this is a FIN packet, or SYN packet
+      bool isFin = tcpHeader.GetFlags() & TcpHeader::FIN;
+      bool isSyn = tcpHeader.GetFlags() & TcpHeader::SYN;
+
+      (*stream->GetStream()) << Simulator::Now().GetNanoSeconds() << "\t 1 1 \t\t\t"
+      << subflowId << " \t\t"
+      << tcpHeader.GetSequenceNumber() << " \t\t" << tcpHeader.GetAckNumber()
+      << " \t\t" << copy->GetSize() << " \t\t" << packet->GetSize()
+      << " \t\t" << isSyn << " \t\t" << isFin << endl;
+
+    }
+  }
+}
+
+void TraceQueueItemDrop(Ptr<OutputStreamWrapper> stream, Ptr<const QueueItem> item)
+{
+  Ptr<const Ipv4QueueDiscItem> qitem = StaticCast<const Ipv4QueueDiscItem>(item);
+
+  Ipv4Header ipheader = qitem->GetHeader();
+  TcpHeader tcpHeader;
+
+  if ((qitem->GetProtocol() == Ipv4L3Protocol::PROT_NUMBER)
+      && (ipheader.GetProtocol() == TcpL4Protocol::PROT_NUMBER))
+  {
+    Ptr<Packet> copy = item->GetPacket();
+    copy->RemoveHeader(tcpHeader);
+
+    //Figure out if this is a FIN packet, or SYN packet
+    bool isFin = tcpHeader.GetFlags() & TcpHeader::FIN;
+    bool isSyn = tcpHeader.GetFlags() & TcpHeader::SYN;
+
+    (*stream->GetStream()) << Simulator::Now().GetNanoSeconds()  << "\t"
+    << tcpHeader.GetSequenceNumber() << " \t\t" << tcpHeader.GetAckNumber()
+    << " \t\t" << isSyn << " \t\t" << isFin << endl;
+
+  }
+}
+
+void ConfigureTracing (const string& outputDir, const NodeContainer& clients,
+                       const NodeContainer& switches, const NodeContainer& servers)
+{
+  //Create an output directory
+  CheckAndCreateDirectory(outputDir);
+
+  stringstream devicePath;
+  devicePath << "/NodeList/" << clients.Get(0)->GetId() << "/DeviceList/*/$ns3::PointToPointNetDevice/";
+
+  stringstream tfile;
+  tfile << outputDir << "/mptcp_client";
+  Ptr<OutputStreamWrapper> throughputFile = Create<OutputStreamWrapper>(tfile.str(), std::ios::out);
+  //Write the column labels into the file
+  *(throughputFile->GetStream()) << "timestamp\t send connection\t subflow\t seqno\t\t ackno\t\t size\t\t psize\t\t isSyn\t\t isFin" << endl;
+
+  Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, throughputFile));
+  Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, throughputFile));
+
+  uint32_t serverId = servers.Get(0)->GetId();
+  devicePath.str("");
+  devicePath << "/NodeList/" << serverId << "/DeviceList/*/$ns3::PointToPointNetDevice/";
+
+  stringstream sfile;
+  sfile << outputDir << "/mptcp_server";
+  Ptr<OutputStreamWrapper> serverFile = Create<OutputStreamWrapper>(sfile.str(), std::ios::out);
+  //Write the column labels into the file
+  *(serverFile->GetStream()) << "timestamp\t send\t\t connection\t subflow\t seqno\t\t ackno\t\t size\t\t psize\t\t isSyn\t\t isFin" << endl;
+  Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, serverFile));
+  Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, serverFile));
+
+  stringstream dfile;
+  dfile << outputDir << "/mptcp_drops";
+  Ptr<OutputStreamWrapper> dropsFile = Create<OutputStreamWrapper>(dfile.str(), std::ios::out);
+  //Write the column labels into the file
+  *(dropsFile->GetStream()) << "timestamp\t seqno\t\t ackno\t\t isSyn\t\t isFin" << endl;
+
+  Config::ConnectWithoutContext("/NodeList/*/$ns3::TrafficControlLayer/RootQueueDiscList/*/Drop",
+                                MakeBoundCallback(TraceQueueItemDrop, dropsFile));
+
+
+  uint32_t clientId = clients.Get(0)->GetId();
+  uint32_t switchId = switches.Get(0)->GetId();
+
+  cout << "client node is " << clientId << " switch id " << switchId << " server id " << serverId << endl;
+
+  //Print the nodes' routing tables
+  //Print the nodes' routing tables
+  for (uint32_t  i = 0; i < switches.GetN(); ++i)
+  {
+    PrintRoutingTable(switches.Get(i), outputDir, "switch" + to_string(i));
+  }
+  for(uint32_t i = 0; i < clients.GetN(); ++i)
+  {
+    PrintRoutingTable(clients.Get(i), outputDir, "cl" + to_string(i));
+  }
+  for(uint32_t i = 0; i < servers.GetN(); ++i)
+  {
+    PrintRoutingTable(servers.Get(i), outputDir, "srv" + to_string(i));
+  }
+}
+
 NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
                                       Ptr<Node> endNode,
                                       DataRate linkRate,
@@ -129,12 +311,11 @@ void SetConfigDefaults (string linkRate, string linkDelay, uint32_t interfaces,
   //Config::SetDefault("ns3::Ipv4::WeakEsModel", BooleanValue(false));
 }
 
-void CreateMultipleFlowsNoBottleneck (uint32_t interfaceCount,
-                                      uint32_t packetSize,
+void CreateMultipleFlowsNoBottleneck (uint32_t packetSize,
                                       DataRate linkRate,
                                       Time delay,
                                       NodeContainer& servers,
-                                      NodeContainer& switches,
+                                      NodeContainer& routers,
                                       NodeContainer& clients,
                                       Ipv4Address& remoteClient)
 {
@@ -146,8 +327,8 @@ void CreateMultipleFlowsNoBottleneck (uint32_t interfaceCount,
   clients.Create(1);
   stackHelper.Install(clients);
 
-  switches.Create(interfaceCount);
-  stackHelper.Install(switches);
+  routers.Create(5);
+  stackHelper.Install(routers);
 
   //Create the servers and install the internet stack on them
   servers.Create(1);
@@ -155,65 +336,44 @@ void CreateMultipleFlowsNoBottleneck (uint32_t interfaceCount,
 
   //Create the address helper
   Ipv4AddressHelper addressHelper;
-  addressHelper.SetBase("10.10.0.0", "255.255.255.0");
 
-  Ipv4InterfaceContainer serverInterfaces;
-  Ipv4InterfaceContainer switchServerInterfaces;
-  Ipv4InterfaceContainer switchClientInterfaces;
-  Ipv4InterfaceContainer clientInterfaces;
+  addressHelper.SetBase("192.168.1.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_c0r0 = PointToPointCreate(clients.Get(0), routers.Get(0), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_c0r0 = addressHelper.Assign(dev_c0r0);
 
-  for(uint32_t i = 0; i < interfaceCount; ++i)
-  {
-    //Create a link between the switch and the server, assign IP addresses
-    NetDeviceContainer devices = PointToPointCreate(servers.Get(0), switches.Get(i),
-                                                    DataRate(linkRate.GetBitRate()), delay, packetSize);
-    Ipv4InterfaceContainer interfaces = addressHelper.Assign(devices);
+  addressHelper.SetBase("192.168.2.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_c0r2 = PointToPointCreate(clients.Get(0), routers.Get(2), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_c0r2 = addressHelper.Assign(dev_c0r2);
 
-    serverInterfaces.Add(interfaces.Get(0));
-    switchServerInterfaces.Add(interfaces.Get(1));
-  }
+  addressHelper.SetBase("192.168.3.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_r0r1 = PointToPointCreate(routers.Get(0), routers.Get(1), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_r0r1 = addressHelper.Assign(dev_r0r1);
 
-  for(uint32_t i = 0; i < interfaceCount; ++i)
-  {
-    //Create a link between the switch and the client, assign IP addresses
-    NetDeviceContainer linkedDevices = PointToPointCreate(clients.Get(0), switches.Get(i),
-                                                          DataRate(linkRate.GetBitRate()), delay, packetSize);
-    Ipv4InterfaceContainer interfaces = addressHelper.Assign(linkedDevices);
+  addressHelper.SetBase("192.168.4.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_r0r3 = PointToPointCreate(routers.Get(0), routers.Get(3), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_r0r3 = addressHelper.Assign(dev_r0r3);
 
-    clientInterfaces.Add(interfaces.Get(0));
-    switchClientInterfaces.Add(interfaces.Get(1));
-  }
+  addressHelper.SetBase("192.168.5.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_r2r1 = PointToPointCreate(routers.Get(2), routers.Get(1), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_r2r1 = addressHelper.Assign(dev_r2r1);
 
-  remoteClient = clientInterfaces.GetAddress(0);
-}
+  addressHelper.SetBase("192.168.6.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_r2r3 = PointToPointCreate(routers.Get(2), routers.Get(3), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_r2r3 = addressHelper.Assign(dev_r2r3);
 
-void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients,
-                              const Ipv4Address& peer, uint32_t packetSize)
-{
-  //Create and install the applications on the server and client
-  int portNum = 4000;
-  Address remoteAddress(InetSocketAddress(peer, portNum));
+  addressHelper.SetBase("192.168.7.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_r1r4 = PointToPointCreate(routers.Get(1), routers.Get(4), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_r1r4 = addressHelper.Assign(dev_r1r4);
 
-  Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("10Mbps"), packetSize);
-  servers.Get(0)->AddApplication(mpOnOff);
+  addressHelper.SetBase("192.168.8.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_r3r4 = PointToPointCreate(routers.Get(3), routers.Get(4), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_r3r4 = addressHelper.Assign(dev_r3r4);
 
-  //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
-  Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum));
-  PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", portAddress);
-  packetSink.Install(clients);
+  addressHelper.SetBase("192.168.9.0", "255.255.255.0", "0.0.0.1");
+  NetDeviceContainer dev_r4s0 = PointToPointCreate(routers.Get(4), servers.Get(0), DataRate(linkRate.GetBitRate()), delay, packetSize);
+  Ipv4InterfaceContainer interfaces_r4s0 = addressHelper.Assign(dev_r4s0);
 
-  if (servers.GetN() == 2)
-  {
-    int portNum = 4020;
-    Address tcpRemote(InetSocketAddress(peer, portNum));
-
-    OnOffHelper onOff("ns3::TcpSocketFactory", tcpRemote);
-    onOff.SetConstantRate(DataRate("20Mbps"), packetSize);
-    onOff.Install(servers.Get(1));
-
-    PacketSinkHelper packetSink("ns3::TcpSocketFactory", tcpRemote);
-    packetSink.Install(clients);
-  }
+  remoteClient = interfaces_c0r0.GetAddress(0);
 }
 
 void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clients,
@@ -222,40 +382,22 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
   //Create and install the applications on the server and client
   int portNum = 4000;
   Address remoteAddress(InetSocketAddress(peer, portNum));
-
+  std::cout << "Hong peer: " << peer << endl;
   FileTransferHelper fileHelper(remoteAddress);
   fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
-  fileHelper.SetAttribute("FileSize", UintegerValue(10e6));
+  fileHelper.SetAttribute("FileSize", UintegerValue(10e3));
 
   fileHelper.Install(servers.Get(0));
 
   //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
-  Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum));
+  Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum)); // GetAny() returns 0.0.0.0 address
   PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", portAddress);
-  packetSink.Install(clients);
-
-  if (servers.GetN() == 2)
-  {
-    int portNum = 4020;
-    Address tcpRemote(InetSocketAddress(peer, portNum));
-
-    fileHelper.SetAttribute("Remote", AddressValue(tcpRemote));
-    fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
-    ApplicationContainer apps = fileHelper.Install(servers.Get(1));
-
-    PacketSinkHelper packetSink("ns3::TcpSocketFactory", tcpRemote);
-    packetSink.Install(clients);
-
-    //Set the tx buffer size to the interface queue size
-    Ptr<Node> tcpServer = servers.Get(1);
-    Ptr<TcpSocket> socket = DynamicCast<TcpSocket>(StaticCast<FileTransferApplication>(apps.Get(0))->GetSocket());
-    //socket->SetAttribute("SndBufSize", UintegerValue(queueSize));
-  }
+  packetSink.Install(clients.Get(0));
 }
 
 int main(int argc, char* argv[])
 {
-  uint32_t interfaceCount = 2;
+  uint32_t interfaceCount = 3;
   string outputDir = "mptcp_output";
 
   CommandLine cmd;
@@ -306,7 +448,7 @@ int main(int argc, char* argv[])
    Server           Switch2          Client
    *
    */
-  CreateMultipleFlowsNoBottleneck(interfaceCount, segmentSizeWithoutHeaders,
+  CreateMultipleFlowsNoBottleneck(segmentSizeWithoutHeaders,
                                   rate, delay,
                                   servers, switches, clients,
                                   remoteClient);
@@ -321,6 +463,7 @@ int main(int argc, char* argv[])
   Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("dynamic-global-routing.routes", std::ios::out);
   g.PrintRoutingTableAllAt (Seconds (6), routingStream);
   //Set the simulator stop time
+  ConfigureTracing(outputDir, clients, switches, servers);
   Simulator::Stop (Seconds(10.0));
 
   //Begin the simulation
