@@ -385,7 +385,7 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
   std::cout << "Hong peer: " << peer << endl;
   FileTransferHelper fileHelper(remoteAddress);
   fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
-  fileHelper.SetAttribute("FileSize", UintegerValue(10e3));
+  fileHelper.SetAttribute("FileSize", UintegerValue(10e4));
 
   fileHelper.Install(servers.Get(0));
 

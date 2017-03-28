@@ -210,6 +210,7 @@ TcpOptionMpTcpCapable::GetInstanceTypeId (void) const
   return TcpOptionMpTcpCapable::GetTypeId ();
 }
 
+// Very interesting, peerkey and senderkey are most important two keys
 bool
 TcpOptionMpTcpCapable::operator== (const TcpOptionMpTcpCapable& opt) const
 {
@@ -746,17 +747,17 @@ TcpOptionMpTcpDSS::GetMapping (uint64_t& dsn, uint32_t& ssn, uint16_t& length) c
       length--;
     }
 }
-  
+
 SequenceNumber64 TcpOptionMpTcpDSS::GetDataSequenceNumber () const
 {
   return SequenceNumber64(m_dsn);
 }
-  
+
 SequenceNumber32 TcpOptionMpTcpDSS::GetSubflowSequenceNumber () const
 {
   return SequenceNumber32(m_ssn);
 }
-  
+
 uint16_t TcpOptionMpTcpDSS::GetMappingLength () const
 {
   uint16_t length = m_dataLevelLength;

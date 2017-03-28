@@ -76,6 +76,8 @@ TcpOption::CreateOption (uint8_t kind)
     { TcpOption::NOP,       TcpOptionNOP::GetTypeId () },
     { TcpOption::TS,        TcpOptionTS::GetTypeId () },
     { TcpOption::WINSCALE,  TcpOptionWinScale::GetTypeId () },
+    // Hong Jiaming: why MPTCP is not here? MPTCP options contains several subtypes and can't be list here
+    // { TcpOption::MPTCP,  TcpOptionMpTcp::GetTypeId () }, compile error
     { TcpOption::UNKNOWN,  TcpOptionUnknown::GetTypeId () }
   };
 

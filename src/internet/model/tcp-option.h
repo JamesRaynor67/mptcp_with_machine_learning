@@ -54,11 +54,11 @@ public:
   {
     // Remember to extend IsKindKnown() with new value, when adding values here
     //
-    END = 0,      //!< END
-    NOP = 1,      //!< NOP
-    MSS = 2,      //!< MSS
-    WINSCALE = 3, //!< WINSCALE
-    TS = 8,       //!< TS
+    END = 0,      //!< END   End of option list
+    NOP = 1,      //!< NOP   Just to fill head be of size 4*k bytes
+    MSS = 2,      //!< MSS   Max segment size, usually 1460
+    WINSCALE = 3, //!< WINSCALE   (0~14) RevWindows size << WINSCALE
+    TS = 8,       //!< TS   Timestamp, for RTT
     MPTCP = 30,   //! Multipath TCP options share the same Kind
     UNKNOWN = 255 //!< not a standardized value; for unknown recv'd options
   };
