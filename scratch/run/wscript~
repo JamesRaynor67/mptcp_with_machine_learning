@@ -7,14 +7,22 @@ def build(bld):
   module.source = ['file-transfer-application.cc',
                    'file-transfer-helper.cc',
                    'mp-onoff-application.cc',
-                   'mptcp-helper-os.cc']
+                   'mptcp-helper-os.cc',
+                   'mptcp-helper-router.cc',
+                   'mptcp-helper-trace.cc',
+                   'mptcp-helper-topology.cc',
+                   'mptcp-helper-application.cc']
 
   headers = bld(features='ns3header')
   headers.module = 'run'
   headers.source = ['file-transfer-application.h',
                     'file-transfer-helper.h',
                     'mp-onoff-application.h',
-                    'mptcp-helper-os.h']
+                    'mptcp-helper-os.h',
+                    'mptcp-helper-router.h',
+                    'mptcp-helper-trace.h',
+                    'mptcp-helper-topology.h',
+                    'mptcp-helper-application.h']
 
   obj = bld.create_ns3_program('mptcp-test', ['run', 'core', 'applications', 'internet', 'network', 'point-to-point', 'traffic-control'])
   obj.source = 'mptcp-test.cc'

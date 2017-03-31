@@ -780,8 +780,8 @@ protected:
 
 private:
   //! Defined and unimplemented to avoid misuse
-  TcpOptionMpTcpAddAddress (const TcpOptionMpTcpAddAddress&);
-  TcpOptionMpTcpAddAddress& operator= (const TcpOptionMpTcpAddAddress&);
+  TcpOptionMpTcpAddAddress (const TcpOptionMpTcpAddAddress&) = delete;
+  TcpOptionMpTcpAddAddress& operator= (const TcpOptionMpTcpAddAddress&) = delete;
 };
 
 /**
@@ -849,13 +849,13 @@ private:
  * \brief Allow to (un)block emission from peer on this subflow
  *
  * MPTCP allows a host to advertise their preference about the links they would prefer to use.
- * It is advertised as a boolean (B) that means "Please don't send data on this connection, except if
- * there is a problem".
+ * It is advertised as a backup (B) that means "Please don't send data on this connection, except
+ * there is no link with this flag set to be 0".
  * The peer is free to ignore this preference.
  * This option is unidirectional, i.e, an emitter may ask not to receive data
  * on a subflow while transmitting on it.
  *
- * \warn This option is not taken into account by ns3 yet.
+ * \warn This option is NOT taken into account by ns3 yet.
  *
  * MP_PRIO option:
 \verbatim
@@ -937,8 +937,8 @@ private:
    *
    * Defined and unimplemented to avoid misuse
    */
-  TcpOptionMpTcpChangePriority (const TcpOptionMpTcpChangePriority&);
-  TcpOptionMpTcpChangePriority& operator= (const TcpOptionMpTcpChangePriority&);
+  TcpOptionMpTcpChangePriority (const TcpOptionMpTcpChangePriority&) = delete;
+  TcpOptionMpTcpChangePriority& operator= (const TcpOptionMpTcpChangePriority&) = delete;
 
   uint8_t m_length;   /**< Length of this option */
 
@@ -952,7 +952,7 @@ private:
  *
  * For example, if the operating system is running out of resources, MPTCP could send an
  * MP_FASTCLOSE.
- * This should not be very useful in ns3 scenarii.
+ * This should not be very useful in ns3 scenario.
  *
  * MP_FASTCLOSE option:
 \verbatim

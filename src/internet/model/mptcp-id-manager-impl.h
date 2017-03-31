@@ -120,6 +120,7 @@ protected:
   // MPTCP containers
   // INetSocketAddress
 //  InetSocketAddress
+  // Hong Jiaming: why it's std::vector<uint16_t>, not uint16_t?
   typedef std::pair<const Ipv4Address, std::vector<uint16_t> > MpTcpAddressInfo;  //!< Ipv4/v6 address and its port
 
 //  typedef std::multimap<uint8_t,MpTcpAddressInfo>  MpTcpAddressContainer;

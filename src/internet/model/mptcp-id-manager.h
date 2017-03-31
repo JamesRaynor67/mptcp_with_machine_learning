@@ -50,7 +50,7 @@ RFC6824
    The Address IDs of the subflow used in the initial SYN exchange of
    the first subflow in the connection are implicit, and have the value
    zero.  A host MUST store the mappings between Address IDs and
-   addresses both for itself and the remote host.  An implementation
+   addresses BOTH for itself and the remote host.  An implementation
    will also need to know which local and remote Address IDs are
    associated with which established subflows, for when addresses are
    removed from a local or remote host.
