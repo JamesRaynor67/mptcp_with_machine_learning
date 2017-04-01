@@ -22,6 +22,7 @@ void PopulateServerRoutingTable(Ptr<Node> aServer,
   //Routes to switch interfaces facing the server
   for(uint32_t i = 0; i < switchServerInterfaces.GetN(); ++i)
   {
+    // void ns3::Ipv4StaticRouting::AddHostRouteTo(Ipv4Address dest, Ipv4Address nextHop, uint32_t interface, uint32_t metric = 0)
     routing->AddHostRouteTo(switchServerInterfaces.GetAddress(i), switchServerInterfaces.GetAddress(i), i + 1);
   }
 

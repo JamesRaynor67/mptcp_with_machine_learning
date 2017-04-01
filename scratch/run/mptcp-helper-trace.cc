@@ -110,14 +110,15 @@ void TraceQueueItemDrop(Ptr<OutputStreamWrapper> stream, Ptr<const QueueItem> it
   }
 }
 
-void ConfigureTracing (const string& outputDir, const NodeContainer& clients,
-                       const NodeContainer& switches, const NodeContainer& servers)
+void ConfigureTracing (const string& outputDir, const NodeContainer& server,
+                       const NodeContainer& client, const NodeContainer& isps,
+                       const NodeContainer& ixs)
 {
   //Create an output directory
   CheckAndCreateDirectory(outputDir);
 
   stringstream devicePath;
-  devicePath << "/NodeList/" << clients.Get(0)->GetId() << "/DeviceList/*/$ns3::PointToPointNetDevice/";
+  devicePath << "/NodeList/" << client.Get(0)->GetId() << "/DeviceList/*/$ns3::PointToPointNetDevice/";
 
   stringstream tfile;
   tfile << outputDir << "/mptcp_client";
@@ -128,7 +129,7 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& clients,
   Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, throughputFile));
   Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, throughputFile));
 
-  uint32_t serverId = servers.Get(0)->GetId();
+  uint32_t serverId = server.Get(0)->GetId();
   devicePath.str("");
   devicePath << "/NodeList/" << serverId << "/DeviceList/*/$ns3::PointToPointNetDevice/";
 
@@ -150,24 +151,37 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& clients,
                                 MakeBoundCallback(TraceQueueItemDrop, dropsFile));
 
 
-  uint32_t clientId = clients.Get(0)->GetId();
-  uint32_t switchId = switches.Get(0)->GetId();
-
-  cout << "client node is " << clientId << " switch id " << switchId << " server id " << serverId << endl;
+  uint32_t clientId = client.Get(0)->GetId();
+  cout << "client node is: " << clientId << endl;
+  cout << "server node is: " << serverId << endl;
+  cout << "isps node are: ";
+  for(int i = 0; i < isps.GetN(); ++i){
+    cout << " " << isps.Get(i)->GetId();
+  }
+  cout << endl;
+  cout << "ixs node are: ";
+  for(int i = 0; i < ixs.GetN(); ++i){
+    cout << " " << ixs.Get(i)->GetId();
+  }
+  cout << endl;
 
   //Print the nodes' routing tables
   //Print the nodes' routing tables
-  for (uint32_t  i = 0; i < switches.GetN(); ++i)
+  for(uint32_t i = 0; i < server.GetN(); ++i)
   {
-    PrintRoutingTable(switches.Get(i), outputDir, "switch" + to_string(i));
+    PrintRoutingTable(server.Get(i), outputDir, "srv" + to_string(i));
   }
-  for(uint32_t i = 0; i < clients.GetN(); ++i)
+  for(uint32_t i = 0; i < client.GetN(); ++i)
   {
-    PrintRoutingTable(clients.Get(i), outputDir, "cl" + to_string(i));
+    PrintRoutingTable(client.Get(i), outputDir, "cl" + to_string(i));
   }
-  for(uint32_t i = 0; i < servers.GetN(); ++i)
+  for (uint32_t  i = 0; i < isps.GetN(); ++i)
   {
-    PrintRoutingTable(servers.Get(i), outputDir, "srv" + to_string(i));
+    PrintRoutingTable(isps.Get(i), outputDir, "isps" + to_string(i));
+  }
+  for (uint32_t  i = 0; i < ixs.GetN(); ++i)
+  {
+    PrintRoutingTable(ixs.Get(i), outputDir, "ixs" + to_string(i));
   }
 }
 

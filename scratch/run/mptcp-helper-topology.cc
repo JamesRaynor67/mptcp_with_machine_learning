@@ -14,6 +14,7 @@ InternetStackHelper GetInternetStackHelper ()
   //Set the routing protocol to static routing
   Ipv4ListRoutingHelper listRoutingHelper;
   Ipv4StaticRoutingHelper staticRoutingHelper;
+  // void ns3::Ipv4ListRoutingHelper::Add(const Ipv4RoutingHelper & routing, int16_t priority)
   listRoutingHelper.Add(staticRoutingHelper, 10);
 
   stackHelper.SetRoutingHelper(listRoutingHelper);
@@ -54,6 +55,8 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
   return linkedDevices;
 }
 
+
+
 void CreateMultipleFlowsSingleBottleneck (uint32_t interfaceCount,
                                           uint32_t packetSize,
                                           DataRate linkRate,
@@ -63,6 +66,17 @@ void CreateMultipleFlowsSingleBottleneck (uint32_t interfaceCount,
                                           NodeContainer& clients,
                                           Ipv4Address& remoteClient)
 {
+  /*
+   * Server has two possible paths to client, there is a bottleneck link at switch.
+   *
+   ------           ------           ------
+  |      | ------  |      |-------  |      |
+  |      | ------  |      |         |      |
+   ------           ------           ------
+   Server           Switch           Client
+   *
+   */
+
   //Create the internet stack helper.
   InternetStackHelper stackHelper = GetInternetStackHelper();
 
@@ -114,182 +128,181 @@ void CreateMultipleFlowsSingleBottleneck (uint32_t interfaceCount,
   remoteClient = clientInterfaces.GetAddress(0);
 }
 
-void CreateMultipleFlowsNoBottleneck (uint32_t interfaceCount,
-                                      uint32_t packetSize,
-                                      DataRate linkRate,
-                                      Time delay,
-                                      NodeContainer& servers,
-                                      NodeContainer& switches,
-                                      NodeContainer& clients,
-                                      Ipv4Address& remoteClient)
+void CreateRealNetwork (uint32_t packetSize,
+                        NodeContainer& server,
+                        NodeContainer& client,
+                        NodeContainer& isps,
+                        NodeContainer& ixs,
+                        Ipv4Address& remoteClient)
 {
   //Create the internet stack helper.
   InternetStackHelper stackHelper = GetInternetStackHelper();
 
-  //Create the nodes in the topology, and install the internet stack on them
-  clients.Create(1);
-  stackHelper.Install(clients);
+  client.Create(1);           // client is connected to Japan
+  stackHelper.Install(client);
 
-  switches.Create(interfaceCount);
-  stackHelper.Install(switches);
+  server.Create(1);           // server is connected to Beijin
+  stackHelper.Install(server);
 
-  //Create the servers and install the internet stack on them
-  servers.Create(1);
-  stackHelper.Install(servers);
+  isps.Create(6);             // ICB, EDU, CU, CT, CM and CST
+  stackHelper.Install(isps);
 
-  //Create the address helper
-  Ipv4AddressHelper addressHelper;
-  addressHelper.SetBase("10.10.0.0", "255.255.255.0");
+  ixs.Create(2);              // Beijing and Japan
+  stackHelper.Install(ixs);
 
-  Ipv4InterfaceContainer serverInterfaces;
-  Ipv4InterfaceContainer switchServerInterfaces;
-  Ipv4InterfaceContainer switchClientInterfaces;
-  Ipv4InterfaceContainer clientInterfaces;
+  Ptr<Node> isp_icb = isps.Get(0);
+  Ptr<Node> isp_edu = isps.Get(1);
+  Ptr<Node> isp_cu = isps.Get(2);
+  Ptr<Node> isp_ct = isps.Get(3);
+  Ptr<Node> isp_cm = isps.Get(4);
+  Ptr<Node> isp_cst = isps.Get(5);
+  Ptr<Node> ix_Beijing = ixs.Get(0);
+  Ptr<Node> ix_Japan = ixs.Get(1);
 
-  for(uint32_t i = 0; i < interfaceCount; ++i)
-  {
-    //Create a link between the switch and the server, assign IP addresses
-    NetDeviceContainer devices = PointToPointCreate(servers.Get(0), switches.Get(i),
-                                                    DataRate(linkRate.GetBitRate()), delay, packetSize);
-    Ipv4InterfaceContainer interfaces = addressHelper.Assign(devices);
-
-    serverInterfaces.Add(interfaces.Get(0));
-    switchServerInterfaces.Add(interfaces.Get(1));
-  }
-
-  for(uint32_t i = 0; i < interfaceCount; ++i)
-  {
-    //Create a link between the switch and the client, assign IP addresses
-    NetDeviceContainer linkedDevices = PointToPointCreate(clients.Get(0), switches.Get(i),
-                                                          DataRate(linkRate.GetBitRate()), delay, packetSize);
-    Ipv4InterfaceContainer interfaces = addressHelper.Assign(linkedDevices);
-
-    clientInterfaces.Add(interfaces.Get(0));
-    switchClientInterfaces.Add(interfaces.Get(1));
-  }
-
-  remoteClient = clientInterfaces.GetAddress(0);
-
-  //We should do static routing, because we'd like to explicitly create 2 different paths through
-  //the switch.
-  PopulateServerRoutingTable(servers.Get(0), clientInterfaces, switchClientInterfaces, switchServerInterfaces);
-  PopulateClientRoutingTable(clients.Get(0), serverInterfaces, switchClientInterfaces, switchServerInterfaces);
-
-  //Do the switches manually
-  for (uint32_t i =0; i < interfaceCount; ++i)
-  {
-    Ptr<Node> aSwitch = switches.Get(i);
-    Ptr<Ipv4StaticRouting> routing = GetNodeStaticRoutingProtocol(aSwitch);
-
-    //Routes to the server interfaces facing the server
-    routing->AddHostRouteTo(serverInterfaces.GetAddress(i),
-                            serverInterfaces.GetAddress(i), 1);
-
-    //Routes to the client
-    for(uint32_t j = 0; j < clientInterfaces.GetN(); ++j)
-    {
-      routing->AddHostRouteTo(clientInterfaces.GetAddress(j), clientInterfaces.GetAddress(j), 2);
-    }
-
-    Ptr<Node> aServer = servers.Get(0);
-    routing = GetNodeStaticRoutingProtocol(aServer);
-    routing->AddHostRouteTo(clientInterfaces.GetAddress(0), switchServerInterfaces.GetAddress(i), i + 1);
-  }
-
-}
-
-void CreateMultipleAndTcpFlows (uint32_t interfaceCount,
-                                uint32_t packetSize,
-                                DataRate linkRate,
-                                Time delay,
-                                NodeContainer& servers,
-                                NodeContainer& switches,
-                                NodeContainer& clients,
-                                Ipv4Address& remoteClient)
-{
-  //Create the internet stack helper.
-  InternetStackHelper mptcpStackHelper = GetInternetStackHelper();
-
-  //Create the nodes in the topology, and install the internet stack on them
-  clients.Create(1);
-  mptcpStackHelper.Install(clients);
-
-  switches.Create(1);
-  mptcpStackHelper.Install(switches);
-
-  //Create the servers and install the internet stack on them
-  servers.Create(2);
-  mptcpStackHelper.Install(servers);
+  /*--------------------------------------*/
 
   //Create the address helper
   Ipv4AddressHelper addressHelper;
   addressHelper.SetBase("10.10.0.0", "255.255.255.0");
 
-  Ipv4InterfaceContainer serverInterfaces;
-  Ipv4InterfaceContainer switchServerInterfaces;
-  Ipv4InterfaceContainer switchClientInterfaces;
   Ipv4InterfaceContainer clientInterfaces;
-  Ipv4InterfaceContainer tcpServerInterfaces;
-  Ipv4InterfaceContainer tcpSwitchServerInterfaces;
+  Ipv4InterfaceContainer serverInterfaces;
+  Ipv4InterfaceContainer ispInterfaces_icb;
+  Ipv4InterfaceContainer ispInterfaces_edu;
+  Ipv4InterfaceContainer ispInterfaces_cu;
+  Ipv4InterfaceContainer ispInterfaces_ct;
+  Ipv4InterfaceContainer ispInterfaces_cm;
+  Ipv4InterfaceContainer ispInterfaces_cst;
+  Ipv4InterfaceContainer ixsInterfaces_Beijin;
+  Ipv4InterfaceContainer ixsInterfaces_Japan;
 
-  for(uint32_t i = 0; i < interfaceCount; ++i)
-  {
-    //Create a link between the switch and the MPTCP server, assign IP addresses
-    NetDeviceContainer devices = PointToPointCreate(servers.Get(0), switches.Get(0),
-                                                    linkRate, delay, packetSize);
-    Ipv4InterfaceContainer interfaces = addressHelper.Assign(devices);
+  Ipv4InterfaceContainer interfaces;
 
-    serverInterfaces.Add(interfaces.Get(0));
-    switchServerInterfaces.Add(interfaces.Get(1));
-  }
+  /*------------isp with isp-----------------*/
+  // interfaces = addressHelper.Assign(PointToPointCreate(isp_icb, isp_cu, DataRate("310Mbps"), Time("5ms"), packetSize));
+  // ispInterfaces_icb.Add(interfaces.Get(0));
+  // ispInterfaces_cu.Add(interfaces.Get(1));
+  NetDeviceContainer dev = PointToPointCreate(isp_icb, isp_cu, DataRate("310Mbps"), Time("5ms"), packetSize);
+  interfaces = addressHelper.Assign(dev);
+  ispInterfaces_icb.Add(interfaces.Get(0));
+  ispInterfaces_cu.Add(interfaces.Get(1));
 
-  //Create a link between the switch and the client, assign IP addresses
-  NetDeviceContainer linkedDevices = PointToPointCreate(clients.Get(0), switches.Get(0), linkRate, delay, packetSize);
-  Ipv4InterfaceContainer interfaces = addressHelper.Assign(linkedDevices);
+  std::pair<Ptr<Ipv4>, uint32_t> returnValue = interfaces.Get(1);
+  Ptr<Ipv4> ipv4 = returnValue.first;
+  uint32_t index = returnValue.second;
+  Ptr<Ipv4Interface> iface =  ipv4->GetObject<Ipv4L3Protocol> ()->GetInterface (index);
+  uint32_t address = iface->GetAddress(0).GetLocal().Get();
+  cout << "Jiaming Hong: " << ((address >> 24) & 0xff) << "."
+                           << ((address >> 16) & 0xff) << "."
+                           << ((address >> 8) & 0xff) << "."
+                           << ((address >> 0) & 0xff) << endl;
 
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_icb, isp_ct, DataRate("100Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_icb.Add(interfaces.Get(0));
+  ispInterfaces_ct.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cst, DataRate("11000Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_edu.Add(interfaces.Get(0));
+  ispInterfaces_cst.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cm, DataRate("20692Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_edu.Add(interfaces.Get(0));
+  ispInterfaces_cm.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_ct, DataRate("27000Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_edu.Add(interfaces.Get(0));
+  ispInterfaces_ct.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cu, DataRate("27000Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_edu.Add(interfaces.Get(0));
+  ispInterfaces_cu.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_cst, DataRate("5000Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_cu.Add(interfaces.Get(0));
+  ispInterfaces_cst.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_cm, DataRate("91024Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_cu.Add(interfaces.Get(0));
+  ispInterfaces_cm.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_ct, DataRate("747000Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_cu.Add(interfaces.Get(0));
+  ispInterfaces_ct.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_ct, isp_cm, DataRate("137168Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_ct.Add(interfaces.Get(0));
+  ispInterfaces_cm.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_ct, isp_cst, DataRate("5600Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_ct.Add(interfaces.Get(0));
+  ispInterfaces_cst.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_cm, isp_cst, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ispInterfaces_cm.Add(interfaces.Get(0));
+  ispInterfaces_cst.Add(interfaces.Get(1));
+
+  /*-------- isp with ix --------------*/
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_edu, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Japan.Add(interfaces.Get(0));
+  ispInterfaces_edu.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cu, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Japan.Add(interfaces.Get(0));
+  ispInterfaces_cu.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_ct, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Japan.Add(interfaces.Get(0));
+  ispInterfaces_ct.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cm, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Japan.Add(interfaces.Get(0));
+  ispInterfaces_cm.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cst, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Japan.Add(interfaces.Get(0));
+  ispInterfaces_cst.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_icb, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Beijin.Add(interfaces.Get(0));
+  ispInterfaces_icb.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_edu, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Beijin.Add(interfaces.Get(0));
+  ispInterfaces_edu.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cu, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Beijin.Add(interfaces.Get(0));
+  ispInterfaces_cu.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_ct, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Beijin.Add(interfaces.Get(0));
+  ispInterfaces_ct.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cm, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Beijin.Add(interfaces.Get(0));
+  ispInterfaces_cm.Add(interfaces.Get(1));
+
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cst, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  ixsInterfaces_Beijin.Add(interfaces.Get(0));
+  ispInterfaces_cst.Add(interfaces.Get(1));
+
+  /*-------- server with ix --------------*/
+  interfaces = addressHelper.Assign(PointToPointCreate(client.Get(0), ix_Japan, DataRate("2500Mbps"), Time("5ms"), packetSize));
   clientInterfaces.Add(interfaces.Get(0));
-  switchClientInterfaces.Add(interfaces.Get(1));
+  ixsInterfaces_Japan.Add(interfaces.Get(1));
 
-  remoteClient = clientInterfaces.GetAddress(0);
+  interfaces = addressHelper.Assign(PointToPointCreate(client.Get(0), ix_Japan, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  clientInterfaces.Add(interfaces.Get(0));
+  ixsInterfaces_Japan.Add(interfaces.Get(1));
 
-  //Create a link between the switch and a normal TCP server, assign IP addresses
-  NetDeviceContainer devices = PointToPointCreate(servers.Get(1), switches.Get(0), linkRate, delay, packetSize);
-  interfaces = addressHelper.Assign(devices);
+  /*-------- client with ix --------------*/
+  interfaces = addressHelper.Assign(PointToPointCreate(server.Get(0), ix_Beijing, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  serverInterfaces.Add(interfaces.Get(0));
+  ixsInterfaces_Beijin.Add(interfaces.Get(1));
 
-  tcpServerInterfaces.Add(interfaces.Get(0));
-  tcpSwitchServerInterfaces.Add(interfaces.Get(1));
-
-  //We should do static routing, because we'd like to explicitly create 2 different paths through
-  //the switch.
-  PopulateServerRoutingTable(servers.Get(0), clientInterfaces, switchClientInterfaces, switchServerInterfaces);
-  PopulateSwitchRoutingTable(switches.Get(0), clientInterfaces, serverInterfaces,
-                             switchClientInterfaces, switchServerInterfaces);
-  PopulateClientRoutingTable(clients.Get(0), serverInterfaces, switchClientInterfaces, switchServerInterfaces);
-
-  //Manually populate the routing tables with info about the normal TCP server
-  Ptr<Ipv4StaticRouting> routing = GetNodeStaticRoutingProtocol(servers.Get(1));
-
-  uint32_t serverFacingInterface = switchServerInterfaces.GetN() + switchClientInterfaces.GetN() + 1;
-  //Routes to switch interfaces facing the server
-  routing->AddHostRouteTo(tcpSwitchServerInterfaces.GetAddress(0),
-                          tcpSwitchServerInterfaces.GetAddress(0), 1);
-
-  //Route from the server to the client switch interface
-  routing->AddHostRouteTo(switchClientInterfaces.GetAddress(0), tcpSwitchServerInterfaces.GetAddress(0), 1);
-  //Route from server to the client
-  routing->AddHostRouteTo(clientInterfaces.GetAddress(0), tcpSwitchServerInterfaces.GetAddress(0), 1);
-
-  //Switch routing
-  routing = GetNodeStaticRoutingProtocol(switches.Get(0));
-
-  //Routes to the server interfaces facing the server
-  routing->AddHostRouteTo(tcpServerInterfaces.GetAddress(0),
-                          tcpServerInterfaces.GetAddress(0), serverFacingInterface);
-
-  //Route from client to tcp server
-  routing = GetNodeStaticRoutingProtocol(clients.Get(0));
-  routing->AddHostRouteTo(tcpServerInterfaces.GetAddress(0), switchClientInterfaces.GetAddress(0), 1);
-  routing->AddHostRouteTo(tcpSwitchServerInterfaces.GetAddress(0), switchClientInterfaces.GetAddress(0), 1);
+  interfaces = addressHelper.Assign(PointToPointCreate(server.Get(0), ix_Beijing, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  serverInterfaces.Add(interfaces.Get(0));
+  ixsInterfaces_Beijin.Add(interfaces.Get(1));
 }
 
 };

@@ -10,6 +10,7 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/traffic-control-module.h"
+#include "ns3/global-route-manager.h"
 
 using namespace ns3;
 
@@ -63,101 +64,23 @@ int main(int argc, char* argv[])
   SetConfigDefaults(linkRate, linkDelay, interfaceCount, segmentSize, segmentSizeWithoutHeaders, queueSize);
 
   //Create the nodes in the topology, and install the internet stack on them
-  NodeContainer clients;
-  NodeContainer switches;
-  NodeContainer servers;
+  NodeContainer server;
+  NodeContainer client;
+  NodeContainer isps;
+  NodeContainer ixs;    // Internet exchange points
 
   Ipv4Address remoteClient;
 
-  switch(type){
-    case (bottleneck):
-    {
-
-      /*
-       * Server has two possible paths to client, there is a bottleneck link at switch.
-       *
-       ------           ------           ------
-      |      | ------  |      |-------  |      |
-      |      | ------  |      |         |      |
-       ------           ------           ------
-       Server           Switch           Client
-       *
-       */
-      CreateMultipleFlowsSingleBottleneck(interfaceCount, segmentSizeWithoutHeaders,
-                                          rate, delay,
-                                          servers, switches, clients,
-                                          remoteClient);
-      break;
-    }
-    case (nobottleneck):
-    {
-
-      /*
-       * Server has two possible paths to client.
-       * Note that two switches are necessary to make
-       * this work without the ADD_ADDR capabilities implemented
-       * Also the packet sink bound endpoint has Ipv4Address::GetAny()
-       *
-       ------           ------           ------
-      |      | ------  |      | ------  |      |
-      |      |         |      |         |      |
-      |      |          ------          |      |
-      |      |          Switch1         |      |
-      |      |          ------          |      |
-      |      | ------  |      | ------  |      |
-      |      |         |      |         |      |
-       ------           ------           ------
-       Server           Switch2          Client
-       *
-       */
-      CreateMultipleFlowsNoBottleneck(interfaceCount, segmentSizeWithoutHeaders,
-                                      rate, delay,
-                                      servers, switches, clients,
-                                      remoteClient);
-      break;
-    }
-    case (otherflow):
-    {
-      /*
-       * 2 MPTCP flows share a bottleneck with a normal TCP flow.
-       *
-       ------           ------           ------
-      |      | ------  |      |-------  |      |
-      |      | ------  |      |         |      |
-       ------          |      |          ------
-       MPTCP           |      |          Client
-       Server          |      |
-                       |      |
-       ------          |      |
-      |      | ------  |      |
-      |      |         |      |
-       ------           ------
-       Server2            Switch
-       */
-
-      CreateMultipleAndTcpFlows (interfaceCount, segmentSizeWithoutHeaders,
-                                 rate, delay,
-                                 servers, switches, clients,
-                                 remoteClient);
-      break;
-    }
-    default:
-    {
-      CreateMultipleFlowsSingleBottleneck(interfaceCount, segmentSizeWithoutHeaders,
-                                          rate, delay,
-                                          servers, switches, clients,
-                                          remoteClient);
-    }
-  }
+  CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs, remoteClient);
 
   //Create and install the applications on the server and client
   if(appType == onoff)
   {
-    InstallOnOffApplications(servers, clients, remoteClient, segmentSizeWithoutHeaders);
+    InstallOnOffApplications(server, client, remoteClient, segmentSizeWithoutHeaders);
   }
   else if (appType == filetransfer)
   {
-    InstallFileTransferApplications(servers, clients, remoteClient,
+    InstallFileTransferApplications(server, client, remoteClient,
                                     segmentSizeWithoutHeaders,
                                     queueSize);
   }
@@ -165,11 +88,23 @@ int main(int argc, char* argv[])
   //Populate the IP routing tables
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
+  Ipv4GlobalRoutingHelper g;
+  Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("dynamic-global-routing.routes", std::ios::out);
+  g.PrintRoutingTableAllAt (Seconds (0), routingStream);
+
+  // Ptr<Ipv4> ipv4 = server.Get(0)->GetObject<Ipv4> ();
+  // if (ipv4)
+  // {
+  //   Ptr<Ipv4RoutingProtocol> rp = ipv4->GetRoutingProtocol ();
+  //   NS_ASSERT (rp);
+  //   rp->PrintRoutingTable (routingStream);
+  // }
+
   //Create an output directory and configure tracing
-  ConfigureTracing(outputDir, clients, switches, servers);
+  ConfigureTracing(outputDir, server, client, isps, ixs);
 
   //Set the simulator stop time
-  Simulator::Stop (Seconds(20.0));
+  Simulator::Stop (Seconds(10.0));
 
   //Begin the simulation
   Simulator::Run ();
