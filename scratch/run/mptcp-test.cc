@@ -5,6 +5,7 @@
 #include "mptcp-helper-topology.h"
 #include "mptcp-helper-application.h"
 
+#include "ns3/netanim-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/point-to-point-module.h"
@@ -32,7 +33,7 @@ int main(int argc, char* argv[])
 
   uint32_t interfaceCount = 2;
   uint32_t type = 0;
-  uint32_t appType = 1;
+  uint32_t appType = 0;
   string outputDir = "mptcp_test";
 
   CommandLine cmd;
@@ -76,10 +77,12 @@ int main(int argc, char* argv[])
   //Create and install the applications on the server and client
   if(appType == onoff)
   {
+    std::cout << "Application type: onoff\n";
     InstallOnOffApplications(server, client, remoteClient, segmentSizeWithoutHeaders);
   }
   else if (appType == filetransfer)
   {
+    std::cout << "Application type: filetransfer\n";
     InstallFileTransferApplications(server, client, remoteClient,
                                     segmentSizeWithoutHeaders,
                                     queueSize);
@@ -105,6 +108,8 @@ int main(int argc, char* argv[])
 
   //Set the simulator stop time
   Simulator::Stop (Seconds(10.0));
+
+  AnimationInterface anim ("mptcp-animation.xml");
 
   //Begin the simulation
   Simulator::Run ();

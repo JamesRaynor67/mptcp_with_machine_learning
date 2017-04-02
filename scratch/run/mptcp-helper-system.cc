@@ -37,7 +37,8 @@ void SetConfigDefaults (std::string linkRate, std::string linkDelay, uint32_t in
   Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(false));
 
   //Set the mptcp option
-  Config::SetDefault("ns3::TcpSocketImpl::EnableMpTcp", BooleanValue(true));
+  Config::SetDefault("ns3::TcpSocketImpl::EnableMpTcp", BooleanValue(false)); // changed into false by Hong Jiaming for debug
+  Config::SetDefault ("ns3::Ipv4GlobalRouting::RespondToInterfaceEvents", BooleanValue (true)); // this line added by Hong Jiaming
 
   //Set the initial congestion window to be larger than duplicate ack threshold
   Config::SetDefault("ns3::TcpSocket::InitialCwnd", UintegerValue(4));
