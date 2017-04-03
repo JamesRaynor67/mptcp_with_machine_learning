@@ -12,13 +12,13 @@ InternetStackHelper GetInternetStackHelper ()
 {
   //Create the internet stack helper, and install the internet stack on the client node
   InternetStackHelper stackHelper;
-  //Set the routing protocol to static routing
-  Ipv4ListRoutingHelper listRoutingHelper;
-  Ipv4StaticRoutingHelper staticRoutingHelper;
-  // void ns3::Ipv4ListRoutingHelper::Add(const Ipv4RoutingHelper & routing, int16_t priority)
-  listRoutingHelper.Add(staticRoutingHelper, 10);
-
-  stackHelper.SetRoutingHelper(listRoutingHelper);
+  // //Set the routing protocol to static routing
+  // Ipv4ListRoutingHelper listRoutingHelper;
+  // Ipv4StaticRoutingHelper staticRoutingHelper;
+  // // void ns3::Ipv4ListRoutingHelper::Add(const Ipv4RoutingHelper & routing, int16_t priority)  THIS IS THE ROOT CAUSE OF ROUTING FAILURE!!!
+  // listRoutingHelper.Add(staticRoutingHelper, 10);
+  //
+  // stackHelper.SetRoutingHelper(listRoutingHelper);
 
   return stackHelper;
 }
@@ -54,79 +54,6 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
   tchRed.Install(linkedDevices);
 
   return linkedDevices;
-}
-
-
-
-void CreateMultipleFlowsSingleBottleneck (uint32_t interfaceCount,
-                                          uint32_t packetSize,
-                                          DataRate linkRate,
-                                          Time delay,
-                                          NodeContainer& servers,
-                                          NodeContainer& switches,
-                                          NodeContainer& clients,
-                                          Ipv4Address& remoteClient)
-{
-  /*
-   * Server has two possible paths to client, there is a bottleneck link at switch.
-   *
-   ------           ------           ------
-  |      | ------  |      |-------  |      |
-  |      | ------  |      |         |      |
-   ------           ------           ------
-   Server           Switch           Client
-   *
-   */
-
-  //Create the internet stack helper.
-  InternetStackHelper stackHelper = GetInternetStackHelper();
-
-  //Create the nodes in the topology, and install the internet stack on them
-  clients.Create(1);
-  stackHelper.Install(clients);
-
-  switches.Create(1);
-  stackHelper.Install(switches);
-
-  //Create the servers and install the internet stack on them
-  servers.Create(1);
-  stackHelper.Install(servers);
-
-  //Create the address helper
-  Ipv4AddressHelper addressHelper;
-  addressHelper.SetBase("10.10.0.0", "255.255.255.0");
-
-  Ipv4InterfaceContainer serverInterfaces;
-  Ipv4InterfaceContainer switchServerInterfaces;
-  Ipv4InterfaceContainer switchClientInterfaces;
-  Ipv4InterfaceContainer clientInterfaces;
-
-  for(uint32_t i = 0; i < interfaceCount; ++i)
-  {
-    //Create a link between the switch and the server, assign IP addresses
-    NetDeviceContainer devices = PointToPointCreate(servers.Get(0), switches.Get(0),
-                                                    DataRate(linkRate.GetBitRate() * 2), delay, packetSize);
-    Ipv4InterfaceContainer interfaces = addressHelper.Assign(devices);
-
-    serverInterfaces.Add(interfaces.Get(0));
-    switchServerInterfaces.Add(interfaces.Get(1));
-  }
-
-  //Create a link between the switch and the client, assign IP addresses
-  NetDeviceContainer linkedDevices = PointToPointCreate(clients.Get(0), switches.Get(0), linkRate, delay, packetSize);
-  Ipv4InterfaceContainer interfaces = addressHelper.Assign(linkedDevices);
-
-  clientInterfaces.Add(interfaces.Get(0));
-  switchClientInterfaces.Add(interfaces.Get(1));
-
-  //We should do static routing, because we'd like to explicitly create 2 different paths through
-  //the switch.
-  PopulateServerRoutingTable(servers.Get(0), clientInterfaces, switchClientInterfaces, switchServerInterfaces);
-  PopulateSwitchRoutingTable(switches.Get(0), clientInterfaces, serverInterfaces,
-                             switchClientInterfaces, switchServerInterfaces);
-  PopulateClientRoutingTable(clients.Get(0), serverInterfaces, switchClientInterfaces, switchServerInterfaces);
-
-  remoteClient = clientInterfaces.GetAddress(0);
 }
 
 void CreateRealNetwork (uint32_t packetSize,

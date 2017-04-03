@@ -13,15 +13,6 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
                                       Time delay,
                                       uint32_t packetSize);
 
-void CreateMultipleFlowsSingleBottleneck (uint32_t interfaceCount,
-                                          uint32_t packetSize,
-                                          DataRate linkRate,
-                                          Time delay,
-                                          NodeContainer& servers,
-                                          NodeContainer& switches,
-                                          NodeContainer& clients,
-                                          Ipv4Address& remoteClient);
-
 void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,

@@ -92,8 +92,8 @@ int main(int argc, char* argv[])
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   Ipv4GlobalRoutingHelper g;
-  Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("dynamic-global-routing.routes", std::ios::out);
-  g.PrintRoutingTableAllAt (Seconds (0), routingStream);
+  Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("dynamic-global-routing-mptcp.routes", std::ios::out);
+  g.PrintRoutingTableAllAt (Seconds (3), routingStream);
 
   // Ptr<Ipv4> ipv4 = server.Get(0)->GetObject<Ipv4> ();
   // if (ipv4)
