@@ -7,7 +7,6 @@ namespace ns3{
 
   void SetConfigDefaults (std::string linkRate,
                           std::string linkDelay,
-                          uint32_t interfaces,
                           uint32_t segmentSize,
                           uint32_t segmentSizeWithoutHeaders,
                           uint32_t queueSize);

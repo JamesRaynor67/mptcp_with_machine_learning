@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ns3/internet-module.h"
+#include "ns3/flow-monitor-module.h"
 
 namespace ns3{
 
@@ -13,4 +14,6 @@ void TraceQueueItemDrop(Ptr<OutputStreamWrapper> stream, Ptr<const QueueItem> it
 void ConfigureTracing (const string& outputDir, const NodeContainer& server,
                        const NodeContainer& client, const NodeContainer& isps,
                        const NodeContainer& ixs);
+
+void GetThroughout(void);
 }

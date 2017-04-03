@@ -87,16 +87,16 @@ void CreateRealNetwork (uint32_t packetSize,
   Ptr<Node> ix_Beijing = ixs.Get(0);
   Ptr<Node> ix_Japan = ixs.Get(1);
 
-  AnimationInterface::SetConstantPosition	(isps.Get(0), 200, 0);
-  AnimationInterface::SetConstantPosition	(isps.Get(1), 100, 200);
-  AnimationInterface::SetConstantPosition	(isps.Get(2), 200, 400);
-  AnimationInterface::SetConstantPosition	(isps.Get(3), 100, 600);
-  AnimationInterface::SetConstantPosition	(isps.Get(4), 200, 800);
-  AnimationInterface::SetConstantPosition	(isps.Get(5), 100, 1000);
-  AnimationInterface::SetConstantPosition	(ixs.Get(0), 500, 300);
-  AnimationInterface::SetConstantPosition	(ixs.Get(1), 500, 700);
-  AnimationInterface::SetConstantPosition	(server.Get(0), 600, 300);
-  AnimationInterface::SetConstantPosition	(client.Get(0), 600, 700);
+  AnimationInterface::SetConstantPosition	(isps.Get(0), 0, 200);
+  AnimationInterface::SetConstantPosition	(isps.Get(1), 200, 100);
+  AnimationInterface::SetConstantPosition	(isps.Get(2), 400, 200);
+  AnimationInterface::SetConstantPosition	(isps.Get(3), 600, 100);
+  AnimationInterface::SetConstantPosition	(isps.Get(4), 800, 200);
+  AnimationInterface::SetConstantPosition	(isps.Get(5), 1000, 100);
+  AnimationInterface::SetConstantPosition	(ixs.Get(0), 300, 500);
+  AnimationInterface::SetConstantPosition	(ixs.Get(1), 700, 500);
+  AnimationInterface::SetConstantPosition	(server.Get(0), 300, 600);
+  AnimationInterface::SetConstantPosition	(client.Get(0), 700, 600);
   /*--------------------------------------*/
 
   //Create the address helper

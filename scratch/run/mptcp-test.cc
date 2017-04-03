@@ -5,6 +5,7 @@
 #include "mptcp-helper-topology.h"
 #include "mptcp-helper-application.h"
 
+#include "ns3/flow-monitor-module.h"
 #include "ns3/netanim-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
@@ -17,28 +18,17 @@ using namespace ns3;
 
 int main(int argc, char* argv[])
 {
-
-  enum TopologyType
-  {
-    bottleneck = 0,
-    nobottleneck,
-    otherflow
-  };
-
   enum AppType
   {
     onoff = 0,
     filetransfer = 1
   };
 
-  uint32_t interfaceCount = 2;
   uint32_t type = 0;
   uint32_t appType = 0;
-  string outputDir = "mptcp_test";
+  string outputDir = "mptcp_output";
 
   CommandLine cmd;
-  cmd.AddValue("interfaces", "The number of interfaces", interfaceCount);
-  cmd.AddValue("topologyType", "The type of topology to use", type);
   cmd.AddValue("outputDir", "The output directory to write the logs to.", outputDir);
   cmd.AddValue("appType", "The type of application to run", appType);
   cmd.Parse(argc, argv);
@@ -62,7 +52,7 @@ int main(int argc, char* argv[])
   //Enable logging
   EnableLogging ();
 
-  SetConfigDefaults(linkRate, linkDelay, interfaceCount, segmentSize, segmentSizeWithoutHeaders, queueSize);
+  SetConfigDefaults(linkRate, linkDelay, segmentSize, segmentSizeWithoutHeaders, queueSize);
 
   //Create the nodes in the topology, and install the internet stack on them
   NodeContainer server;
@@ -88,32 +78,28 @@ int main(int argc, char* argv[])
                                     queueSize);
   }
 
-  //Populate the IP routing tables
+  //Populate and print the IP routing tables
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-
   Ipv4GlobalRoutingHelper g;
   Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("dynamic-global-routing-mptcp.routes", std::ios::out);
-  g.PrintRoutingTableAllAt (Seconds (3), routingStream);
-
-  // Ptr<Ipv4> ipv4 = server.Get(0)->GetObject<Ipv4> ();
-  // if (ipv4)
-  // {
-  //   Ptr<Ipv4RoutingProtocol> rp = ipv4->GetRoutingProtocol ();
-  //   NS_ASSERT (rp);
-  //   rp->PrintRoutingTable (routingStream);
-  // }
+  g.PrintRoutingTableAllAt (Seconds (0.5), routingStream);
 
   //Create an output directory and configure tracing
   ConfigureTracing(outputDir, server, client, isps, ixs);
+  AnimationInterface anim ("mptcp-animation.xml");
 
   //Set the simulator stop time
+  Simulator::Schedule(Seconds(1), &GetThroughout);
+  Simulator::Schedule(Seconds(2), &GetThroughout);
+  Simulator::Schedule(Seconds(3), &GetThroughout);
+  Simulator::Schedule(Seconds(4), &GetThroughout);
+  Simulator::Schedule(Seconds(5), &GetThroughout);
   Simulator::Stop (Seconds(10.0));
-
-  AnimationInterface anim ("mptcp-animation.xml");
+  GetThroughout();
 
   //Begin the simulation
   Simulator::Run ();
-  Simulator::Destroy ();
 
+  Simulator::Destroy ();
   return 0;
 }
