@@ -18,7 +18,7 @@ while True:
 
         print "Client Says: " + data
         sleep(0.5)
-        conn.sendall("Server Says: " + str(int(data)*2))
+        conn.sendall("Server Says: Please set cwnd to 98765\n")
 
     except socket.error:
         print "Error Occured."
