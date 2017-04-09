@@ -4,7 +4,6 @@
 #include "mptcp-helper-trace.h"
 #include "mptcp-helper-topology.h"
 #include "mptcp-helper-application.h"
-#include "rl-data-interface.h"
 
 #include "ns3/flow-monitor-module.h"
 #include "ns3/netanim-module.h"
@@ -90,18 +89,18 @@ int main(int argc, char* argv[])
   AnimationInterface anim ("mptcp-animation.xml");
 
   // Connect to machine learning process
-  rl::InterfaceToRL rl_socket("127.0.0.1", 12345);
-  rl_socket << "time$12323#cwnd$1...and others\n";
-  string test_str;
-  rl_socket >> test_str;
-  cout << test_str;
+  // rl::InterfaceToRL rl_socket("127.0.0.1", 12345);
+  // rl_socket << "time$12323#cwnd$1...and others\n";
+  // string test_str;
+  // rl_socket >> test_str;
+  // cout << test_str;
   //Set the simulator stop time
   // Simulator::Schedule(Seconds(1), &GetThroughout);
   // Simulator::Schedule(Seconds(2), &GetThroughout);
   // Simulator::Schedule(Seconds(3), &GetThroughout);
   // Simulator::Schedule(Seconds(4), &GetThroughout);
   // Simulator::Schedule(Seconds(5), &GetThroughout);
-  Simulator::Stop (Seconds(10.0));
+  Simulator::Stop (Seconds(30.0));
   // GetThroughout();
 
   //Begin the simulation

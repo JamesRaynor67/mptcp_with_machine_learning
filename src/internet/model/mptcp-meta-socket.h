@@ -533,10 +533,8 @@ protected: // protected methods
   /**
    Called when a subflow that received a connection
    request gets established
-
-   TODO I don't like the name,rename later
    */
-  virtual void OnSubflowEstablished(Ptr<MpTcpSubflow> subflow);
+  virtual void OnSubflowCreated(Ptr<MpTcpSubflow> subflow);
 
   /**
    Should be called when subflows enters FIN_WAIT or LAST_ACK

@@ -11,13 +11,14 @@ public:
   virtual ~InterfaceToRL(){};
 
   // Add name-value pair to send string
-  void add(std::string name, double val);
+  const InterfaceToRL&  add(const std::string name, const uint32_t val);
+  const InterfaceToRL&  add(const std::string name, const double val);
 
   std::string get_send_str();
 
-  const InterfaceToRL& operator << ( const std::string& ) const;
+  void send();
 
-  const InterfaceToRL& operator >> ( std::string& ) const;
+  std::string recv();
 
 private:
   // This is the string to be sent.

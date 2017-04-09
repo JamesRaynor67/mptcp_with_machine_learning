@@ -29,11 +29,11 @@
 #include "ns3/ipv4.h"
 
 namespace ns3 {
-  
+
   NS_LOG_COMPONENT_DEFINE ("MpOnOffApplication");
-  
+
   NS_OBJECT_ENSURE_REGISTERED (MpOnOffApplication);
-  
+
   TypeId
   MpOnOffApplication::GetTypeId (void)
   {
@@ -78,8 +78,8 @@ namespace ns3 {
     ;
     return tid;
   }
-  
-  
+
+
   MpOnOffApplication::MpOnOffApplication ()
   : m_socket (0),
   m_connected (false),
@@ -90,26 +90,26 @@ namespace ns3 {
   {
     NS_LOG_FUNCTION (this);
   }
-  
+
   MpOnOffApplication::~MpOnOffApplication()
   {
     NS_LOG_FUNCTION (this);
   }
-  
+
   void
   MpOnOffApplication::SetMaxBytes (uint64_t maxBytes)
   {
     NS_LOG_FUNCTION (this << maxBytes);
     m_maxBytes = maxBytes;
   }
-  
+
   Ptr<Socket>
   MpOnOffApplication::GetSocket (void) const
   {
     NS_LOG_FUNCTION (this);
     return m_socket;
   }
-  
+
   int64_t
   MpOnOffApplication::AssignStreams (int64_t stream)
   {
@@ -118,43 +118,43 @@ namespace ns3 {
     m_offTime->SetStream (stream + 1);
     return 2;
   }
-  
+
   void
   MpOnOffApplication::DoDispose (void)
   {
     NS_LOG_FUNCTION (this);
-    
+
     m_socket = 0;
     // chain up
     Application::DoDispose ();
   }
-  
+
   // Application Methods
   void MpOnOffApplication::StartApplication () // Called at time specified by Start
   {
     NS_LOG_FUNCTION (this);
-    
+
     // Create the socket if not already
     if (!m_socket)
     {
       m_socket = Socket::CreateSocket (GetNode (), m_tid);
       if (Inet6SocketAddress::IsMatchingType (m_peer))
       {
-        m_socket->Bind6 ();
+        m_socket->Bind6 (); // Hong Jiaming: here, ipv6 is not supported by MpTcp
       }
       else if (InetSocketAddress::IsMatchingType (m_peer) ||
                PacketSocketAddress::IsMatchingType (m_peer))
       {
         m_socket->Bind ();
       }
-      
+
       m_socket->SetConnectCallback (MakeCallback (&MpOnOffApplication::ConnectionSucceeded, this),
                                     MakeCallback (&MpOnOffApplication::ConnectionFailed, this));
-      
+
       m_socket->Connect (m_peer);
       m_socket->SetAllowBroadcast (true);
       m_socket->ShutdownRecv ();
-      
+
       Ptr<MpTcpMetaSocket> meta = DynamicCast<MpTcpMetaSocket>(m_socket);
       if(meta)
       {
@@ -164,19 +164,19 @@ namespace ns3 {
       }
     }
     m_cbrRateFailSafe = m_cbrRate;
-    
-    // Insure no pending event
+
+    // Make sure no pending event
     CancelEvents ();
     // If we are not yet connected, there is nothing to do here
     // The ConnectionComplete upcall will start timers at that time
     if (!m_connected) return;
     ScheduleStartEvent ();
   }
-  
+
   void MpOnOffApplication::StopApplication () // Called at time specified by Stop
   {
     NS_LOG_FUNCTION (this);
-    
+
     CancelEvents ();
     if(m_socket != 0)
     {
@@ -187,11 +187,11 @@ namespace ns3 {
       NS_LOG_WARN ("MpOnOffApplication found null socket to close in StopApplication");
     }
   }
-  
+
   void MpOnOffApplication::CancelEvents ()
   {
     NS_LOG_FUNCTION (this);
-    
+
     if (m_sendEvent.IsRunning () && m_cbrRateFailSafe == m_cbrRate )
     { // Cancel the pending send packet event
       // Calculate residual bits since last packet sent
@@ -203,7 +203,7 @@ namespace ns3 {
     Simulator::Cancel (m_sendEvent);
     Simulator::Cancel (m_startStopEvent);
   }
-  
+
   // Event handlers
   void MpOnOffApplication::StartSending ()
   {
@@ -212,61 +212,59 @@ namespace ns3 {
     ScheduleNextTx ();  // Schedule the send packet event
     ScheduleStopEvent ();
   }
-  
+
   void MpOnOffApplication::StopSending ()
   {
     NS_LOG_FUNCTION (this);
     CancelEvents ();
-    
+
     ScheduleStartEvent ();
   }
-  
+
   // Private helpers
   void MpOnOffApplication::ScheduleNextTx ()
   {
     NS_LOG_FUNCTION (this);
-    
+
     if (m_maxBytes == 0 || m_totBytes < m_maxBytes)
     {
       uint32_t bits = m_pktSize * 8 - m_residualBits;
       NS_LOG_LOGIC ("bits = " << bits);
-      Time nextTime (Seconds (bits /
-                              static_cast<double>(m_cbrRate.GetBitRate ()))); // Time till next packet
+      Time nextTime (Seconds (bits / static_cast<double>(m_cbrRate.GetBitRate ()))); // Time till next packet
       NS_LOG_LOGIC ("nextTime = " << nextTime);
-      m_sendEvent = Simulator::Schedule (nextTime,
-                                         &MpOnOffApplication::SendPacket, this);
+      m_sendEvent = Simulator::Schedule (nextTime, &MpOnOffApplication::SendPacket, this);
     }
     else
     { // All done, cancel any pending events
       StopApplication ();
     }
   }
-  
+
   void MpOnOffApplication::ScheduleStartEvent ()
   {  // Schedules the event to start sending data (switch to the "On" state)
     NS_LOG_FUNCTION (this);
-    
+
     Time offInterval = Seconds (m_offTime->GetValue ());
     NS_LOG_LOGIC ("start at " << offInterval);
     m_startStopEvent = Simulator::Schedule (offInterval, &MpOnOffApplication::StartSending, this);
   }
-  
+
   void MpOnOffApplication::ScheduleStopEvent ()
   {  // Schedules the event to stop sending data (switch to "Off" state)
     NS_LOG_FUNCTION (this);
-    
+
     Time onInterval = Seconds (m_onTime->GetValue ());
     NS_LOG_LOGIC ("stop at " << onInterval);
     m_startStopEvent = Simulator::Schedule (onInterval, &MpOnOffApplication::StopSending, this);
   }
-  
-  
+
+
   void MpOnOffApplication::SendPacket ()
   {
     NS_LOG_FUNCTION (this);
-    
+
     NS_ASSERT (m_sendEvent.IsExpired ());
-    
+
     Ptr<Packet> packet = Create<Packet> (m_pktSize);
     m_txTrace (packet);
     m_socket->Send (packet);
@@ -293,46 +291,46 @@ namespace ns3 {
     m_residualBits = 0;
     ScheduleNextTx ();
   }
-  
-  
+
+
   void MpOnOffApplication::ConnectionSucceeded (Ptr<Socket> socket)
   {
     NS_LOG_FUNCTION (this << socket);
     m_connected = true;
-    
+
     if(!m_startStopEvent.IsRunning())
     {
       ScheduleStartEvent ();
     }
   }
-  
+
   void MpOnOffApplication::ConnectionFailed (Ptr<Socket> socket)
   {
     NS_LOG_FUNCTION (this << socket);
   }
-  
+
   void MpOnOffApplication::ConnectionFullyEstablished(Ptr<MpTcpMetaSocket> socket)
   {
     //Get the node's ipv4 interfaces
     Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
     NS_ASSERT(ipv4);
-    
+
     if(m_nextLocalAddress < ipv4->GetNInterfaces())
     {
       //Try to create a new subflow
       Ipv4Address localAddress = ipv4->GetAddress(m_nextLocalAddress, 0).GetLocal();
-      
+
       if(ipv4->IsUp (m_nextLocalAddress) &&
          ipv4->IsForwarding (m_nextLocalAddress))
       {
-        
+
         m_nextLocalAddress++;
-        
+
         InetSocketAddress localSocketAddr(localAddress, 0);
         socket->ConnectNewSubflow (localSocketAddr, m_peer);
       }
-      
+
     }
   }
-  
+
 } // Namespace ns3
