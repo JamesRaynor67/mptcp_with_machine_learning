@@ -27,7 +27,7 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients,
   int portNum = 4000;
   Address remoteAddress(InetSocketAddress(peer, portNum));
 
-  Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.02Mbps"), packetSize);
+  Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("200Mbps"), packetSize);
   servers.Get(0)->AddApplication(mpOnOff);
 
   //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);

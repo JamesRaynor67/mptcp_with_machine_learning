@@ -15,5 +15,5 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
                        const NodeContainer& client, const NodeContainer& isps,
                        const NodeContainer& ixs);
 
-void GetThroughout(void);
+void TraceMonitorStates(const std::string& outputDir);
 }

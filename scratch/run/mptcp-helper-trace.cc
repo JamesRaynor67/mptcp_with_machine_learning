@@ -111,6 +111,72 @@ void TraceQueueItemDrop(Ptr<OutputStreamWrapper> stream, Ptr<const QueueItem> it
   }
 }
 
+// void TraceMonitorStates(const string& outputDir){
+//   //Create flow monitor
+//   static FlowMonitorHelper flowmon;
+//   static Ptr<FlowMonitor> monitor = flowmon.InstallAll ();
+//
+//   monitor->CheckForLostPackets ();
+//   Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmon.GetClassifier ());
+//   FlowMonitor::FlowStatsContainer stats = monitor->GetFlowStats ();
+//   for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i){
+//     Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);
+//     std::cout << Simulator::Now().As(Time::MS) << "\t";
+//     std::cout << "Flow " << i->first << " (" << t.sourceAddress << " -> " << t.destinationAddress << ")\t";
+//     std::cout << "  Tx Packets: " << i->second.txPackets << "\t";
+//     std::cout << "  Tx Bytes:   " << i->second.txBytes << "\t";
+//     std::cout << "  TxOffered:  " << i->second.txBytes * 8.0 / 9.0 / 1000 / 1000  << " Mbps\t";
+//     std::cout << "  Rx Packets: " << i->second.rxPackets << "\t";
+//     std::cout << "  Rx Bytes:   " << i->second.rxBytes << "\t";
+//     std::cout << "  Throughput: " << i->second.rxBytes * 8.0 / 9.0 / 1000 / 1000  << " Mbps\t\n";
+//   }
+//   cout << '\n';
+// }
+
+void TraceMonitorStates(const string& outputDir){
+  //Create flow monitor
+  static FlowMonitorHelper flowmon;
+  static Ptr<FlowMonitor> monitor = flowmon.InstallAll();;
+  static bool initialized = false;
+  static Ptr<OutputStreamWrapper> logFile;
+
+  if(!initialized){
+    // monitor = flowmon.InstallAll();
+    logFile = Create<OutputStreamWrapper>(outputDir + "/mptcp_server_cWnd", std::ios::out);
+    *(logFile->GetStream()) << "Timestamp,FlowId,From,To,TxPackets,TxBytes,RxPackets,RxBytes,DelaySum,JitterSum,LostPacketSum,TTL_expire,Bad_checksum" << endl;
+    initialized = true;
+  }
+
+  monitor->CheckForLostPackets ();
+  Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmon.GetClassifier ());
+  FlowMonitor::FlowStatsContainer stats = monitor->GetFlowStats ();
+  // std::cout << "Hong Jiaming: 0 " << endl;
+  for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i){
+    // std::cout << "Hong Jiaming: 1 " << i->first << endl;
+    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);
+    // std::cout << "Hong Jiaming: 2 " << i->first << endl;
+    *(logFile->GetStream()) << Simulator::Now().GetNanoSeconds() << ","
+                            << i->first << ","
+                            << t.sourceAddress << ","
+                            << t.destinationAddress << ","
+                            << i->second.txPackets << ","
+                            << i->second.txBytes << ","
+                            << i->second.rxPackets << ","
+                            << i->second.rxBytes << ","
+                            << i->second.delaySum << ","
+                            << i->second.jitterSum << ","
+                            << i->second.lostPackets;
+    if(i->second.packetsDropped.size() > Ipv4L3Protocol::DropReason::DROP_TTL_EXPIRED){
+      *(logFile->GetStream()) << "," <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_TTL_EXPIRED];
+    }
+    if(i->second.packetsDropped.size() > Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM){
+      *(logFile->GetStream()) << "," <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM];
+    }
+    *(logFile->GetStream()) << "\n";
+    // std::cout << "Hong Jiaming: 3 " << i->first << endl;
+  }
+}
+
 void ConfigureTracing (const string& outputDir, const NodeContainer& server,
                        const NodeContainer& client, const NodeContainer& isps,
                        const NodeContainer& ixs)
@@ -143,6 +209,7 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   *(serverFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
   Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, serverFile));
   Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, serverFile));
+  // Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMonitorStates, outputDir));
 
   // configure for droped packets
   stringstream dfile;
@@ -187,28 +254,6 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   {
     PrintRoutingTable(ixs.Get(i), outputDir, "ixs" + to_string(i));
   }
-}
-
-void GetThroughout(void){
-  //Create flow monitor
-  static FlowMonitorHelper flowmon;
-  static Ptr<FlowMonitor> monitor = flowmon.InstallAll ();
-
-  monitor->CheckForLostPackets ();
-  Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmon.GetClassifier ());
-  FlowMonitor::FlowStatsContainer stats = monitor->GetFlowStats ();
-  for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i){
-    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);
-    std::cout << Simulator::Now().As(Time::MS) << "\t";
-    std::cout << "Flow " << i->first << " (" << t.sourceAddress << " -> " << t.destinationAddress << ")\t";
-    std::cout << "  Tx Packets: " << i->second.txPackets << "\t";
-    std::cout << "  Tx Bytes:   " << i->second.txBytes << "\t";
-    std::cout << "  TxOffered:  " << i->second.txBytes * 8.0 / 9.0 / 1000 / 1000  << " Mbps\t";
-    std::cout << "  Rx Packets: " << i->second.rxPackets << "\t";
-    std::cout << "  Rx Bytes:   " << i->second.rxBytes << "\t";
-    std::cout << "  Throughput: " << i->second.rxBytes * 8.0 / 9.0 / 1000 / 1000  << " Mbps\t\n";
-  }
-  cout << '\n';
 }
 
 };

@@ -96,12 +96,17 @@ int main(int argc, char* argv[])
   // cout << test_str;
   //Set the simulator stop time
   // Simulator::Schedule(Seconds(1), &GetThroughout);
-  // Simulator::Schedule(Seconds(2), &GetThroughout);
+  Simulator::Schedule(Seconds(1), &TraceMonitorStates, outputDir);
+  Simulator::Schedule(Seconds(2), &TraceMonitorStates, outputDir);
+  Simulator::Schedule(Seconds(3), &TraceMonitorStates, outputDir);
+  Simulator::Schedule(Seconds(10), &TraceMonitorStates, outputDir);
+  Simulator::Schedule(Seconds(20), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(3), &GetThroughout);
   // Simulator::Schedule(Seconds(4), &GetThroughout);
   // Simulator::Schedule(Seconds(5), &GetThroughout);
   Simulator::Stop (Seconds(30.0));
-  // GetThroughout();
+  // Hong Jiaming: Don't know why, call it once here ensures Scheduled call is called
+  TraceMonitorStates(outputDir);
 
   //Begin the simulation
   Simulator::Run ();

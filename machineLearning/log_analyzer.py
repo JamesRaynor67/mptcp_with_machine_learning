@@ -6,7 +6,7 @@ def plot_by_list(record):
     for pair in record:
         x.append(pair[0])
         y.append(pair[1])
-    plt.plot(x, y, 'r')
+    plt.plot(x, y, 'ro')
     plt.title('Time-Packet size')
     plt.xlabel('Time / s', fontsize = 14, color = 'black')
     plt.ylabel('Packet size / Byte', fontsize = 14, color = 'black')

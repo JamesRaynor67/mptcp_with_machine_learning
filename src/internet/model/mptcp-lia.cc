@@ -128,11 +128,11 @@ MpTcpLia::IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
   rl_socket.add("totalCwnd", metaSock->GetTotalCwnd ());
   rl_socket.add("m_alpha", ComputeAlpha (metaSock, tcb));
   // std::cout<< "Hong Jiaming: 6"<< endl;
-  cout << rl_socket.get_send_str() << endl;
+  // cout << rl_socket.get_send_str() << endl;
   rl_socket.send();
   // std::cout<< "Hong Jiamindg: 7"<< endl;
   std::string recv_str = rl_socket.recv();
-  std::cout<< recv_str << endl;
+  // std::cout<< recv_str << endl;
   tcb->m_cWnd = std::stoi(recv_str);
   seq_num++;
 
