@@ -37,11 +37,11 @@ void TraceMacRx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
       bool isSyn = tcpHeader.GetFlags() & TcpHeader::SYN;
 
       // this is the only difference with TraceMacTx   send connection
-      (*stream->GetStream()) << Simulator::Now().GetNanoSeconds() << " 0 1 "
-      << subflowId << " "
-      << tcpHeader.GetSequenceNumber() << " " << tcpHeader.GetAckNumber()
-      << " " << copy->GetSize() << " " << packet->GetSize()
-      << " " << isSyn << " " << isFin << endl;
+      (*stream->GetStream()) << Simulator::Now().GetNanoSeconds() << ",0,1,"
+      << subflowId << ","
+      << tcpHeader.GetSequenceNumber() << "," << tcpHeader.GetAckNumber()
+      << "," << copy->GetSize() << "," << packet->GetSize()
+      << "," << isSyn << "," << isFin << endl;
 
     }
   }
@@ -77,11 +77,11 @@ void TraceMacTx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
       bool isSyn = tcpHeader.GetFlags() & TcpHeader::SYN;
 
       // this is the only difference with TraceMacRx   send connection
-      (*stream->GetStream()) << Simulator::Now().GetNanoSeconds() << " 1 1 "
-      << subflowId << " "
-      << tcpHeader.GetSequenceNumber() << " " << tcpHeader.GetAckNumber()
-      << " " << copy->GetSize() << " " << packet->GetSize()
-      << " " << isSyn << " " << isFin << endl;
+      (*stream->GetStream()) << Simulator::Now().GetNanoSeconds() << ",1,1,"
+      << subflowId << ","
+      << tcpHeader.GetSequenceNumber() << "," << tcpHeader.GetAckNumber()
+      << "," << copy->GetSize() << "," << packet->GetSize()
+      << "," << isSyn << "," << isFin << endl;
 
     }
   }
@@ -104,9 +104,9 @@ void TraceQueueItemDrop(Ptr<OutputStreamWrapper> stream, Ptr<const QueueItem> it
     bool isFin = tcpHeader.GetFlags() & TcpHeader::FIN;
     bool isSyn = tcpHeader.GetFlags() & TcpHeader::SYN;
 
-    (*stream->GetStream()) << Simulator::Now().GetNanoSeconds()  << " "
-    << tcpHeader.GetSequenceNumber() << " " << tcpHeader.GetAckNumber()
-    << " " << isSyn << " " << isFin << endl;
+    (*stream->GetStream()) << Simulator::Now().GetNanoSeconds()  << ","
+    << tcpHeader.GetSequenceNumber() << "," << tcpHeader.GetAckNumber()
+    << "," << isSyn << "," << isFin << endl;
 
   }
 }
@@ -118,6 +118,7 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   //Create an output directory
   CheckAndCreateDirectory(outputDir);
 
+  // configure for clients
   stringstream devicePath;
   devicePath << "/NodeList/" << client.Get(0)->GetId() << "/DeviceList/*/$ns3::PointToPointNetDevice/";
 
@@ -125,11 +126,12 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   tfile << outputDir << "/mptcp_client";
   Ptr<OutputStreamWrapper> throughputFile = Create<OutputStreamWrapper>(tfile.str(), std::ios::out);
   //Write the column labels into the file
-  *(throughputFile->GetStream()) << "timestamp send connection subflow seqno ackno size psize isSyn isFin" << endl;
+  *(throughputFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
 
   Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, throughputFile));
   Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, throughputFile));
 
+  // configure for server
   uint32_t serverId = server.Get(0)->GetId();
   devicePath.str("");
   devicePath << "/NodeList/" << serverId << "/DeviceList/*/$ns3::PointToPointNetDevice/";
@@ -138,15 +140,16 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   sfile << outputDir << "/mptcp_server";
   Ptr<OutputStreamWrapper> serverFile = Create<OutputStreamWrapper>(sfile.str(), std::ios::out);
   //Write the column labels into the file
-  *(serverFile->GetStream()) << "timestamp send connection subflow seqno ackno size psize isSyn isFin" << endl;
+  *(serverFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
   Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, serverFile));
   Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, serverFile));
 
+  // configure for droped packets
   stringstream dfile;
   dfile << outputDir << "/mptcp_drops";
   Ptr<OutputStreamWrapper> dropsFile = Create<OutputStreamWrapper>(dfile.str(), std::ios::out);
   //Write the column labels into the file
-  *(dropsFile->GetStream()) << "timestamp seqno ackno isSyn isFin" << endl;
+  *(dropsFile->GetStream()) << "timestamp,seqno,ackno,isSyn,isFin" << endl;
 
   Config::ConnectWithoutContext("/NodeList/*/$ns3::TrafficControlLayer/RootQueueDiscList/*/Drop",
                                 MakeBoundCallback(TraceQueueItemDrop, dropsFile));
@@ -207,6 +210,5 @@ void GetThroughout(void){
   }
   cout << '\n';
 }
-
 
 };
