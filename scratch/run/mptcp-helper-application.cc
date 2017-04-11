@@ -13,8 +13,8 @@ Ptr<Application> CreateApplication (Address& remoteAddress, DataRate dataRate, u
   Ptr<MpOnOffApplication> onOff = CreateObject<MpOnOffApplication>();
   onOff->SetAttribute("Protocol", StringValue("ns3::MpTcpSocketFactory"));
   onOff->SetAttribute("Remote", AddressValue (remoteAddress));
-  onOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=5.0]"));
-  onOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=3.0]"));
+  onOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
+  onOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
   onOff->SetAttribute("DataRate", DataRateValue (dataRate));
   onOff->SetAttribute("PacketSize", UintegerValue (packetSize));
   return onOff;
@@ -27,7 +27,7 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients,
   int portNum = 4000;
   Address remoteAddress(InetSocketAddress(peer, portNum));
 
-  Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("200Mbps"), packetSize);
+  Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.3Mbps"), packetSize);
   servers.Get(0)->AddApplication(mpOnOff);
 
   //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);

@@ -1,5 +1,6 @@
 #include "mptcp-helper-system.h"
 #include "mptcp-helper-router.h"
+#include "mptcp-helper-trace.h"
 
 #include "ns3/flow-monitor-module.h"
 #include "ns3/internet-module.h"
@@ -209,7 +210,6 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   *(serverFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
   Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, serverFile));
   Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, serverFile));
-  // Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMonitorStates, outputDir));
 
   // configure for droped packets
   stringstream dfile;

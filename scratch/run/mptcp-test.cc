@@ -88,25 +88,17 @@ int main(int argc, char* argv[])
   ConfigureTracing(outputDir, server, client, isps, ixs);
   AnimationInterface anim ("mptcp-animation.xml");
 
-  // Connect to machine learning process
-  // rl::InterfaceToRL rl_socket("127.0.0.1", 12345);
-  // rl_socket << "time$12323#cwnd$1...and others\n";
-  // string test_str;
-  // rl_socket >> test_str;
-  // cout << test_str;
-  //Set the simulator stop time
-  // Simulator::Schedule(Seconds(1), &GetThroughout);
-  Simulator::Schedule(Seconds(1), &TraceMonitorStates, outputDir);
-  Simulator::Schedule(Seconds(2), &TraceMonitorStates, outputDir);
-  Simulator::Schedule(Seconds(3), &TraceMonitorStates, outputDir);
-  Simulator::Schedule(Seconds(10), &TraceMonitorStates, outputDir);
-  Simulator::Schedule(Seconds(20), &TraceMonitorStates, outputDir);
-  // Simulator::Schedule(Seconds(3), &GetThroughout);
-  // Simulator::Schedule(Seconds(4), &GetThroughout);
-  // Simulator::Schedule(Seconds(5), &GetThroughout);
+  for(int i = 0;i < 30 * 100;i++){
+    Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
+  }
+  // Simulator::Schedule(Seconds(1), &TraceMonitorStates, outputDir);
+  // Simulator::Schedule(Seconds(2), &TraceMonitorStates, outputDir);
+  // Simulator::Schedule(Seconds(3), &TraceMonitorStates, outputDir);
+  // Simulator::Schedule(Seconds(10), &TraceMonitorStates, outputDir);
+  // Simulator::Schedule(Seconds(20), &TraceMonitorStates, outputDir);
   Simulator::Stop (Seconds(30.0));
   // Hong Jiaming: Don't know why, call it once here ensures Scheduled call is called
-  TraceMonitorStates(outputDir);
+  // TraceMonitorStates(outputDir);
 
   //Begin the simulation
   Simulator::Run ();

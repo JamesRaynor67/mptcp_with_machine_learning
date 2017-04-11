@@ -69,9 +69,9 @@ public:
   MpTcpSubflow();
   MpTcpSubflow(const MpTcpSubflow&);
   virtual ~MpTcpSubflow();
-  
+
   static TypeId GetTypeId(void);
-  
+
   virtual TypeId GetInstanceTypeId(void) const override;
 
   /**
@@ -85,21 +85,21 @@ public:
    */
   virtual void
   SetMeta(Ptr<MpTcpMetaSocket> metaSocket);
-  
+
   /**
    *
    */
   Ptr<MpTcpMetaSocket> GetMeta() const;
-  
+
   void SetSubflowId (uint32_t subflowId);
   uint32_t GetSubflowId () const;
-  
+
   /**
    * Not implemented
    * \return false
    */
   bool IsInfiniteMappingEnabled() const;
-  
+
   /**
    * Mapping is said "loose" because it is not tied to an SSN yet, this is the job
    * of this function: it will look for the FirstUnmappedSSN() and map the DSN to it.
@@ -126,7 +126,7 @@ public:
   */
   virtual bool
   StopAdvertisingAddress(Ipv4Address);
-  
+
   virtual int Bind (void) override;
   virtual int Bind6 (void) override;
   virtual int Bind (const Address &address) override;
@@ -145,7 +145,7 @@ public:
   \return True if this subflow is the first (should be unique) subflow attempting to connect
   **/
   virtual bool IsMaster() const;
-  
+
   virtual void SetMaster ();
 
   /**
@@ -156,7 +156,7 @@ public:
 
 //  virtual void
 //  DoForwardUp(Ptr<Packet> packet, Ipv4Header header, uint16_t port, Ptr<Ipv4Interface> incomingInterface);
-  
+
   virtual bool SendPendingData(bool withAck = false) override;
 
 
@@ -166,7 +166,7 @@ public:
   **/
   int
   Send(Ptr<Packet> p, uint32_t flags);
-  
+
   virtual bool CanSendPendingData (uint32_t transmitWindow) override;
 
   //! disabled
@@ -190,7 +190,7 @@ public:
   virtual void DoRetransmit();
 
   virtual int Listen(void);
- 
+
   void
   ProcessListen(Ptr<Packet> packet, const TcpHeader& tcpHeader,
                 const Address& fromAddress, const Address& toAddress);
@@ -204,7 +204,7 @@ public:
 
   virtual void UpdateTxBuffer(SequenceNumber32 ack) override;
   virtual void UpdateRxBuffer();
-  
+
   /**
   */
   virtual void Retransmit(void);
@@ -227,7 +227,7 @@ public:
 //  void
 //  SetupTracing(const std::string prefix);
 //  MpTcpMapping getSegmentOfACK( uint32_t ack);
-  
+
   /**
    * Will send MP_JOIN or MP_CAPABLE depending on if it is master or not
    * Updates the meta endpoint
@@ -236,6 +236,9 @@ public:
    */
   virtual void
   CompleteFork(Ptr<Packet> p, const TcpHeader& h, const Address& fromAddress, const Address& toAddress) override;
+
+  /* Following public functions are just for RL-MPTCP */
+  Ptr<TcpSocketState> GetTcb(void);
 
 protected:
   friend class MpTcpMetaSocket;
@@ -265,19 +268,19 @@ protected:
   int DoConnect();
 
   virtual void AddOptions (TcpHeader& tcpHeader) override;
-  
+
   /**
   * TODO in fact, instead of relying on IsMaster etc...
   * this should depend on meta's state , if it is wait or not
   * and thus it should be pushed in meta (would also remove the need for crypto accessors)
   */
   virtual void AddOptionMpTcp3WHS(TcpHeader& hdr) const;
-  
+
   /**
    * Corresponds to mptcp_write_dss_mapping and mptcp_write_dss_ack
    */
   virtual void AddMpTcpOptionDSS(TcpHeader& header);
-  
+
   /**
    * Overrides the TcpSocketBase that just handles the MP_CAPABLE option.
    *
@@ -286,21 +289,21 @@ protected:
 
   // TO remove hopefully
   virtual void ProcessClosing(Ptr<Packet> packet, const TcpHeader& tcpHeader);
-  
+
   /**
    * Process an option before we call the main TCP functionality on receiving a segment
    */
   virtual void PreProcessOption(Ptr<const TcpOption> option) override;
-  
+
   /**
    * Process an option after we call the main TCP functionality on receiving a segment
    */
   virtual void PostProcessOption(Ptr<const TcpOption> option) override;
-  
+
   // Return the max possible number of unacked bytes. Note that we take the connection level rWnd into consideration
   // not the subflow rWnd.
   virtual uint32_t Window(void) const override;
-  
+
   /**
    \return Value advertised by the meta socket
    */
@@ -309,11 +312,11 @@ protected:
 
   //Override this to always set mptcp enabled to true
   virtual void SetMptcpEnabled (bool flag) override;
-  
+
   //Find net device with given address
   Ptr<NetDevice> MapIpv4ToDevice (Ipv4Address) const;
   Ptr<NetDevice> MapIpv6ToDevice (Ipv6Address) const;
-  
+
   /////////////////////////////////////////////
   //// DSS Mapping handling
   /////////////////////////////////////////////
@@ -339,13 +342,13 @@ protected:
   virtual void ReceivedAck(Ptr<Packet>, const TcpHeader&); // Received an ACK packet
 
   virtual void ReceivedData(Ptr<Packet>, const TcpHeader&);
-  
+
   /**
 
   */
   uint32_t
   SendDataPacket(TcpHeader& header, SequenceNumber32 ssn, uint32_t maxSize);
-  
+
   virtual void
   ReTxTimeout();
   /**
@@ -356,9 +359,9 @@ protected:
 
   virtual void
   SendEmptyPacket(TcpHeader& header);
-  
+
   virtual Ptr<TcpSocketImpl> Fork (void) override; // Call CopyObject<> to clone me
-  
+
   Ptr<const TcpOptionMpTcpMain> GetMptcpOptionWithSubtype (const TcpHeader& header, TcpOptionMpTcpMain::SubType subtype);
 
 

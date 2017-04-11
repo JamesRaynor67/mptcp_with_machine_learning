@@ -4,7 +4,7 @@
 
 namespace rl{
 
-InterfaceToRL::InterfaceToRL(std::string ip, int port){
+InterfaceToRL::InterfaceToRL(std::string ip, int port):m_added_pair_number(0){
   if(!RealSocket::create()){
     throw SocketException("Could not create client socket.");
   }
@@ -18,6 +18,7 @@ const InterfaceToRL& InterfaceToRL::add(const std::string name, const uint32_t v
   m_send_str.append("#");
   m_send_str.append(std::to_string(val));
   m_send_str.append("$");
+  m_added_pair_number++;
   return *this;
 }
 
@@ -26,14 +27,19 @@ const InterfaceToRL& InterfaceToRL::add(const std::string name, const double val
   m_send_str.append("#");
   m_send_str.append(std::to_string(val));
   m_send_str.append("$");
+  m_added_pair_number++;
   return *this;
 }
 
 void InterfaceToRL::send(){
+  // m_added_pair_number plus 1 to include itself
+  this->add("size", m_added_pair_number+1);
+  m_send_str.append("\r\n");
   if(!RealSocket::send(this->m_send_str)){
     throw SocketException("Could not write to socket.");
   }
   this->m_send_str.clear();
+  m_added_pair_number = 0;
 }
 
 std::string InterfaceToRL::recv(){
@@ -46,5 +52,9 @@ std::string InterfaceToRL::recv(){
 std::string InterfaceToRL::get_send_str(){
   return m_send_str;
 }
+
+// static int InterfaceToRL::GetPortOffset(){
+//   return m_port_offset;
+// }
 
 }

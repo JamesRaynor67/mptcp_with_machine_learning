@@ -266,20 +266,20 @@ void CreateRealNetwork (uint32_t packetSize,
 
   /*-------- server with ix --------------*/
   addressHelper.SetBase("10.10.25.0", "255.255.255.0");
-  NetDeviceContainer d0_server0_Beijing = PointToPointCreate(server.Get(0), ix_Beijing, DataRate("0.1Mbps"), Time("5ms"), packetSize);
+  NetDeviceContainer d0_server0_Beijing = PointToPointCreate(server.Get(0), ix_Beijing, DataRate("1Mbps"), Time("5ms"), packetSize);
   interfaces = addressHelper.Assign(d0_server0_Beijing);
   serverInterfaces.Add(interfaces.Get(0));
   ixsInterfaces_Beijin.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.26.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(server.Get(0), ix_Beijing, DataRate("0.1Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(server.Get(0), ix_Beijing, DataRate("0.1Mbps"), Time("500ms"), packetSize));
   serverInterfaces.Add(interfaces.Get(0));
   ixsInterfaces_Beijin.Add(interfaces.Get(1));
-  // 
+
   // Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
-  // ptr_em->SetRate(0.00001);
-  // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-  // d0_server0_Beijing.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+  // ptr_em->SetRate(0.0001);
+  // // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+  // d0_server0_Beijing.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
 
   remoteClient = clientInterfaces.GetAddress(0); // important, do not forget!
 }

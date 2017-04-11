@@ -20,6 +20,8 @@ public:
 
   std::string recv();
 
+  // static int GetPortOffset();
+
 private:
   // This is the string to be sent.
   // Its pattern is "name0$value0#name1$value1#...",
@@ -31,8 +33,10 @@ private:
   // where name is a string for name and value is a double value
   std::string m_receive_str;
 
-  // We assume 32 bits are enough, and don't care about overflow
+  // We assume 32 bits are enough, and don't care about overflow, not used yet
   uint32_t m_last_sent_index;
+
+  uint32_t m_added_pair_number;
 };
 
 
