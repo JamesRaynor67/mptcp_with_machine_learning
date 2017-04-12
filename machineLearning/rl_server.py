@@ -4,6 +4,7 @@ from RL_core import QLearningTable
 from RL_core import extract_observation
 from RL_core import action_translator
 from RL_core import calculate_reward
+from shutil import copyfile
 
 def IsInt(s):
     # A naive method, but enough here
@@ -101,11 +102,11 @@ class Interacter_socket():
 if __name__ == "__main__":
     base_port = 12345     # Arbitrary non-privileged port
     batch_count = 0
-    while batch_count < 5:
+    RL = QLearningTable(actions=["use subflow 0", "use subflow 1"])
 
+    while batch_count < 1000:
         interacter_socket = Interacter_socket(host = '', port = base_port)
         train_data = Train_data()
-        RL = QLearningTable(actions=["use subflow 0", "use subflow 1"])
         interacter_socket.listen()
         recv_str, this_batch_done = interacter_socket.recv()
         train_data.add_one_record(recv_str)
@@ -130,8 +131,12 @@ if __name__ == "__main__":
             observation_before_action = observation_after_action
         interacter_socket.close()
         interacter_socket = None
-        print "sleep 30 seconds from now"
-        sleep(30)
+        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_count) + '_mptcp_client')
+        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_count) + '_mptcp_drops')
+        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_count) + '_mptcp_server')
+        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server_cWnd", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_count) + '_mptcp_server_cWnd')
+        # print "sleep 30 seconds from now"
+        # sleep(30)
         batch_count += 1
 
 

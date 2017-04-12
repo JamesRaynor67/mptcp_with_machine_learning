@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 def analyze_application(file_path):
     record = []
-    with open('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client', 'rb') as csvfile:
+    with open(file_path, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         total_psize = 0
@@ -57,7 +57,7 @@ def analyze_server_end_point(file_path):
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
-            if int(row[1]): # not send record
+            if int(row[1]) == 1: # not send record
                 timestamp = int(row[0])/10e8
                 subflowId = int(row[3])
                 seqnum = int(row[4])
@@ -110,12 +110,22 @@ def analyze_flow(file_path):
     plt.ylabel('Packet number', fontsize = 14, color = 'black')
 
 if __name__ == '__main__':
+    # plt.subplot(4,1,1)
+    # analyze_application('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server')
+    # plt.subplot(4,1,2)
+    # analyze_client_end_node('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client')
+    # plt.subplot(4,1,3)
+    # analyze_server_end_point('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server')
+    # plt.subplot(4,1,4)
+    # analyze_flow('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server_cWnd')
+    # plt.show()
+    batch_num = 65
     plt.subplot(4,1,1)
-    analyze_application('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server')
+    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
     plt.subplot(4,1,2)
-    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client')
+    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
     plt.subplot(4,1,3)
-    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server')
+    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
     plt.subplot(4,1,4)
-    analyze_flow('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server_cWnd')
+    analyze_flow('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server_cWnd')
     plt.show()

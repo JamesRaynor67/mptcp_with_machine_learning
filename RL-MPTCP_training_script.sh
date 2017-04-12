@@ -1,7 +1,7 @@
 #!/bin/bash
-for i in {1..5}
+for i in {1..1000}
 do
    ./waf --run "scratch/run/run"
-   echo 'sleep 31 seconds from now'
-   sleep 31
+  #  echo 'sleep 33 seconds from now'
+  #  sleep 33
 done

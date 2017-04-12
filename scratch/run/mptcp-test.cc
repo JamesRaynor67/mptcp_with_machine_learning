@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
   ConfigureTracing(outputDir, server, client, isps, ixs);
   AnimationInterface anim ("mptcp-animation.xml");
 
-  for(int i = 0;i < 30 * 100;i++){
+  for(int i = 0;i < 100 * 10;i++){
     Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
   }
   // Simulator::Schedule(Seconds(1), &TraceMonitorStates, outputDir);
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
   // Simulator::Schedule(Seconds(3), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(10), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(20), &TraceMonitorStates, outputDir);
-  Simulator::Stop (Seconds(30.0));
+  Simulator::Stop (Seconds(100.0));
   // Hong Jiaming: Don't know why, call it once here ensures Scheduled call is called
   // TraceMonitorStates(outputDir);
 
