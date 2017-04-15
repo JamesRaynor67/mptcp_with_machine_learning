@@ -2,6 +2,8 @@
 #include "rl-data-interface.h"
 #include "rl-socketException.h"
 
+rl::InterfaceToRL* rl_socket;
+
 namespace rl{
 
 InterfaceToRL::InterfaceToRL(std::string ip, int port):m_added_pair_number(0){
@@ -22,10 +24,37 @@ const InterfaceToRL& InterfaceToRL::add(const std::string name, const uint32_t v
   return *this;
 }
 
+const InterfaceToRL& InterfaceToRL::add(const std::string name, const uint64_t val){
+  m_send_str.append(name);
+  m_send_str.append("#");
+  m_send_str.append(std::to_string(val));
+  m_send_str.append("$");
+  m_added_pair_number++;
+  return *this;
+}
+
+const InterfaceToRL& InterfaceToRL::add(const std::string name, const int64_t val){
+  m_send_str.append(name);
+  m_send_str.append("#");
+  m_send_str.append(std::to_string(val));
+  m_send_str.append("$");
+  m_added_pair_number++;
+  return *this;
+}
+
 const InterfaceToRL& InterfaceToRL::add(const std::string name, const double val){
   m_send_str.append(name);
   m_send_str.append("#");
   m_send_str.append(std::to_string(val));
+  m_send_str.append("$");
+  m_added_pair_number++;
+  return *this;
+}
+
+const InterfaceToRL& InterfaceToRL::add(const std::string name, const std::string val){
+  m_send_str.append(name);
+  m_send_str.append("#");
+  m_send_str.append(val);
   m_send_str.append("$");
   m_added_pair_number++;
   return *this;

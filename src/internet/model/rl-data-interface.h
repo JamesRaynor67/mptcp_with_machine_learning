@@ -11,16 +11,17 @@ public:
   virtual ~InterfaceToRL(){};
 
   // Add name-value pair to send string
-  const InterfaceToRL&  add(const std::string name, const uint32_t val);
-  const InterfaceToRL&  add(const std::string name, const double val);
+  const InterfaceToRL& add(const std::string name, const uint32_t val);
+  const InterfaceToRL& add(const std::string name, const uint64_t val);
+  const InterfaceToRL& add(const std::string name, const int64_t val);
+  const InterfaceToRL& add(const std::string name, const double val);
+  const InterfaceToRL& add(const std::string name, const std::string val);
 
   std::string get_send_str();
 
   void send();
 
   std::string recv();
-
-  // static int GetPortOffset();
 
 private:
   // This is the string to be sent.
@@ -38,6 +39,5 @@ private:
 
   uint32_t m_added_pair_number;
 };
-
 
 }

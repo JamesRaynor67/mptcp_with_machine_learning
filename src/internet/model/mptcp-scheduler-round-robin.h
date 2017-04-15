@@ -37,19 +37,18 @@ public:
 
   MpTcpSchedulerRoundRobin();
   virtual ~MpTcpSchedulerRoundRobin ();
-  
+
   /*
      Pick the next available subflow with space in its congestion window to send the next MSS on,
      in a round robin fashion from amongst active subflows.
    */
   virtual Ptr<MpTcpSubflow> GetAvailableSubflow (uint32_t dataToSend, uint32_t metaWindow) override;
-  
+
   virtual Ptr<MpTcpSubflow> GetAvailableControlSubflow () override;
 
 protected:
   uint32_t  m_lastUsedFlowId;        //!< keep track of last used subflow
 };
-
 
 } // end of 'ns3'
 

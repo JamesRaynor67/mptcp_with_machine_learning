@@ -11,9 +11,7 @@ def build(bld):
                    'mptcp-helper-router.cc',
                    'mptcp-helper-trace.cc',
                    'mptcp-helper-topology.cc',
-                   'mptcp-helper-application.cc',
-                   'rl-data-interface.cc',
-                   'rl-realSocket.cc',]
+                   'mptcp-helper-application.cc',]
 
   headers = bld(features='ns3header')
   headers.module = 'run'
@@ -24,10 +22,7 @@ def build(bld):
                     'mptcp-helper-router.h',
                     'mptcp-helper-trace.h',
                     'mptcp-helper-topology.h',
-                    'mptcp-helper-application.h',
-                    'rl-data-interface.h',
-                    'rl-realSocket.h',
-                    'rl-socketException.h',]
+                    'mptcp-helper-application.h',]
 
   obj = bld.create_ns3_program('mptcp-test', ['run', 'core', 'applications', 'internet', 'network', 'point-to-point', 'traffic-control'])
   obj.source = 'mptcp-test.cc'

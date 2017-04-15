@@ -23,8 +23,9 @@
 #include "ns3/mptcp-scheduler-round-robin.h"
 #include "ns3/mptcp-subflow.h"
 #include "ns3/log.h"
+#include "ns3/core-module.h"
 
-#include "rl-data-interface.h"
+#include "ns3/rl-data-interface.h"
 
 namespace ns3
 {
@@ -70,7 +71,7 @@ Ptr<MpTcpSubflow> MpTcpSchedulerRoundRobin::GetAvailableSubflow (uint32_t dataTo
   rl_socket.add("ssn", seq_num);
   seq_num++;
   // std::cout<< "Hong Jiaming: 2"<< endl;
-
+  rl_socket.add("time", Simulator::Now().GetNanoSeconds());
   rl_socket.add("nbOfSubflows", nbOfSubflows);
   rl_socket.add("metaWindow", metaWindow);
 
@@ -92,7 +93,7 @@ Ptr<MpTcpSubflow> MpTcpSchedulerRoundRobin::GetAvailableSubflow (uint32_t dataTo
   // std::cout<< "Choose: " << recv_str << " of " << nbOfSubflows << " subflows "<< endl;
   int suggested_index = std::stoi(recv_str);
 
-  if(suggested_index < nbOfSubflows && (std::min(m_metaSock->GetActiveSubflow(suggested_index)->AvailableWindow(), metaWindow) > 0 && m_metaSock->GetActiveSubflow(suggested_index)->CanSendPendingData(dataToSend))){
+  if(suggested_index >= 0 && suggested_index < nbOfSubflows && (std::min(m_metaSock->GetActiveSubflow(suggested_index)->AvailableWindow(), metaWindow) > 0 && m_metaSock->GetActiveSubflow(suggested_index)->CanSendPendingData(dataToSend))){
     return m_metaSock->GetActiveSubflow(suggested_index);
   }
   else{
@@ -114,7 +115,7 @@ Ptr<MpTcpSubflow> MpTcpSchedulerRoundRobin::GetAvailableSubflow (uint32_t dataTo
   //
   //   NS_LOG_DEBUG("subflow AvailableWindow  [" << subflowWindow << "]");
   //
-  //   //uint32_t canSend = subflowWindow;
+  //   uint32_t canSend = subflowWindow;
   //
   //   //Check whether we can send (check silly window)
   //   if(canSend > 0 && subflow->CanSendPendingData(dataToSend))
