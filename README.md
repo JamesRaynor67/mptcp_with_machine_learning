@@ -11,14 +11,14 @@ CXXFLAGS=" -std=c++11" ./waf --enable-examples configure
 ./waf
 ```
 
-3.mock machine learning process and make it run in background
+3.launch machine learning process and make it run in background
 ```
-python machineLearning/server_example.py &
+python machineLearning/rl_server.py &
 ```
 
-4.run mptcp test and communicate with machine learning process
+4.run NS3 and communicate with machine learning process
 ```
-./waf --run "scratch/run/run --outputDir=./mptcp_output"
+bash RL-MPTCP_training_script.sh
 ```
 
 PS. Because of the modification of tcp part, some irrelevant tests of original 300+ test will fail if try to compile and run original test suit.
@@ -27,3 +27,4 @@ Env:
 gcc version 4.8.4 (Ubuntu 4.8.4-2ubuntu1~14.04.3)
 ubuntu 14.04: kernel version 4.2.0-27-generic
 Python 2.7.12 | Anaconda 4.2.0 (64-bit)
+Tensorflow 0.12.0
