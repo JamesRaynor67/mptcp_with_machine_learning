@@ -2,7 +2,7 @@ import socket
 import pandas
 from time import sleep
 from rl_socket import Interacter_socket
-from RL_core import DeepQNetwork
+from RL_core import QLearningTable
 from RL_core import extract_observation
 from RL_core import calculate_reward
 from RL_core import apply_action
@@ -69,8 +69,7 @@ class DataRecorder():
 
 if __name__ == "__main__":
     episode_count = 0
-    RL = DeepQNetwork(n_actions=2, n_features=2, learning_rate=0.01, reward_decay=0.9,
-                      e_greedy=0.95, replace_target_iter=200, memory_size=2000, output_graph=True)
+    RL = QLearningTable(actions=["use subflow 0", "use subflow 1"])
 
     while episode_count < 1000:
         interacter_socket = Interacter_socket(host = '', port = 12345)
@@ -79,7 +78,6 @@ if __name__ == "__main__":
         recv_str, this_episode_done = interacter_socket.recv()
         dataRecorder.add_one_record(recv_str)
         observation_before_action = extract_observation(dataRecorder)
-        reward = calculate_reward(dataRecorder, reset = True)
         step = 0
         print 'iter: ', episode_count
         f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w')
@@ -113,6 +111,7 @@ if __name__ == "__main__":
         interacter_socket = None
         f.close()
 
+        RL.q_table.to_csv("/home/hong/workspace/mptcp/ns3/mptcp_output/q_table")
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_calculate_reward')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_client')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_drops')
@@ -121,4 +120,3 @@ if __name__ == "__main__":
         # print "sleep 30 seconds from now"
         # sleep(30)
         episode_count += 1
-    RL.plot_cost()

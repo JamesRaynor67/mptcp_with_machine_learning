@@ -2,15 +2,12 @@ import socket
 import pandas
 from time import sleep
 from rl_socket import Interacter_socket
-from RL_core import DeepQNetwork
+from RL_core import QLearningTable
 from RL_core import extract_observation
+from RL_core import action_translator
 from RL_core import calculate_reward
 from RL_core import apply_action
 from shutil import copyfile
-
-'''
-This file implements Deep Q-learning Network (DQN)
-'''
 
 def IsInt(s):
     # A naive method, but enough here
@@ -69,50 +66,41 @@ class DataRecorder():
 
 if __name__ == "__main__":
     episode_count = 0
-    RL = DeepQNetwork(n_actions=2, n_features=2, learning_rate=0.01, reward_decay=0.9,
-                      e_greedy=0.95, replace_target_iter=200, memory_size=2000, output_graph=True)
+    RL = QLearningTable(actions=["use subflow 0", "use subflow 1"])
 
     while episode_count < 1000:
         interacter_socket = Interacter_socket(host = '', port = 12345)
         dataRecorder = DataRecorder()
         interacter_socket.listen()
-        recv_str, this_episode_done = interacter_socket.recv()
+        recv_str, this_batch_done = interacter_socket.recv()
         dataRecorder.add_one_record(recv_str)
-        observation_before_action = extract_observation(dataRecorder)
-        reward = calculate_reward(dataRecorder, reset = True)
-        step = 0
         print 'iter: ', episode_count
         f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w')
         f.write("time,reward\n")
         while True:
-            # Choose action
+            observation_before_action = extract_observation(dataRecorder)
+            # print observation_before_action
             action = RL.choose_action(observation_before_action)
 
-            # Apply action to environment
+            # print action
             apply_action(interacter_socket, dataRecorder, action)
-            # Get feedback (observation, reward)
-            recv_str, this_episode_done = interacter_socket.recv() # get new observation and reward
-            if this_episode_done is True:
+            recv_str, this_batch_done = interacter_socket.recv() # get new observation and reward
+
+            if this_batch_done is True:
                 break
+
             dataRecorder.add_one_record(recv_str)
             observation_after_action = extract_observation(dataRecorder)
+
             reward = calculate_reward(dataRecorder)
-
-            # Update memory
-            RL.store_transition(observation_before_action, action, reward, observation_after_action)
-
-            if (step > 200) and (step % 5 == 0):
-                RL.learn()
+            f.write(str(dataRecorder.get_latest_subflow_data()["time"]) + ',' + str(reward) + '\n')
+            RL.learn(observation_before_action, action, reward, observation_after_action) # RL learning
 
             observation_before_action = observation_after_action
-
-            f.write(str(dataRecorder.get_latest_subflow_data()["time"]) + ',' + str(reward) + '\n')
-            step += 1
-
         interacter_socket.close()
         interacter_socket = None
         f.close()
-
+        RL.q_table.to_csv("/home/hong/workspace/mptcp/ns3/mptcp_output/q_table")
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_calculate_reward')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_client')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_drops')
@@ -121,4 +109,3 @@ if __name__ == "__main__":
         # print "sleep 30 seconds from now"
         # sleep(30)
         episode_count += 1
-    RL.plot_cost()

@@ -215,7 +215,7 @@ def extract_observation(dataRecorder):
 
     # let's set return value "observation" to be a np array with fixed length
     value_dic = dataRecorder.get_latest_subflow_data()
-    observation = np.zeros((2))
+    observation = np.zeros(1, 2)
     for i in range(value_dic["nbOfSubflows"]):
         name = "window" + str(i)
         observation[i] = value_dic[name]
@@ -230,8 +230,14 @@ def extract_observation(dataRecorder):
 def action_translator(dataRecorder, action):
     # let's set return value "action" to be a np array with fixed length
     # actions=["use subflow 0", "use subflow 1"]
-    # print type(action), action
-    return str(int(action))
+    last_record = dataRecorder.get_latest_subflow_data()
+    if action == "use subflow 0":
+        return str(0)
+    elif action == "use subflow 1":
+        return str(1)
+    else:
+        print "Error in action_translator"
+        assert 1 is not 1
 
 def apply_action(interacter_socket, dataRecorder, action):
     dataRecorder.action.append(action)
