@@ -16,4 +16,6 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
                        const NodeContainer& ixs);
 
 void TraceMonitorStates(const std::string& outputDir);
+
+void PrintMonitorStates(void);
 }

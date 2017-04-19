@@ -1,4 +1,7 @@
 #include <string>
+#include <utility>
+#include <vector>
+
 #include "mptcp-helper-system.h"
 #include "mptcp-helper-router.h"
 #include "mptcp-helper-trace.h"
@@ -61,21 +64,20 @@ int main(int argc, char* argv[])
   NodeContainer client;
   NodeContainer isps;
   NodeContainer ixs;    // Internet exchange points
+  // std::vector<std::pair<Ipv4Address, Ipv4Address>> SCIpPairs;
 
-  Ipv4Address remoteClient;
-
-  CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs, remoteClient);
+  CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs);
 
   //Create and install the applications on the server and client
   if(appType == onoff)
   {
     std::cout << "Application type: onoff\n";
-    InstallOnOffApplications(server, client, remoteClient, segmentSizeWithoutHeaders);
+    InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
   }
   else if (appType == filetransfer)
   {
     std::cout << "Application type: filetransfer\n";
-    InstallFileTransferApplications(server, client, remoteClient,
+    InstallFileTransferApplications(server, client,
                                     segmentSizeWithoutHeaders,
                                     queueSize);
   }
@@ -90,14 +92,18 @@ int main(int argc, char* argv[])
   ConfigureTracing(outputDir, server, client, isps, ixs);
   AnimationInterface anim ("mptcp-animation.xml");
 
-  for(int i = 0;i < 100 * 10;i++){
-    Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
-  }
+  // for(int i = 0;i < 100 * 10;i++){
+  //   Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
+  // }
   // Simulator::Schedule(Seconds(1), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(2), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(3), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(10), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(20), &TraceMonitorStates, outputDir);
+  Simulator::Schedule(Seconds(1), &PrintMonitorStates);
+  Simulator::Schedule(Seconds(2), &PrintMonitorStates);
+  Simulator::Schedule(Seconds(3), &PrintMonitorStates);
+  Simulator::Schedule(Seconds(20), &PrintMonitorStates);
   Simulator::Stop (Seconds(100.0));
   // Hong Jiaming: Don't know why, call it once here ensures Scheduled call is called
   // TraceMonitorStates(outputDir);

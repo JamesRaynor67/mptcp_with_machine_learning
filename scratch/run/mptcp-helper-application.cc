@@ -20,20 +20,38 @@ Ptr<Application> CreateApplication (Address& remoteAddress, DataRate dataRate, u
   return onOff;
 }
 
-void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients,
-                              const Ipv4Address& peer, uint32_t packetSize)
+void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, uint32_t packetSize)
 {
   //Create and install the applications on the server and client
+  NS_ASSERT(servers.GetN() == clients.GetN());
+
   int portNum = 4000;
-  Address remoteAddress(InetSocketAddress(peer, portNum));
+  for(int i = 0; i < clients.GetN();i++){
+    Ptr<Ipv4> ipv4 = clients.Get(i)->GetObject<Ipv4>(); // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
+    Ipv4InterfaceAddress iaddr = ipv4->GetAddress(1,0);
+    Ipv4Address addr = iaddr.GetLocal();
+    Address remoteAddress(InetSocketAddress(addr, portNum));
 
-  Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.3Mbps"), packetSize);
-  servers.Get(0)->AddApplication(mpOnOff);
+    // Create application
+    Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.3Mbps"), packetSize);
 
-  //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
-  Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum));
-  PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", portAddress);
-  packetSink.Install(clients);
+    // Install on server
+    servers.Get(i)->AddApplication(mpOnOff);
+
+    // Install on client
+    PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
+    packetSink.Install(clients.Get(i));
+    portNum++;
+  }
+  // Address remoteAddress(InetSocketAddress(peer, portNum));
+  //
+  // Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.3Mbps"), packetSize);
+  // servers.Get(0)->AddApplication(mpOnOff);
+  //
+  // //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
+  // Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum));
+  // PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", portAddress);
+  // packetSink.Install(clients);
 
   // if (servers.GetN() == 2)
   // {
@@ -49,41 +67,55 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients,
   // }
 }
 
-void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clients,
-                                     const Ipv4Address& peer, uint32_t packetSize, uint32_t queueSize)
+void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clients, uint32_t packetSize, uint32_t queueSize)
 {
   //Create and install the applications on the server and client
+  NS_ASSERT(servers.GetN() == clients.GetN());
+
   int portNum = 4000;
-  Address remoteAddress(InetSocketAddress(peer, portNum));
 
-  FileTransferHelper fileHelper(remoteAddress);
-  fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
-  fileHelper.SetAttribute("FileSize", UintegerValue(10e6));
+  for(int i = 0; i < clients.GetN();i++){
+    // Create application
+    // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
+    Ptr<Ipv4> ipv4 = clients.Get(i)->GetObject<Ipv4>(); // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
+    Ipv4InterfaceAddress iaddr = ipv4->GetAddress(1,0);
+    Ipv4Address addr = iaddr.GetLocal();
+    Address remoteAddress(InetSocketAddress(addr, portNum));
+    FileTransferHelper fileHelper(remoteAddress);
+    fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
+    fileHelper.SetAttribute("FileSize", UintegerValue(10e6));
 
-  fileHelper.Install(servers.Get(0));
+    // Install on server
+    ApplicationContainer apps = fileHelper.Install(servers.Get(i));
 
-  //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
-  Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum));
-  PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", portAddress);
-  packetSink.Install(clients);
-
-  if (servers.GetN() == 2)
-  {
-    int portNum = 4020;
-    Address tcpRemote(InetSocketAddress(peer, portNum));
-
-    fileHelper.SetAttribute("Remote", AddressValue(tcpRemote));
-    fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
-    ApplicationContainer apps = fileHelper.Install(servers.Get(1));
-
-    PacketSinkHelper packetSink("ns3::TcpSocketFactory", tcpRemote);
-    packetSink.Install(clients);
-
-    //Set the tx buffer size to the interface queue size
-    Ptr<Node> tcpServer = servers.Get(1);
-    Ptr<TcpSocket> socket = DynamicCast<TcpSocket>(StaticCast<FileTransferApplication>(apps.Get(0))->GetSocket());
-    //socket->SetAttribute("SndBufSize", UintegerValue(queueSize));
+    // Install on client
+    PacketSinkHelper packetSink("ns3::TcpSocketFactory", remoteAddress);
+    packetSink.Install(clients.Get(i));
+    // //Set the tx buffer size to the interface queue size
+    // Ptr<Node> tcpServer = servers.Get(1);
+    // Ptr<TcpSocket> socket = DynamicCast<TcpSocket>(StaticCast<FileTransferApplication>(apps.Get(0))->GetSocket());
+    // //socket->SetAttribute("SndBufSize", UintegerValue(queueSize));
+    portNum++;
   }
+
+  // //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
+  // Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum));
+  // PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", portAddress);
+  // packetSink.Install(clients);
+  //
+  // if (servers.GetN() == 2)
+  // {
+  //   int portNum = 4020;
+  //   Address tcpRemote(InetSocketAddress(peer, portNum));
+  //
+  //   fileHelper.SetAttribute("Remote", AddressValue(tcpRemote));
+  //   fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
+  //   ApplicationContainer apps = fileHelper.Install(servers.Get(1));
+  //
+  //   PacketSinkHelper packetSink("ns3::TcpSocketFactory", tcpRemote);
+  //   packetSink.Install(clients);
+  // }
+
 }
 
 };

@@ -160,6 +160,41 @@ void TraceMonitorStates(const string& outputDir){
   }
 }
 
+void PrintMonitorStates(void){
+  //Create flow monitor
+  static FlowMonitorHelper flowmon;
+  static Ptr<FlowMonitor> monitor = flowmon.InstallAll();;
+
+  monitor->CheckForLostPackets ();
+  Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmon.GetClassifier ());
+  FlowMonitor::FlowStatsContainer stats = monitor->GetFlowStats ();
+  for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i){
+    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);
+    std::cout << "Timestamp: " << Simulator::Now().GetNanoSeconds() << ","
+                    "FlowId: " << i->first << ","
+                      "From: " << t.sourceAddress << ","
+                        "To: " << t.destinationAddress << ","
+                 "TxPackets: " << i->second.txPackets << ","
+                   "TxBytes: " << i->second.txBytes << ","
+                 "RxPackets: " << i->second.rxPackets << ","
+                   "RxBytes: " << i->second.rxBytes << ","
+                  "DelaySum: " << i->second.delaySum << ","
+                 "JitterSum: " << i->second.jitterSum << ","
+             "LostPacketSum: " << i->second.lostPackets;
+    if(i->second.packetsDropped.size() > Ipv4L3Protocol::DropReason::DROP_TTL_EXPIRED){
+      std::cout << ", TTL_expire: " <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_TTL_EXPIRED];
+    }
+    if(i->second.packetsDropped.size() > Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM){
+      std::cout << ", Bad_checksum: " <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM];
+    }
+    std::cout << endl;
+    // std::cout << "Hong Jiaming: 3 " << i->first << endl;
+  }
+  std::cout << endl;
+}
+
+
+
 void ConfigureTracing (const string& outputDir, const NodeContainer& server,
                        const NodeContainer& client, const NodeContainer& isps,
                        const NodeContainer& ixs)

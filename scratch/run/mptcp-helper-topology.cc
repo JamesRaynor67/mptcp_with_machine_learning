@@ -1,3 +1,6 @@
+#include <utility>
+#include <vector>
+
 #include "mptcp-helper-router.h"
 
 #include "ns3/core-module.h"
@@ -62,8 +65,10 @@ void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
                         NodeContainer& isps,
-                        NodeContainer& ixs,
-                        Ipv4Address& remoteClient)
+                        NodeContainer& ixs)
+                        // NodeContainer& other_server,
+                        // NodeContainer& other_client,
+                        // std::vector<std::pair<Ipv4Address, Ipv4Address>>& SCIpPairs)
 {
   //Create the internet stack helper.
   InternetStackHelper stackHelper = GetInternetStackHelper();
@@ -281,7 +286,11 @@ void CreateRealNetwork (uint32_t packetSize,
   // // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
   // d0_server0_Beijing.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
 
-  remoteClient = clientInterfaces.GetAddress(0); // important, do not forget!
+  // Here, only one pair is OK
+  // SCIpPairs.push_back(std::make_pair(serverInterfaces.GetAddress(0) ,clientInterfaces.GetAddress(0)));
+  // SCIpPairs.push_back(std::make_pair(serverInterfaces.GetAddress(1) ,clientInterfaces.GetAddress(1)));
+
+  // remoteClient = clientInterfaces.GetAddress(0); // important, do not forget!
 }
 
 };

@@ -312,6 +312,8 @@ namespace ns3 {
   void MpOnOffApplication::ConnectionFullyEstablished(Ptr<MpTcpMetaSocket> socket)
   {
     //Get the node's ipv4 interfaces
+    static int count = 0;
+    std::cout << "ConnectionFullyEstablished count: " << count << endl;
     Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
     NS_ASSERT(ipv4);
 

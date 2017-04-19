@@ -1,5 +1,6 @@
 #pragma once
-
+#include <utility>
+#include <vector>
 #include "ns3/internet-module.h"
 #include "ns3/point-to-point-module.h"
 
@@ -17,6 +18,6 @@ void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
                         NodeContainer& isps,
-                        NodeContainer& ixs,
-                        Ipv4Address& remoteClient);
+                        NodeContainer& ixs);
+                        // std::vector<std::pair<Ipv4Address, Ipv4Address>>& SCIpPairs
 };
