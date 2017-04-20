@@ -65,9 +65,9 @@ void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
                         NodeContainer& isps,
-                        NodeContainer& ixs)
-                        // NodeContainer& other_server,
-                        // NodeContainer& other_client,
+                        NodeContainer& ixs,
+                        NodeContainer& other_servers,
+                        NodeContainer& other_clients)
                         // std::vector<std::pair<Ipv4Address, Ipv4Address>>& SCIpPairs)
 {
   //Create the internet stack helper.
@@ -93,6 +93,13 @@ void CreateRealNetwork (uint32_t packetSize,
   Ptr<Node> isp_cst = isps.Get(5);
   Ptr<Node> ix_Beijing = ixs.Get(0);
   Ptr<Node> ix_Japan = ixs.Get(1);
+
+  other_servers.Add(isp_icb);
+  // other_servers.Add(isp_edu);
+  // other_servers.Add(isp_cu);
+  // other_clients.Add(isp_ct);
+  // other_clients.Add(isp_cm);
+  other_clients.Add(isp_cst);
 
   AnimationInterface::SetConstantPosition	(isps.Get(0), 0, 200);
   AnimationInterface::SetConstantPosition	(isps.Get(1), 200, 100);
@@ -125,10 +132,10 @@ void CreateRealNetwork (uint32_t packetSize,
 
   /*------------isp with isp-----------------*/
   addressHelper.SetBase("10.10.0.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_icb, isp_cu, DataRate("310Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_icb, isp_cu, DataRate("310Kbps"), Time("5ms"), packetSize));
   ispInterfaces_icb.Add(interfaces.Get(0));
   ispInterfaces_cu.Add(interfaces.Get(1));
-  // NetDeviceContainer dev = PointToPointCreate(isp_icb, isp_cu, DataRate("310Mbps"), Time("5ms"), packetSize);
+  // NetDeviceContainer dev = PointToPointCreate(isp_icb, isp_cu, DataRate("310Kbps"), Time("5ms"), packetSize);
   // interfaces = addressHelper.Assign(dev);
   // ispInterfaces_icb.Add(interfaces.Get(0));
   // ispInterfaces_cu.Add(interfaces.Get(1));
@@ -143,141 +150,141 @@ void CreateRealNetwork (uint32_t packetSize,
   //                          << ((address >> 8) & 0xff) << "."
   //                          << ((address >> 0) & 0xff) << endl;
   addressHelper.SetBase("10.10.1.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_icb, isp_ct, DataRate("100Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_icb, isp_ct, DataRate("100Kbps"), Time("5ms"), packetSize));
   ispInterfaces_icb.Add(interfaces.Get(0));
   ispInterfaces_ct.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.2.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cst, DataRate("11000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cst, DataRate("11000Kbps"), Time("5ms"), packetSize));
   ispInterfaces_edu.Add(interfaces.Get(0));
   ispInterfaces_cst.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.3.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cm, DataRate("20692Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cm, DataRate("20692Kbps"), Time("5ms"), packetSize));
   ispInterfaces_edu.Add(interfaces.Get(0));
   ispInterfaces_cm.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.4.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_ct, DataRate("27000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_ct, DataRate("27000Kbps"), Time("5ms"), packetSize));
   ispInterfaces_edu.Add(interfaces.Get(0));
   ispInterfaces_ct.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.5.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cu, DataRate("27000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_edu, isp_cu, DataRate("27000Kbps"), Time("5ms"), packetSize));
   ispInterfaces_edu.Add(interfaces.Get(0));
   ispInterfaces_cu.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.6.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_cst, DataRate("5000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_cst, DataRate("5000Kbps"), Time("5ms"), packetSize));
   ispInterfaces_cu.Add(interfaces.Get(0));
   ispInterfaces_cst.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.7.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_cm, DataRate("91024Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_cm, DataRate("91024Kbps"), Time("5ms"), packetSize));
   ispInterfaces_cu.Add(interfaces.Get(0));
   ispInterfaces_cm.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.8.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_ct, DataRate("747000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_cu, isp_ct, DataRate("747000Kbps"), Time("5ms"), packetSize));
   ispInterfaces_cu.Add(interfaces.Get(0));
   ispInterfaces_ct.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.9.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_ct, isp_cm, DataRate("137168Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_ct, isp_cm, DataRate("137168Kbps"), Time("5ms"), packetSize));
   ispInterfaces_ct.Add(interfaces.Get(0));
   ispInterfaces_cm.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.10.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_ct, isp_cst, DataRate("5600Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_ct, isp_cst, DataRate("5600Kbps"), Time("5ms"), packetSize));
   ispInterfaces_ct.Add(interfaces.Get(0));
   ispInterfaces_cst.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.11.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(isp_cm, isp_cst, DataRate("2500Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(isp_cm, isp_cst, DataRate("2500Kbps"), Time("5ms"), packetSize));
   ispInterfaces_cm.Add(interfaces.Get(0));
   ispInterfaces_cst.Add(interfaces.Get(1));
 
   /*-------- isp with ix --------------*/
   addressHelper.SetBase("10.10.12.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_edu, DataRate("10000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_edu, DataRate("10000Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Japan.Add(interfaces.Get(0));
   ispInterfaces_edu.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.13.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cu, DataRate("139050Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cu, DataRate("139050Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Japan.Add(interfaces.Get(0));
   ispInterfaces_cu.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.14.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_ct, DataRate("139551Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_ct, DataRate("139551Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Japan.Add(interfaces.Get(0));
   ispInterfaces_ct.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.15.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cm, DataRate("31000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cm, DataRate("31000Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Japan.Add(interfaces.Get(0));
   ispInterfaces_cm.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.16.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cst, DataRate("1000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Japan, isp_cst, DataRate("1000Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Japan.Add(interfaces.Get(0));
   ispInterfaces_cst.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.17.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_icb, DataRate("1000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_icb, DataRate("1000Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Beijin.Add(interfaces.Get(0));
   ispInterfaces_icb.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.18.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_edu, DataRate("1000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_edu, DataRate("1000Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Beijin.Add(interfaces.Get(0));
   ispInterfaces_edu.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.19.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cu, DataRate("22000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cu, DataRate("22000Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Beijin.Add(interfaces.Get(0));
   ispInterfaces_cu.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.20.0", "255.255.255.0");
 
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_ct, DataRate("10000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_ct, DataRate("10000Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Beijin.Add(interfaces.Get(0));
   ispInterfaces_ct.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.21.0", "255.255.255.0");
 
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cm, DataRate("41720Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cm, DataRate("41720Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Beijin.Add(interfaces.Get(0));
   ispInterfaces_cm.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.22.0", "255.255.255.0");
 
-  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cst, DataRate("1000Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(ix_Beijing, isp_cst, DataRate("1000Kbps"), Time("5ms"), packetSize));
   ixsInterfaces_Beijin.Add(interfaces.Get(0));
   ispInterfaces_cst.Add(interfaces.Get(1));
 
   /*-------- client with ix --------------*/
 
   addressHelper.SetBase("10.10.23.0", "255.255.255.0");
-  NetDeviceContainer d0_client0_Japan = PointToPointCreate(client.Get(0), ix_Japan, DataRate("0.1Mbps"), Time("5ms"), packetSize);
+  NetDeviceContainer d0_client0_Japan = PointToPointCreate(client.Get(0), ix_Japan, DataRate("1000Kbps"), Time("5ms"), packetSize);
   interfaces = addressHelper.Assign(d0_client0_Japan);
   clientInterfaces.Add(interfaces.Get(0));
   ixsInterfaces_Japan.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.24.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(client.Get(0), ix_Japan, DataRate("0.1Mbps"), Time("5ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(client.Get(0), ix_Japan, DataRate("1000Kbps"), Time("5ms"), packetSize));
   clientInterfaces.Add(interfaces.Get(0));
   ixsInterfaces_Japan.Add(interfaces.Get(1));
 
   /*-------- server with ix --------------*/
   addressHelper.SetBase("10.10.25.0", "255.255.255.0");
-  NetDeviceContainer d0_server0_Beijing = PointToPointCreate(server.Get(0), ix_Beijing, DataRate("1Mbps"), Time("5ms"), packetSize);
+  NetDeviceContainer d0_server0_Beijing = PointToPointCreate(server.Get(0), ix_Beijing, DataRate("1000Kbps"), Time("5ms"), packetSize);
   interfaces = addressHelper.Assign(d0_server0_Beijing);
   serverInterfaces.Add(interfaces.Get(0));
   ixsInterfaces_Beijin.Add(interfaces.Get(1));
 
   addressHelper.SetBase("10.10.26.0", "255.255.255.0");
-  interfaces = addressHelper.Assign(PointToPointCreate(server.Get(0), ix_Beijing, DataRate("0.1Mbps"), Time("500ms"), packetSize));
+  interfaces = addressHelper.Assign(PointToPointCreate(server.Get(0), ix_Beijing, DataRate("1000Kbps"), Time("500ms"), packetSize));
   serverInterfaces.Add(interfaces.Get(0));
   ixsInterfaces_Beijin.Add(interfaces.Get(1));
 

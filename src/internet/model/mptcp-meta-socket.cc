@@ -329,6 +329,7 @@ MpTcpMetaSocket::CreateScheduler(TypeId schedulerTypeId)
   m_scheduler->SetMeta(this);
 }
 
+// Jiaming: Important function
 int
 MpTcpMetaSocket::ConnectNewSubflow(const Address &local, const Address &remote)
 {
@@ -336,11 +337,13 @@ MpTcpMetaSocket::ConnectNewSubflow(const Address &local, const Address &remote)
   NS_LOG_LOGIC("Trying to add a new subflow " << InetSocketAddress::ConvertFrom(local).GetIpv4()
                 << "->" << InetSocketAddress::ConvertFrom(remote).GetIpv4());
 
+  // Jiaming: Here a new subflow is created, and created subflow's IPs are not decided
+  // It is bind in the following code by Bind and Connect
   Ptr<MpTcpSubflow> sf = CreateSubflow(false);
   NS_ASSERT(sf);
   AddSubflow(sf, false);
 
-  // TODO account for this error as well ?
+  // TODO account for this error as well ? Jiaming: I don't understand what's the "error" mean
   int ret = sf->Bind(local);
   NS_ASSERT(ret == 0);
   ret = sf->Connect(remote);

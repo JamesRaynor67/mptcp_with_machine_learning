@@ -68,10 +68,10 @@ void SetConfigDefaults (std::string linkRate, std::string linkDelay,
 
 void EnableLogging ()
 {
-  // LogComponentEnable("TcpL4Protocol", LOG_LEVEL_ALL);
-  // LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
-  // LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
-  // LogComponentEnable("MpTcpSubflow", LOG_LEVEL_ALL);
+  LogComponentEnable("TcpL4Protocol", LOG_LEVEL_ALL);
+  LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
+  LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
+  LogComponentEnable("MpTcpSubflow", LOG_LEVEL_ALL);
   //
   // LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_ALL);
   // LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);

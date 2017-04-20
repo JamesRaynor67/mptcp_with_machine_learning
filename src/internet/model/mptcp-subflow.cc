@@ -534,6 +534,7 @@ MpTcpSubflow::AddOptionMpTcp3WHS(TcpHeader& hdr) const
         mpc->SetPeerKey(GetMeta()->GetPeerKey());
         break;
       default:
+        std::cout<< "Hong Jiaming debug 1: "<< hdr.FlagsToString(hdr.GetFlags()) << endl;
         NS_FATAL_ERROR("Should never happen");
         break;
     };
@@ -1040,7 +1041,7 @@ Ptr<NetDevice>
 MpTcpSubflow::MapIpv4ToDevice (Ipv4Address addr) const
 {
   NS_LOG_DEBUG(addr);
-  cout << addr << endl;
+  cout << "MpTcpSubflow::MapIpv4ToDevice " << addr << endl;
   Ptr<Ipv4> ipv4client = m_node->GetObject<Ipv4>();
 
   for (uint32_t n = 0; n < ipv4client->GetNInterfaces(); n++)

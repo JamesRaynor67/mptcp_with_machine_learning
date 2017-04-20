@@ -64,15 +64,20 @@ int main(int argc, char* argv[])
   NodeContainer client;
   NodeContainer isps;
   NodeContainer ixs;    // Internet exchange points
+  NodeContainer other_servers;
+  NodeContainer other_clients;
   // std::vector<std::pair<Ipv4Address, Ipv4Address>> SCIpPairs;
 
-  CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs);
+  CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs, other_servers, other_clients);
 
   //Create and install the applications on the server and client
   if(appType == onoff)
   {
     std::cout << "Application type: onoff\n";
-    InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
+    // InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
+    InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
+    // InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
+    // InstallFileTransferApplications(other_servers, other_clients, segmentSizeWithoutHeaders, queueSize);
   }
   else if (appType == filetransfer)
   {
@@ -100,11 +105,10 @@ int main(int argc, char* argv[])
   // Simulator::Schedule(Seconds(3), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(10), &TraceMonitorStates, outputDir);
   // Simulator::Schedule(Seconds(20), &TraceMonitorStates, outputDir);
-  Simulator::Schedule(Seconds(1), &PrintMonitorStates);
   Simulator::Schedule(Seconds(2), &PrintMonitorStates);
   Simulator::Schedule(Seconds(3), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(20), &PrintMonitorStates);
-  Simulator::Stop (Seconds(100.0));
+  Simulator::Schedule(Seconds(9), &PrintMonitorStates);
+  Simulator::Stop (Seconds(10.0));
   // Hong Jiaming: Don't know why, call it once here ensures Scheduled call is called
   // TraceMonitorStates(outputDir);
 

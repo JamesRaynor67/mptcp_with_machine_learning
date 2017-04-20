@@ -31,6 +31,7 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
     Ipv4InterfaceAddress iaddr = ipv4->GetAddress(1,0);
     Ipv4Address addr = iaddr.GetLocal();
     Address remoteAddress(InetSocketAddress(addr, portNum));
+    // std::cout << "From: " << servers.Get(i)->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() << " To: " << addr << endl;
 
     // Create application
     Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.3Mbps"), packetSize);
@@ -43,28 +44,6 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
     packetSink.Install(clients.Get(i));
     portNum++;
   }
-  // Address remoteAddress(InetSocketAddress(peer, portNum));
-  //
-  // Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.3Mbps"), packetSize);
-  // servers.Get(0)->AddApplication(mpOnOff);
-  //
-  // //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
-  // Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum));
-  // PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", portAddress);
-  // packetSink.Install(clients);
-
-  // if (servers.GetN() == 2)
-  // {
-  //   int portNum = 4020;
-  //   Address tcpRemote(InetSocketAddress(peer, portNum));
-  //
-  //   OnOffHelper onOff("ns3::TcpSocketFactory", tcpRemote);
-  //   onOff.SetConstantRate(DataRate("2Mbps"), packetSize);
-  //   onOff.Install(servers.Get(1));
-  //
-  //   PacketSinkHelper packetSink("ns3::TcpSocketFactory", tcpRemote);
-  //   packetSink.Install(clients);
-  // }
 }
 
 void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clients, uint32_t packetSize, uint32_t queueSize)
@@ -91,31 +70,9 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
     // Install on client
     PacketSinkHelper packetSink("ns3::TcpSocketFactory", remoteAddress);
     packetSink.Install(clients.Get(i));
-    // //Set the tx buffer size to the interface queue size
-    // Ptr<Node> tcpServer = servers.Get(1);
-    // Ptr<TcpSocket> socket = DynamicCast<TcpSocket>(StaticCast<FileTransferApplication>(apps.Get(0))->GetSocket());
-    // //socket->SetAttribute("SndBufSize", UintegerValue(queueSize));
+
     portNum++;
   }
-
-  // //PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
-  // Address portAddress(InetSocketAddress(Ipv4Address::GetAny(), portNum));
-  // PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", portAddress);
-  // packetSink.Install(clients);
-  //
-  // if (servers.GetN() == 2)
-  // {
-  //   int portNum = 4020;
-  //   Address tcpRemote(InetSocketAddress(peer, portNum));
-  //
-  //   fileHelper.SetAttribute("Remote", AddressValue(tcpRemote));
-  //   fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
-  //   ApplicationContainer apps = fileHelper.Install(servers.Get(1));
-  //
-  //   PacketSinkHelper packetSink("ns3::TcpSocketFactory", tcpRemote);
-  //   packetSink.Install(clients);
-  // }
-
 }
 
 };
