@@ -59,16 +59,23 @@ int main(int argc, char* argv[])
 
   SetConfigDefaults(linkRate, linkDelay, segmentSize, segmentSizeWithoutHeaders, queueSize);
 
-  //Create the nodes in the topology, and install the internet stack on them
+  // //Create the nodes in the topology, and install the internet stack on them
+  // NodeContainer server;
+  // NodeContainer client;
+  // NodeContainer isps;
+  // NodeContainer ixs;    // Internet exchange points
+  // NodeContainer other_servers;
+  // NodeContainer other_clients;
+  // CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs, other_servers, other_clients);
+  // ConfigureTracing(outputDir, server, client, isps, ixs);
+
+
   NodeContainer server;
   NodeContainer client;
-  NodeContainer isps;
-  NodeContainer ixs;    // Internet exchange points
+  NodeContainer middle;
   NodeContainer other_servers;
   NodeContainer other_clients;
-  // std::vector<std::pair<Ipv4Address, Ipv4Address>> SCIpPairs;
-
-  CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs, other_servers, other_clients);
+  CreateClassicNetwork (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
 
   //Create and install the applications on the server and client
   if(appType == onoff)
@@ -101,7 +108,6 @@ int main(int argc, char* argv[])
   g.PrintRoutingTableAllAt (Seconds (0.5), routingStream);
 
   //Create an output directory and configure tracing
-  ConfigureTracing(outputDir, server, client, isps, ixs);
   AnimationInterface anim ("mptcp-animation.xml");
 
   // for(int i = 0;i < 100 * 10;i++){
@@ -138,9 +144,18 @@ int main(int argc, char* argv[])
     }
   }
 
-  for(int i = 0;i < ixs.GetN();i++){
-    std::cout << "\nixs: " << "node " << ixs.Get(i)->GetId() << "\n";
-    Ptr<Node> node = ixs.Get (i); // Get pointer to ith node in container
+  // for(int i = 0;i < ixs.GetN();i++){
+  //   std::cout << "\nixs: " << "node " << ixs.Get(i)->GetId() << "\n";
+  //   Ptr<Node> node = ixs.Get (i); // Get pointer to ith node in container
+  //   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+  //   for(int j = 0;j < ipv4->GetNInterfaces();j++){
+  //     Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+  //     std::cout << "interface " << j << " : " << addr << '\t';
+  //   }
+  // }
+  for(int i = 0;i < middle.GetN();i++){
+    std::cout << "\nixs: " << "node " << middle.Get(i)->GetId() << "\n";
+    Ptr<Node> node = middle.Get (i); // Get pointer to ith node in container
     Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
     for(int j = 0;j < ipv4->GetNInterfaces();j++){
       Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.

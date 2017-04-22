@@ -225,4 +225,116 @@ void CreateRealNetwork (uint32_t packetSize,
 
 }
 
+
+
+void CreateClassicNetwork (uint32_t packetSize,
+                        NodeContainer& server,
+                        NodeContainer& client,
+                        NodeContainer& middle,
+                        NodeContainer& other_servers,
+                        NodeContainer& other_clients)
+{
+  //Create the internet stack helper.
+  InternetStackHelper stackHelper = GetInternetStackHelper();
+
+  client.Create(1);           // A
+  stackHelper.Install(client);
+
+  server.Create(1);           // D
+  stackHelper.Install(server);
+
+  middle.Create(4);             // B, C, E, F
+  stackHelper.Install(middle);
+
+  other_clients.Create(2);              // H, J
+  stackHelper.Install(other_clients);
+
+  other_servers.Create(2);              // G, I
+  stackHelper.Install(other_servers);
+
+  Ptr<Node> A = client.Get(0);
+  Ptr<Node> B = middle.Get(0);
+  Ptr<Node> C = middle.Get(1);
+  Ptr<Node> D = server.Get(0);
+  Ptr<Node> E = middle.Get(2);
+  Ptr<Node> F = middle.Get(3);
+  Ptr<Node> G = other_servers.Get(0);
+  Ptr<Node> H = other_clients.Get(1);
+  Ptr<Node> I = other_servers.Get(1);
+  Ptr<Node> J = other_clients.Get(0);
+
+  AnimationInterface::SetConstantPosition	(A, 0, 400);
+  AnimationInterface::SetConstantPosition	(B, 200, 200);
+  AnimationInterface::SetConstantPosition	(C, 200, 400);
+  AnimationInterface::SetConstantPosition	(D, 600, 400);
+  AnimationInterface::SetConstantPosition	(E, 600, 400);
+  AnimationInterface::SetConstantPosition	(F, 200, 600);
+  AnimationInterface::SetConstantPosition	(G, 0, 0);
+  AnimationInterface::SetConstantPosition	(H, 600, 0);
+  AnimationInterface::SetConstantPosition	(I, 0, 800);
+  AnimationInterface::SetConstantPosition	(J, 600, 800);
+  /*--------------------------------------*/
+
+  //Create the address helper
+  Ipv4AddressHelper addressHelper;
+  // addressHelper.SetBase("192.168.0.0", "255.255.255.0");
+
+  Ipv4InterfaceContainer interfaces;
+
+  addressHelper.SetBase("192.168.0.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(A, B, DataRate("310Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.1.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(A, F, DataRate("100Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.2.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(G, B, DataRate("11000Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.3.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(I, F, DataRate("20692Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.4.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(B, C, DataRate("27000Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.5.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(B, E, DataRate("27000Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.6.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(F, C, DataRate("5000Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.7.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(F, E, DataRate("91024Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.8.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(C, H, DataRate("747000Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.9.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(C, D, DataRate("137168Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.10.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(E, J, DataRate("5600Kbps"), Time("5ms"), packetSize));
+
+  addressHelper.SetBase("192.168.11.0", "255.255.255.0");
+  addressHelper.Assign(PointToPointCreate(E, D, DataRate("2500Kbps"), Time("5ms"), packetSize));
+
+  // Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
+  // ptr_em->SetRate(0.0001);
+  // // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+  // d0_server0_Beijing.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+
+  // addressHelper.SetBase("192.168.99.0", "255.255.255.0");
+  // addressHelper.Assign(PointToPointCreate(other_clients.Get(0), other_servers.Get(0), DataRate("1Kbps"), Time("5ms"), packetSize));
+  // addressHelper.Assign(PointToPointCreate(isps.Get(0), isps.Get(5), DataRate("1000Kbps"), Time("5ms"), packetSize));
+  // addressHelper.Assign(PointToPointCreate(isp_icb, isp_cst, DataRate("1000Kbps"), Time("5ms"), packetSize));
+
+  // Ptr<Ipv4Interface> iface =  other_clients.Get(0)->GetObject<Ipv4>()->GetObject<Ipv4L3Protocol>()->GetInterface (2);
+  // uint32_t address = iface->GetAddress(0).GetLocal().Get();
+  // cout << "--------Jiaming Hong Debug 2: node id: " << other_clients.Get(0)->GetId() << " ip: " << ((address >> 24) & 0xff) << "."
+  //                          << ((address >> 16) & 0xff) << "."
+  //                          << ((address >> 8) & 0xff) << "."
+  //                          << ((address >> 0) & 0xff) << endl;
+
+
+}
+
 };

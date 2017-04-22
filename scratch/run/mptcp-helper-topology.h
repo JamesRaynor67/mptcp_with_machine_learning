@@ -21,5 +21,11 @@ void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& ixs,
                         NodeContainer& other_servers,
                         NodeContainer& other_clients);
-                        // std::vector<std::pair<Ipv4Address, Ipv4Address>>& SCIpPairs
+
+void CreateClassicNetwork (uint32_t packetSize,
+                        NodeContainer& server,
+                        NodeContainer& client,
+                        NodeContainer& middle,
+                        NodeContainer& other_servers,
+                        NodeContainer& other_clients);
 };
