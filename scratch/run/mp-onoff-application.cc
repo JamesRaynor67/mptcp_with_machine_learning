@@ -135,30 +135,30 @@ namespace ns3 {
     NS_LOG_FUNCTION (this);
 
     // Create the socket if not already
-    static int count = 0;
-    std::cout << "Start application count: " << count << endl;
-    count++;
+    // static int count = 0;
+    // std::cout << "Start application count: " << count << endl;
+    // count++;
     if (!m_socket)
     {
-      std::cout << count << ": 1" << endl;
+      // std::cout << count << ": 1" << endl;
       m_socket = Socket::CreateSocket (GetNode (), m_tid);
       if (Inet6SocketAddress::IsMatchingType (m_peer))
       {
-        std::cout << count << ": 2" << endl;
+        // std::cout << count << ": 2" << endl;
         m_socket->Bind6 (); // Hong Jiaming: here, ipv6 is not supported by MpTcp
       }
       else if (InetSocketAddress::IsMatchingType (m_peer) ||
                PacketSocketAddress::IsMatchingType (m_peer))
       {
-        std::cout << count << ": 3" << endl;
+        // std::cout << count << ": 3" << endl;
         m_socket->Bind ();
       }
-      std::cout << count << ": 3.0" << endl;
+      // std::cout << count << ": 3.0" << endl;
 
       m_socket->SetConnectCallback (MakeCallback (&MpOnOffApplication::ConnectionSucceeded, this),
                                     MakeCallback (&MpOnOffApplication::ConnectionFailed, this));
 
-      std::cout << count << ": 3.1" << endl;
+      // std::cout << count << ": 3.1" << endl;
       m_socket->Connect (m_peer);
       m_socket->SetAllowBroadcast (true);
       m_socket->ShutdownRecv ();
@@ -166,7 +166,7 @@ namespace ns3 {
       Ptr<MpTcpMetaSocket> meta = DynamicCast<MpTcpMetaSocket>(m_socket);
       if(meta)
       {
-        std::cout << count << ": 4" << endl;
+        // std::cout << count << ": 4" << endl;
         //The initial interface bound to the subflow
         m_nextLocalAddress = 2;
         meta->SetFullyEstablishedCallback(MakeCallback(&MpOnOffApplication::ConnectionFullyEstablished, this));
@@ -178,9 +178,9 @@ namespace ns3 {
     CancelEvents ();
     // If we are not yet connected, there is nothing to do here
     // The ConnectionComplete upcall will start timers at that time
-    std::cout << count << ": 5" << endl;
+    // std::cout << count << ": 5" << endl;
     if (!m_connected) return;
-    std::cout << count << ": 6" << endl;
+    // std::cout << count << ": 6" << endl;
     ScheduleStartEvent ();
   }
 

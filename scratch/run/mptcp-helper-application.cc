@@ -24,14 +24,17 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
 {
   //Create and install the applications on the server and client
   NS_ASSERT(servers.GetN() == clients.GetN());
+  std::cout << "WTF InstallOnOffApplications 0" << endl;
 
-  int portNum = 4000;
+  static int portNum = 4000;
   for(int i = 0; i < clients.GetN();i++){
+    std::cout << "InstallOnOffApplications 1" << endl;
     Ptr<Ipv4> ipv4 = clients.Get(i)->GetObject<Ipv4>(); // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
     Ipv4InterfaceAddress iaddr = ipv4->GetAddress(1,0);
     Ipv4Address addr = iaddr.GetLocal();
+    std::cout << "InstallOnOffApplications 2" << endl;
     Address remoteAddress(InetSocketAddress(addr, portNum));
-    // std::cout << "From: " << servers.Get(i)->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() << " To: " << addr << endl;
+    std::cout << "From: " << servers.Get(i)->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() << " To: " << addr << endl;
 
     // Create application
     Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.3Mbps"), packetSize);
@@ -51,7 +54,7 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
   //Create and install the applications on the server and client
   NS_ASSERT(servers.GetN() == clients.GetN());
 
-  int portNum = 4000;
+  static int portNum = 4000;
 
   for(int i = 0; i < clients.GetN();i++){
     // Create application
@@ -62,7 +65,7 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
     Address remoteAddress(InetSocketAddress(addr, portNum));
     FileTransferHelper fileHelper(remoteAddress);
     fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
-    fileHelper.SetAttribute("FileSize", UintegerValue(10e6));
+    fileHelper.SetAttribute("FileSize", UintegerValue(2*10e6)); // The setting of FileSize should be careful, flowmonitor may fail to trace if too small
 
     // Install on server
     ApplicationContainer apps = fileHelper.Install(servers.Get(i));

@@ -74,10 +74,17 @@ int main(int argc, char* argv[])
   if(appType == onoff)
   {
     std::cout << "Application type: onoff\n";
-    // InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
-    InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
+    // NodeContainer tmp_servers;
+    // NodeContainer tmp_clients;
+    // tmp_servers.Add(server);
+    // tmp_servers.Add(other_servers);
+    // tmp_clients.Add(client);
+    // tmp_clients.Add(other_clients);
+    InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
+    // InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
+    // InstallOnOffApplications(tmp_servers, tmp_clients, segmentSizeWithoutHeaders);
     // InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
-    // InstallFileTransferApplications(other_servers, other_clients, segmentSizeWithoutHeaders, queueSize);
+    InstallFileTransferApplications(other_servers, other_clients, segmentSizeWithoutHeaders, queueSize);
   }
   else if (appType == filetransfer)
   {
@@ -107,11 +114,60 @@ int main(int argc, char* argv[])
   // Simulator::Schedule(Seconds(20), &TraceMonitorStates, outputDir);
   Simulator::Schedule(Seconds(2), &PrintMonitorStates);
   Simulator::Schedule(Seconds(3), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(9), &PrintMonitorStates);
-  Simulator::Stop (Seconds(10.0));
+  Simulator::Schedule(Seconds(50), &PrintMonitorStates);
+  Simulator::Stop (Seconds(100.0));
   // Hong Jiaming: Don't know why, call it once here ensures Scheduled call is called
   // TraceMonitorStates(outputDir);
+  for(int i = 0;i < client.GetN();i++){
+    std::cout << "\nclient: " << "node " << client.Get(i)->GetId() << "\n";
+    Ptr<Node> node = client.Get (i); // Get pointer to ith node in container
+    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+    for(int j = 0;j < ipv4->GetNInterfaces();j++){
+      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+      std::cout  << "interface " << j << " : " << addr << '\t';
+    }
+  }
 
+  for(int i = 0;i < server.GetN();i++){
+    std::cout << "\nserver: " << "node " << server.Get(i)->GetId() << "\n";
+    Ptr<Node> node = server.Get (i); // Get pointer to ith node in container
+    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+    for(int j = 0;j < ipv4->GetNInterfaces();j++){
+      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+      std::cout << "interface " << j << " : " << addr << '\t';
+    }
+  }
+
+  for(int i = 0;i < ixs.GetN();i++){
+    std::cout << "\nixs: " << "node " << ixs.Get(i)->GetId() << "\n";
+    Ptr<Node> node = ixs.Get (i); // Get pointer to ith node in container
+    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+    for(int j = 0;j < ipv4->GetNInterfaces();j++){
+      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+      std::cout << "interface " << j << " : " << addr << '\t';
+    }
+  }
+
+  for(int i = 0;i < other_clients.GetN();i++){
+    std::cout << "\nother_clients: " << "node " << other_clients.Get(i)->GetId() << "\n";
+    Ptr<Node> node = other_clients.Get (i); // Get pointer to ith node in container
+    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+    for(int j = 0;j < ipv4->GetNInterfaces();j++){
+      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+      std::cout << "interface " << j << " : " << addr << '\t';
+    }
+  }
+
+  for(int i = 0;i < other_servers.GetN();i++){
+    std::cout << "\nother_servers: " << "node " << other_servers.Get(i)->GetId() << "\n";
+    Ptr<Node> node = other_servers.Get (i); // Get pointer to ith node in container
+    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+    for(int j = 0;j < ipv4->GetNInterfaces();j++){
+      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+      std::cout << "interface " << j << " : " << addr << '\t';
+    }
+  }
+  std::cout << "\n\n";
   //Begin the simulation
   Simulator::Run ();
 
