@@ -1072,7 +1072,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
 
 
     m_rxTrace (packet, tcpHeader, this);
-  
+
   if (tcpHeader.GetFlags () & TcpHeader::SYN)
     {
       /* The window field in a segment where the SYN bit is set (i.e., a <SYN>
@@ -1138,7 +1138,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
 
   //Process any options with side effects before running main TCP state machine
   ProcessOptions(tcpHeader, false);
-  
+
   if (m_rWnd.Get () == 0 && m_persistEvent.IsExpired ())
     { // Zero window: Enter persist state to send 1 byte to probe
       NS_LOG_LOGIC (this << " Enter zerowindow persist state");
@@ -1586,7 +1586,7 @@ TcpSocketBase::ProcessListen (Ptr<Packet> packet, const TcpHeader& tcpHeader,
    **/
   Ptr<TcpSocketImpl> newSock = Fork();
   //newSock->ResetUserCallbacks ();
-  
+
   NS_LOG_LOGIC ("Cloned a TcpSocketBase " << newSock);
   Simulator::ScheduleNow (&TcpSocketImpl::CompleteFork, newSock,
                           packet, tcpHeader, fromAddress, toAddress);
@@ -1595,7 +1595,7 @@ TcpSocketBase::ProcessListen (Ptr<Packet> packet, const TcpHeader& tcpHeader,
 void
 TcpSocketBase::ResetUserCallbacks (void)
 {
-  
+
   Callback<void, Ptr< Socket > > vPS = MakeNullCallback<void, Ptr<Socket> > ();
   Callback<void, Ptr<Socket>, const Address &> vPSA = MakeNullCallback<void, Ptr<Socket>, const Address &> ();
   Callback<void, Ptr<Socket>, uint32_t> vPSUI = MakeNullCallback<void, Ptr<Socket>, uint32_t> ();
@@ -1615,7 +1615,7 @@ void TcpSocketBase::EstablishConnection(Ptr<Packet> packet, const TcpHeader& tcp
   m_rxBuffer->SetNextRxSequence (tcpHeader.GetSequenceNumber () + SequenceNumber32 (1));
   m_tcb->m_highTxMark = ++m_tcb->m_nextTxSequence;
   m_txBuffer->SetHeadSequence (m_tcb->m_nextTxSequence);
-  
+
   if(sendAck)
   {
     SendEmptyPacket (TcpHeader::ACK);
@@ -1656,15 +1656,15 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   else if (tcpflags == (TcpHeader::SYN | TcpHeader::ACK)
            && m_tcb->m_nextTxSequence + SequenceNumber32 (1) == tcpHeader.GetAckNumber ())
     { // Handshake completed
-      
+
       EstablishConnection (packet, tcpHeader, true);
-      
+
       SendPendingData (m_connected);
       Simulator::ScheduleNow (&TcpSocketBase::ConnectionSucceeded, this);
       // Always respond to first data packet to speed up the connection.
       // Remove to get the behaviour of old NS-3 code.
       m_delAckCount = m_tcpParams->m_delAckMaxCount;
-      
+
     }
   else
     { // Other in-sequence input
@@ -1715,7 +1715,7 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
       // Always respond to first data packet to speed up the connection.
       // Remove to get the behaviour of old NS-3 code.
       m_delAckCount = m_tcpParams->m_delAckMaxCount;
-      
+
       ReceivedAck (packet, tcpHeader);
       NotifyNewConnectionCreated (this, fromAddress);
       // As this connection is established, the socket is available to send data now
@@ -2056,7 +2056,7 @@ TcpSocketBase::GenerateEmptyPacketHeader(TcpHeader& header, uint8_t flags)
       header.SetSourcePort (m_endPoint6->GetLocalPort ());
       header.SetDestinationPort (m_endPoint6->GetPeerPort ());
     }
-  
+
   header.SetWindowSize (AdvertisedWindowSize ());
 }
 
@@ -2065,6 +2065,7 @@ void
 TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
 {
   NS_LOG_LOGIC ("Send packet via TcpL4Protocol with flags");
+  // std::cout << "Hong Jiaming TcpSocketBase::SendPacket:\n"<< header.GetWindowSize() << " " << AdvertisedWindowSize () << std::endl;
   NS_ASSERT(header.GetWindowSize() == AdvertisedWindowSize ());
 
   /*
@@ -2100,7 +2101,7 @@ TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
       ipHopLimitTag.SetHopLimit (GetIpv6HopLimit ());
       p->AddPacketTag (ipHopLimitTag);
     }
-  
+
   uint8_t priority = GetPriority ();
   if (priority)
   {
@@ -2116,9 +2117,9 @@ TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
       NS_LOG_WARN ("Failed to send empty packet due to null endpoint");
       return;
     }
-  
+
   m_txTrace (p, header, this);
-  
+
   if (m_endPoint != 0)
     {
       m_tcp->SendPacket (p, header, m_endPoint->GetLocalAddress (),
@@ -2136,7 +2137,7 @@ TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
     { // If sending an ACK, cancel the delayed ACK as well
       m_delAckEvent.Cancel ();
       m_delAckCount = 0;
-      
+
       if (m_highTxAck < header.GetAckNumber ())
       {
         m_highTxAck = header.GetAckNumber ();
@@ -2172,7 +2173,7 @@ TcpSocketBase::SendEmptyPacket (TcpHeader& header)
   // RFC 6298, clause 2.4
   // TODO GetRTO
   m_rto = Max (m_rtt->GetEstimate () + Max (m_tcpParams->m_clockGranularity, m_rtt->GetVariation () * 4), m_tcpParams->m_minRto);
-  
+
   uint16_t windowSize = AdvertisedWindowSize ();
   uint8_t flags = header.GetFlags();
   bool hasSyn = flags & TcpHeader::SYN;
@@ -2419,7 +2420,7 @@ TcpSocketBase::SendDataPacket (TcpHeader& header, SequenceNumber32 seq, uint32_t
     }
 
   header.SetSequenceNumber (seq);
-  
+
   if (m_retxEvent.IsExpired ())
     {
       // Schedules retransmit timeout. If this is a retransmission, double the timer
@@ -2525,7 +2526,7 @@ TcpSocketBase::SendPendingData (bool withAck)
         {
           break; // No more
         }
-      
+
       NS_LOG_LOGIC ("TcpSocketBase " << this << " SendPendingData" <<
                     " w " << w <<
                     " rxwin " << m_rWnd <<
@@ -2655,7 +2656,7 @@ TcpSocketBase::AdvertisedWindowSize (bool scale) const
 {
   NS_LOG_FUNCTION (this << scale);
   uint32_t w = m_rxBuffer->MaxBufferSize ();
-
+  // std::cout << "Hong Jiaming: TcpSocketBase::AdvertisedWindowSize()\n MaxBufferSize: " << m_rxBuffer->MaxBufferSize () << " w >> m_rcvWindShift: " << (w >> m_rcvWindShift) << " m_maxWinSize: " << m_tcpParams->m_maxWinSize << " " << std::endl;
   if (scale)
     {
       w >>= m_rcvWindShift;
@@ -2770,7 +2771,7 @@ TcpSocketBase::EstimateRtt (const TcpHeader& tcpHeader)
           break;
         // Done removing
         }
-      
+
       m_history.pop_front (); // Remove
     }
 
@@ -2797,7 +2798,7 @@ void
 TcpSocketBase::NewAck (const TcpHeader& header, bool resetRTO)
 {
   SequenceNumber32 ack = header.GetAckNumber();
-  
+
   NS_LOG_FUNCTION (this << ack);
 
   if (m_state != SYN_RCVD && resetRTO)
@@ -2831,7 +2832,7 @@ TcpSocketBase::NewAck (const TcpHeader& header, bool resetRTO)
                 " numberAck " << (ack - m_txBuffer->HeadSequence ())); // Number bytes ack'ed
 
   UpdateTxBuffer(ack);
-  
+
   if (GetTxAvailable () > 0)
     {
       NotifySend (GetTxAvailable ());
@@ -3082,7 +3083,7 @@ void TcpSocketBase::SetRcvBufSize (uint32_t size)
   uint32_t oldSize = GetRcvBufSize ();
 
   m_rxBuffer->SetMaxBufferSize (size);
-  
+
   NotifyRcvBufferChange(oldSize, size);
 }
 
@@ -3154,7 +3155,7 @@ TcpSocketBase::ProcessOptionWScale (const Ptr<const TcpOption> option)
       NS_LOG_WARN ("Possible error; m_sndWindShift exceeds 14: " << m_sndWindShift);
       m_sndWindShift = 14;
     }
-  
+
   NS_LOG_INFO (m_node->GetId () << " Received a scale factor of " <<
                static_cast<int> (m_sndWindShift));
 }
@@ -3224,7 +3225,7 @@ void TcpSocketBase::ProcessOptions (const TcpHeader& header, bool post)
 {
   TcpHeader::TcpOptionList options;
   header.GetOptions (options);
-  
+
   for(TcpHeader::TcpOptionList::const_iterator it(options.begin()); it != options.end(); ++it)
   {
     Ptr<const TcpOption> option = *it;
@@ -3237,7 +3238,7 @@ void TcpSocketBase::ProcessOptions (const TcpHeader& header, bool post)
       PreProcessOption (option);
     }
   }
-  
+
 }
 
 void TcpSocketBase::PreProcessOption (Ptr<const TcpOption> option)
@@ -3360,7 +3361,7 @@ Ptr<TcpSocketImpl>
 TcpSocketBase::Fork (void)
 {
   Ptr<TcpSocketBase> newSock = CopyObject<TcpSocketBase> (this);
-  
+
   return newSock;
 }
 

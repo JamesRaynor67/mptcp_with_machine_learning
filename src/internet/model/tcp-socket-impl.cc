@@ -18,11 +18,11 @@
 
 namespace ns3
 {
-  
+
 NS_LOG_COMPONENT_DEFINE("TcpSocketImpl");
 
 NS_OBJECT_ENSURE_REGISTERED(TcpSocketImpl);
- 
+
 TcpSocketImpl::TcpSocketImpl () : TcpSocket ()
                                   , m_node (0)
                                   , m_tcp (0)
@@ -40,23 +40,23 @@ TcpSocketImpl::TcpSocketImpl(const TcpSocketImpl& sock) : TcpSocket (sock)
 {
   //Deep copy
   m_tcpParams = Copy<TcpParameters>(sock.m_tcpParams);
-  
+
   // Copy the rtt estimator if it is set
   if (sock.m_rtt)
   {
     m_rtt = sock.m_rtt->Copy ();
   }
-  
+
   if (sock.m_congestionControl)
   {
     m_congestionControl = sock.m_congestionControl->Fork ();
   }
 }
-  
+
 TcpSocketImpl::~TcpSocketImpl ()
 {
 }
-  
+
 TypeId
 TcpSocketImpl::GetTypeId(void)
 {
@@ -70,7 +70,7 @@ TcpSocketImpl::GetTypeId(void)
                                      &TcpSocketImpl::GetMaxSegLifetime),
                  MakeDoubleChecker<double> (0))
   .AddAttribute ("MaxWindowSize", "Max size of advertised window",
-                 UintegerValue (65535),
+                 UintegerValue (32768), // Hong Jiaming: Important!! Origianlly is 65535!!! Changed to 32768
                  MakeUintegerAccessor (&TcpSocketImpl::SetMaxWindowSize,
                                        &TcpSocketImpl::GetMaxWindowSize),
                  MakeUintegerChecker<uint16_t> ())
@@ -118,16 +118,16 @@ TcpSocketImpl::GetTypeId(void)
                  MakeBooleanAccessor (&TcpSocketImpl::SetLimitedTransmit,
                                       &TcpSocketImpl::GetLimitedTransmit),
                  MakeBooleanChecker ())
-  
+
   ;
   return tid;
 }
-  
+
 TypeId TcpSocketImpl::GetInstanceTypeId(void) const
 {
   return TcpSocketImpl::GetTypeId();
 }
-  
+
 Ptr<const TcpParameters> TcpSocketImpl::GetTcpParameters () const
 {
   return m_tcpParams;
@@ -138,7 +138,7 @@ void TcpSocketImpl::SetTcpParameters (Ptr<const TcpParameters> params)
   //Deep copy
   m_tcpParams = Copy<TcpParameters>(params);
 }
-  
+
 /* Below are the attribute get/set functions */
 
 void TcpSocketImpl::SetConnTimeout (Time timeout)
@@ -241,12 +241,12 @@ void TcpSocketImpl::SetNode (Ptr<Node> node)
 {
   m_node = node;
 }
-  
+
 Ptr<Node> TcpSocketImpl::GetNode (void) const
 {
   return m_node;
 }
-  
+
 /* Inherit from Socket class: Returns socket type, NS3_SOCK_STREAM */
 enum Socket::SocketType
 TcpSocketImpl::GetSocketType (void) const
@@ -259,19 +259,19 @@ void TcpSocketImpl::SetTcp (Ptr<TcpL4Protocol> tcp)
 {
   m_tcp = tcp;
 }
-  
+
 void TcpSocketImpl::SetCongestionControlAlgorithm (Ptr<TcpCongestionOps> algo)
 {
   NS_LOG_FUNCTION (this << algo);
   m_congestionControl = algo;
 }
 
-  
+
 void TcpSocketImpl::SetMaxSegLifetime (double msl)
 {
   m_tcpParams->m_msl = msl;
 }
-  
+
 double TcpSocketImpl::GetMaxSegLifetime () const
 {
   return m_tcpParams->m_msl;
@@ -281,7 +281,7 @@ void TcpSocketImpl::SetMaxWindowSize (uint16_t size)
 {
   m_tcpParams->m_maxWinSize = size;
 }
-  
+
 uint16_t TcpSocketImpl::GetMaxWindowSize () const
 {
   return m_tcpParams->m_maxWinSize;
@@ -291,7 +291,7 @@ void TcpSocketImpl::SetNullIsn (bool flag)
 {
   m_tcpParams->m_nullIsn = flag;
 }
-  
+
 bool TcpSocketImpl::GetNullIsn () const
 {
   return m_tcpParams->m_nullIsn;
@@ -301,7 +301,7 @@ void TcpSocketImpl::SetMptcpEnabled (bool flag)
 {
   m_tcpParams->m_mptcpEnabled = flag;
 }
-  
+
 bool TcpSocketImpl::GetMptcpEnabled () const
 {
   return m_tcpParams->m_mptcpEnabled;
@@ -347,7 +347,7 @@ bool TcpSocketImpl::GetLimitedTransmit () const
 {
   return m_tcpParams->m_limitedTx;
 }
-  
+
 void TcpSocketImpl::SetMinRto (Time minRto)
 {
   m_tcpParams->m_minRto = minRto;
@@ -367,13 +367,13 @@ Time TcpSocketImpl::GetClockGranularity (void) const
 {
   return m_tcpParams->m_clockGranularity;
 }
-  
+
 Ptr<const RttEstimator> TcpSocketImpl::GetRttEstimator()
 {
   //!
   return m_rtt;
 }
-  
+
 /* Set an RTT estimator with this socket */
 void TcpSocketImpl::SetRtt (Ptr<RttEstimator> rtt)
 {
