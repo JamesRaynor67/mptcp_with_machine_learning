@@ -70,7 +70,7 @@ TcpSocketImpl::GetTypeId(void)
                                      &TcpSocketImpl::GetMaxSegLifetime),
                  MakeDoubleChecker<double> (0))
   .AddAttribute ("MaxWindowSize", "Max size of advertised window",
-                 UintegerValue (32768), // Hong Jiaming: Important!! Origianlly is 65535!!! Changed to 32768
+                 UintegerValue (65535), // Hong Jiaming: Important!! Origianlly is 65535!!! Changed to 32768
                  MakeUintegerAccessor (&TcpSocketImpl::SetMaxWindowSize,
                                        &TcpSocketImpl::GetMaxWindowSize),
                  MakeUintegerChecker<uint16_t> ())

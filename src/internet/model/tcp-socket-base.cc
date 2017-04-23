@@ -1176,7 +1176,10 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
           // Do we really need that in a RST ?
           Ptr<Packet> p = Create<Packet>();
           m_txTrace (p, h, this);
+          // std::cout<< "TcpSocketBase::DoForwardUp: next is SendPacket(h, p)"<<std::endl;
           SendPacket(h, p);
+          // std::cout<< "TcpSocketBase::DoForwardUp: just called SendPacket(h, p)\n"<<std::endl;
+
         }
       break;
     case SYN_SENT:
@@ -2056,8 +2059,17 @@ TcpSocketBase::GenerateEmptyPacketHeader(TcpHeader& header, uint8_t flags)
       header.SetSourcePort (m_endPoint6->GetLocalPort ());
       header.SetDestinationPort (m_endPoint6->GetPeerPort ());
     }
+  // std::cout << "TcpSocketBase::GenerateEmptyPacketHeader 1: " << AdvertisedWindowSize () << std::endl;
 
-  header.SetWindowSize (AdvertisedWindowSize ());
+  // Hong Jiaming: originally is just header.SetWindowSize (AdvertisedWindowSize ());
+  if(flags & TcpHeader::SYN){
+    header.SetWindowSize (AdvertisedWindowSize (false));
+  }
+  else{
+    header.SetWindowSize (AdvertisedWindowSize ());
+  }
+  // std::cout << "TcpSocketBase::GenerateEmptyPacketHeader 2: " << header.GetWindowSize() << std::endl;
+
 }
 
 
@@ -2066,8 +2078,8 @@ TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
 {
   NS_LOG_LOGIC ("Send packet via TcpL4Protocol with flags");
   // std::cout << "Hong Jiaming TcpSocketBase::SendPacket:\n"<< header.GetWindowSize() << " " << AdvertisedWindowSize () << std::endl;
-  NS_ASSERT(header.GetWindowSize() == AdvertisedWindowSize ());
-
+  // NS_ASSERT(header.GetWindowSize() == AdvertisedWindowSize ()); // Hong Jiaming: original code. Bellow is a better way to solve bug
+  NS_ASSERT(header.GetWindowSize() == AdvertisedWindowSize (!(header.GetFlags() & TcpHeader::SYN)));
   /*
    * Add tags for each socket option.
    * Note that currently the socket adds both IPv4 tag and IPv6 tag
@@ -2163,7 +2175,7 @@ TcpSocketBase::SendEmptyPacket (TcpHeader& header)
   NS_LOG_FUNCTION (this << header);
   Ptr<Packet> p = Create<Packet> ();
 
-
+  // std::cout << "hehe 1: " << header.GetWindowSize() << std::endl;
   if (m_endPoint == 0 && m_endPoint6 == 0)
     {
       NS_LOG_WARN ("Failed to send empty packet due to null endpoint");
@@ -2183,7 +2195,9 @@ TcpSocketBase::SendEmptyPacket (TcpHeader& header)
     {
       if (m_tcpParams->m_winScalingEnabled)
         { // The window scaling option is set only on SYN packets
+          // std::cout << "TcpSocketBase::SendEmptyPacket(): befroe m_rcvWindShift get modified in AddOptionWScale()\n AdvertisedWindowSize(false) == " << AdvertisedWindowSize(false) << std::endl;
           AddOptionWScale (header);
+          // std::cout << "TcpSocketBase::SendEmptyPacket(): after m_rcvWindShift is modified in AddOptionWScale()\n AdvertisedWindowSize(false) == " << AdvertisedWindowSize(false) << std::endl;
         }
 
       if (m_synCount == 0)
@@ -2210,11 +2224,19 @@ TcpSocketBase::SendEmptyPacket (TcpHeader& header)
           UpdateRttHistory (s, 0, true);
         }
 
+      // Hong Jiaming: scale	indicate if the window should be scaled. True for almost all cases, except when we are sending a SYN
+      // std::cout << "hehe 2: " << header.GetWindowSize() << std::endl;
       windowSize = AdvertisedWindowSize (false);
+      // std::cout << "hehe 3: " << header.GetWindowSize() << std::endl;
+
     }
 
     header.SetWindowSize (windowSize);
+    // std::cout<< "TcpSocketBase::SendEmptyPacket: hasSyn == "<<hasSyn<< std::endl;
+    // std::cout << "hehe 4: " << header.GetWindowSize() << std::endl;
+    // std::cout<< "TcpSocketBase::SendEmptyPacket: next is SendPacket(header, p)"<<std::endl;
     SendPacket(header, p);
+    // std::cout<< "TcpSocketBase::SendEmptyPacket: just called SendPacket(header, p)\n"<<std::endl;
 
   if (m_retxEvent.IsExpired () && (hasSyn || hasFin) && !isAck )
     { // Retransmit SYN / SYN+ACK / FIN / FIN+ACK to guard against lost
@@ -2438,8 +2460,9 @@ TcpSocketBase::SendDataPacket (TcpHeader& header, SequenceNumber32 seq, uint32_t
       m_retxEvent = Simulator::Schedule (m_rto, &TcpSocketBase::ReTxTimeout, this);
     }
 
-
+  // std::cout<< "TcpSocketBase::SendDataPacket: next is SendPacket(header, p)"<<std::endl;
   SendPacket(header, p);
+  // std::cout<< "TcpSocketBase::SendDataPacket: just called SendPacket(header, p)\n"<<std::endl;
 
   UpdateRttHistory (seq, sz, isRetransmission);
 
@@ -2656,7 +2679,8 @@ TcpSocketBase::AdvertisedWindowSize (bool scale) const
 {
   NS_LOG_FUNCTION (this << scale);
   uint32_t w = m_rxBuffer->MaxBufferSize ();
-  // std::cout << "Hong Jiaming: TcpSocketBase::AdvertisedWindowSize()\n MaxBufferSize: " << m_rxBuffer->MaxBufferSize () << " w >> m_rcvWindShift: " << (w >> m_rcvWindShift) << " m_maxWinSize: " << m_tcpParams->m_maxWinSize << " " << std::endl;
+  // // std::cout << "\nHong Jiaming: TcpSocketBase::AdvertisedWindowSize()\n MaxBufferSize: " << m_rxBuffer->MaxBufferSize () << " w >> m_rcvWindShift: " << (w >> m_rcvWindShift) << " m_maxWinSize: " << m_tcpParams->m_maxWinSize << " " << std::endl;
+  // std::cout << "\nHong Jiaming: TcpSocketBase::AdvertisedWindowSize() is called: \n MaxBufferSize: " << m_rxBuffer->MaxBufferSize () << " w >> m_rcvWindShift: " << (w >> m_rcvWindShift) << " m_maxWinSize: " << m_tcpParams->m_maxWinSize << " m_rcvWindShift: " << (int)m_rcvWindShift << " scale: " << scale << std::endl;
   if (scale)
     {
       w >>= m_rcvWindShift;
@@ -2911,7 +2935,9 @@ TcpSocketBase::PersistTimeout ()
   Ptr<Packet> p = m_txBuffer->CopyFromSequence (1, m_tcb->m_nextTxSequence);
   TcpHeader tcpHeader;
   GenerateEmptyPacketHeader(tcpHeader, 0);
+  // std::cout<< "TcpSocketBase::PersistTimeout: next is SendPacket(tcpHeader, p)"<<std::endl;
   SendPacket(tcpHeader,p);
+  // std::cout<< "TcpSocketBase::PersistTimeout: next is SendPacket(tcpHeader, p)\n"<<std::endl;
 
   NS_LOG_LOGIC ("Schedule persist timeout at time "
                 << Simulator::Now ().GetSeconds () << " to expire at time "
@@ -3194,8 +3220,8 @@ TcpSocketBase::AddOptionWScale (TcpHeader &header)
 
   // In naming, we do the contrary of RFC 1323. The sended scaling factor
   // is Snd.Wind.Scale (and not Rcv.Wind.Scale)
-
   m_rcvWindShift = CalculateWScale ();
+  // std::cout << "TcpSocketBase::AddOptionWScale: " << (int)m_rcvWindShift << std::endl;
   option->SetScale (m_rcvWindShift);
 
   header.AppendOption (option);
