@@ -53,6 +53,12 @@
 #include "tcp-congestion-ops.h"
 #include "tcp-option-mptcp.h"
 
+/////////////*********
+#include "ns3/network-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/ipv4-static-routing-helper.h"
+/////////////*********
+
 #include <math.h>
 #include <algorithm>
 
@@ -2298,6 +2304,14 @@ TcpSocketBase::SetupEndpoint ()
   Ptr<Ipv4Route> route;
   Ptr<NetDevice> oif = m_boundnetdevice;
   route = ipv4->GetRoutingProtocol ()->RouteOutput (Ptr<Packet> (), header, oif, errno_);
+////*******//////////////// Hong Jiaming1: Just for debug
+  std::cout << "Hong Jiaming 1: From: " << m_node->GetObject<Ipv4>()->GetAddress(1,0).GetLocal()
+            << " To: " << m_endPoint->GetPeerAddress ()
+            << " route == " << route
+            << " oif == " << oif << std::endl;
+
+//////*******////////////////
+
   if (route == 0)
     {
       NS_LOG_LOGIC ("Route to " << m_endPoint->GetPeerAddress () << " does not exist");

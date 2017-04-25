@@ -1088,6 +1088,8 @@ MpTcpSubflow::Bind (const Address &address)
 
   if (InetSocketAddress::IsMatchingType (address) && result ==0)
   {
+    cout << "MpTcpSubflow::Bind address == " << address;
+    cout << ", m_endPoint == " << m_endPoint << endl;
 
     Ptr<NetDevice> dev = MapIpv4ToDevice(m_endPoint->GetLocalAddress());
 

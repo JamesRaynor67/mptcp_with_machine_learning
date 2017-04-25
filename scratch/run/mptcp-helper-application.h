@@ -10,12 +10,10 @@ Ptr<Application> CreateApplication (Address& remoteAddress,
 
 void InstallOnOffApplications(NodeContainer& servers,
                               NodeContainer& clients,
-                              // const std::vector<std::pair<Ipv4Address, Ipv4Address>>& SCIpPairs,
                               uint32_t packetSize);
 
 void InstallFileTransferApplications(NodeContainer& servers,
                                      NodeContainer& clients,
-                                     // const std::vector<std::pair<Ipv4Address, Ipv4Address>>& SCIpPairs,
                                      uint32_t packetSize,
                                      uint32_t queueSize);
 

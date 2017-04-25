@@ -14,7 +14,7 @@ Ptr<Application> CreateApplication (Address& remoteAddress, DataRate dataRate, u
   onOff->SetAttribute("Protocol", StringValue("ns3::MpTcpSocketFactory"));
   onOff->SetAttribute("Remote", AddressValue (remoteAddress));
   onOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
-  onOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
+  onOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
   onOff->SetAttribute("DataRate", DataRateValue (dataRate));
   onOff->SetAttribute("PacketSize", UintegerValue (packetSize));
   return onOff;
@@ -55,10 +55,12 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
   NS_ASSERT(servers.GetN() == clients.GetN());
 
   static int portNum = 4000;
+  std::cout << "WTF InstallFileTransferApplications 0" << endl;
 
   for(int i = 0; i < clients.GetN();i++){
     // Create application
     // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
+    std::cout << "InstallFileTransferApplications 1" << endl;
     Ptr<Ipv4> ipv4 = clients.Get(i)->GetObject<Ipv4>(); // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
     Ipv4InterfaceAddress iaddr = ipv4->GetAddress(1,0);
     Ipv4Address addr = iaddr.GetLocal();
@@ -71,7 +73,7 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
     ApplicationContainer apps = fileHelper.Install(servers.Get(i));
 
     // Install on client
-    PacketSinkHelper packetSink("ns3::TcpSocketFactory", remoteAddress);
+    PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
     packetSink.Install(clients.Get(i));
 
     portNum++;

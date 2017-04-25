@@ -265,9 +265,9 @@ void CreateClassicNetwork (uint32_t packetSize,
 
   AnimationInterface::SetConstantPosition	(A, 0, 400);
   AnimationInterface::SetConstantPosition	(B, 200, 200);
-  AnimationInterface::SetConstantPosition	(C, 200, 400);
+  AnimationInterface::SetConstantPosition	(C, 400, 200);
   AnimationInterface::SetConstantPosition	(D, 600, 400);
-  AnimationInterface::SetConstantPosition	(E, 600, 400);
+  AnimationInterface::SetConstantPosition	(E, 400, 600);
   AnimationInterface::SetConstantPosition	(F, 200, 600);
   AnimationInterface::SetConstantPosition	(G, 0, 0);
   AnimationInterface::SetConstantPosition	(H, 600, 0);
