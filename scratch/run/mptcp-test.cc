@@ -361,6 +361,9 @@
 
 #include "ns3/rl-data-interface.h"
 
+#include "ns3/olsr-helper.h"
+#include "ns3/ipv4-static-routing-helper.h"
+#include "ns3/ipv4-list-routing-helper.h"
 #include "ns3/flow-monitor-module.h"
 #include "ns3/netanim-module.h"
 // #include "ns3/core-module.h"
@@ -382,18 +385,30 @@ NS_LOG_COMPONENT_DEFINE ("wifi-tcp");
 
 using namespace ns3;
 
-Ptr<PacketSink> sink;                         /* Pointer to the packet sink application */
-uint64_t lastTotalRx = 0;                     /* The value of the last total received bytes */
-
-void
-CalculateThroughput ()
+Ptr<Ipv4StaticRouting> GetNodeStaticRoutingProtocol(Ptr<Node> node)
 {
-  Time now = Simulator::Now ();                                         /* Return the simulator's virtual time. */
-  double cur = (sink->GetTotalRx() - lastTotalRx) * (double) 8/1e5;     /* Convert Application RX Packets to MBits. */
-  std::cout << now.GetSeconds () << "s: \t" << cur << " Mbit/s" << std::endl;
-  lastTotalRx = sink->GetTotalRx ();
-  Simulator::Schedule (MilliSeconds (100), &CalculateThroughput);
+  std::cout << "WTF 1" << std::endl;
+  Ptr<Ipv4> nodeIpv4 = node->GetObject<Ipv4> ();
+  Ptr<Ipv4RoutingProtocol> routingProtocol = nodeIpv4->GetRoutingProtocol();
+  Ptr<Ipv4ListRouting> listRouting = DynamicCast<Ipv4ListRouting>(routingProtocol);
+  int16_t priority;
+  Ptr<Ipv4StaticRouting> routing = DynamicCast<Ipv4StaticRouting>(listRouting->GetRoutingProtocol(0, priority));
+  std::cout << "WTF 2" << std::endl;
+  return routing;
 }
+
+// Ptr<PacketSink> sink;                         /* Pointer to the packet sink application */
+// uint64_t lastTotalRx = 0;                     /* The value of the last total received bytes */
+//
+// void
+// CalculateThroughput ()
+// {
+//   Time now = Simulator::Now ();                                         /* Return the simulator's virtual time. */
+//   double cur = (sink->GetTotalRx() - lastTotalRx) * (double) 8/1e5;     /* Convert Application RX Packets to MBits. */
+//   std::cout << now.GetSeconds () << "s: \t" << cur << " Mbit/s" << std::endl;
+//   lastTotalRx = sink->GetTotalRx ();
+//   Simulator::Schedule (MilliSeconds (100), &CalculateThroughput);
+// }
 
 int
 main(int argc, char *argv[])
@@ -476,9 +491,13 @@ main(int argc, char *argv[])
   mobility.Install (apWifiNode);
   mobility.Install (staWifiNode);
 
-  /* Internet stack */
-  InternetStackHelper stack;
-  stack.Install (networkNodes);
+  // install internet stack
+  InternetStackHelper stackHelper;
+  Ipv4ListRoutingHelper listRoutingHelper;
+  Ipv4StaticRoutingHelper staticRoutingHelper;
+  listRoutingHelper.Add(staticRoutingHelper, 10);
+  stackHelper.SetRoutingHelper(listRoutingHelper);
+  stackHelper.Install (networkNodes);
 
   Ipv4AddressHelper address;
   address.SetBase ("10.10.0.0", "255.255.255.0");
@@ -487,14 +506,7 @@ main(int argc, char *argv[])
   Ipv4InterfaceContainer staInterface;
   staInterface = address.Assign (staDevices);
 
-  // address.SetBase("192.168.1.0", "255.255.255.0");
-  // address.Assign(PointToPointCreate(apWifiNode, staWifiNode, DataRate("1000Kbps"), Time("5ms"), 1000));
 
-  /* Populate routing table */
-  Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-  Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("debug-routing-mptcp.routes", std::ios::out);
-  Ipv4GlobalRoutingHelper g;
-  g.PrintRoutingTableAllAt (Seconds (0.5), routingStream);
   EnableLogging ();
 
   Ptr<Ipv4> ipv4s = apWifiNode->GetObject<Ipv4>();
@@ -503,12 +515,22 @@ main(int argc, char *argv[])
   Ptr<Ipv4> ipv4c = staWifiNode->GetObject<Ipv4>();
   Ipv4Address addrc = ipv4c->GetAddress(1,0).GetLocal();
   Address clientAddress(InetSocketAddress(addrc, 4000));
-  std::cout << "client sta Ip: " << clientAddress << "server ap Ip: " << serverAddress << std::endl;
+  std::cout << "Node Id:"<< staWifiNode->GetId() << "client sta Ip: " << addrc << "\nNode Id:"<< apWifiNode->GetId() << "server ap Ip: " << addrs << std::endl;
+
+  // config routing
+  Ptr<Ipv4StaticRouting> serverRouting = GetNodeStaticRoutingProtocol(apWifiNode);
+  serverRouting->AddHostRouteTo(addrc, addrc, 1);
+  Ptr<Ipv4StaticRouting> clientRouting = GetNodeStaticRoutingProtocol(staWifiNode);
+  clientRouting->AddHostRouteTo(addrs, addrs, 1);
+
+  Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+  Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("debug-routing-mptcp.routes", std::ios::out);
+  Ipv4GlobalRoutingHelper g;
+  g.PrintRoutingTableAllAt (Seconds (0.5), routingStream);
 
   // Create application
   Ptr<MpOnOffApplication> mpOnOff = CreateObject<MpOnOffApplication>();
   mpOnOff->SetAttribute("Protocol", StringValue("ns3::MpTcpSocketFactory"));
-  mpOnOff->SetAttribute("Protocol", StringValue("ns3::TcpSocketFactory"));
   mpOnOff->SetAttribute("Remote", AddressValue (clientAddress));
   mpOnOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
   mpOnOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
@@ -525,8 +547,11 @@ main(int argc, char *argv[])
   /* Start Applications */
   // sink = sinkApp.Get(0);
   sinkApp.Start (Seconds (0.0));
+  Simulator::Schedule(Seconds(1), &PrintMonitorStates);
+  Simulator::Schedule(Seconds(2), &PrintMonitorStates);
+  Simulator::Schedule(Seconds(3), &PrintMonitorStates);
   // mpOnOff.Start (Seconds (1.0));
-  Simulator::Schedule (Seconds (1.1), &CalculateThroughput);
+  // Simulator::Schedule (Seconds (1.1), &CalculateThroughput);
 
 ////////////////**************************///////////////////////
 

@@ -826,6 +826,7 @@ void
 TcpSocketBase::BindToNetDevice (Ptr<NetDevice> netdevice)
 {
   NS_LOG_FUNCTION (netdevice);
+  std::cout << "Hong Jiaming 6: TcpSocketBase::BindToNetDevice()" << std::endl; // This part is not called!?!
   Socket::BindToNetDevice (netdevice); // Includes sanity check
   if (m_endPoint == 0)
     {
@@ -2302,15 +2303,15 @@ TcpSocketBase::SetupEndpoint ()
   header.SetDestination (m_endPoint->GetPeerAddress ());
   Socket::SocketErrno errno_;
   Ptr<Ipv4Route> route;
-  Ptr<NetDevice> oif = m_boundnetdevice;
+  // Ptr<NetDevice> oif = nullptr; //!?!
+  Ptr<NetDevice> oif = m_boundnetdevice; // Hong Jiaming: In setup, m_boundnetdevice is wrong!?!
+  ////*******//////////////// Hong Jiaming1: Just for debug
+    std::cout << "---------Hong Jiaming 1:\n Check routing by dummy packet From: " << m_node->GetObject<Ipv4>()->GetAddress(1,0).GetLocal()
+              << " To: " << m_endPoint->GetPeerAddress () << " route == " << route
+              << " oif == " << oif << " endpoint == " << m_endPoint << std::endl;
+  //////*******////////////////
   route = ipv4->GetRoutingProtocol ()->RouteOutput (Ptr<Packet> (), header, oif, errno_);
-////*******//////////////// Hong Jiaming1: Just for debug
-  std::cout << "Hong Jiaming 1: From: " << m_node->GetObject<Ipv4>()->GetAddress(1,0).GetLocal()
-            << " To: " << m_endPoint->GetPeerAddress ()
-            << " route == " << route
-            << " oif == " << oif << std::endl;
-
-//////*******////////////////
+  std::cout << "---------Hong Jiaming 2:\n Check end " << std::endl;
 
   if (route == 0)
     {

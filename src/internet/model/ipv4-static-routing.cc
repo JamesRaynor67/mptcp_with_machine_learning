@@ -53,16 +53,16 @@ Ipv4StaticRouting::GetTypeId (void)
   return tid;
 }
 
-Ipv4StaticRouting::Ipv4StaticRouting () 
+Ipv4StaticRouting::Ipv4StaticRouting ()
   : m_ipv4 (0)
 {
   NS_LOG_FUNCTION (this);
 }
 
-void 
-Ipv4StaticRouting::AddNetworkRouteTo (Ipv4Address network, 
-                                      Ipv4Mask networkMask, 
-                                      Ipv4Address nextHop, 
+void
+Ipv4StaticRouting::AddNetworkRouteTo (Ipv4Address network,
+                                      Ipv4Mask networkMask,
+                                      Ipv4Address nextHop,
                                       uint32_t interface,
                                       uint32_t metric)
 {
@@ -75,9 +75,9 @@ Ipv4StaticRouting::AddNetworkRouteTo (Ipv4Address network,
   m_networkRoutes.push_back (make_pair (route,metric));
 }
 
-void 
-Ipv4StaticRouting::AddNetworkRouteTo (Ipv4Address network, 
-                                      Ipv4Mask networkMask, 
+void
+Ipv4StaticRouting::AddNetworkRouteTo (Ipv4Address network,
+                                      Ipv4Mask networkMask,
                                       uint32_t interface,
                                       uint32_t metric)
 {
@@ -89,8 +89,8 @@ Ipv4StaticRouting::AddNetworkRouteTo (Ipv4Address network,
   m_networkRoutes.push_back (make_pair (route,metric));
 }
 
-void 
-Ipv4StaticRouting::AddHostRouteTo (Ipv4Address dest, 
+void
+Ipv4StaticRouting::AddHostRouteTo (Ipv4Address dest,
                                    Ipv4Address nextHop,
                                    uint32_t interface,
                                    uint32_t metric)
@@ -99,8 +99,8 @@ Ipv4StaticRouting::AddHostRouteTo (Ipv4Address dest,
   AddNetworkRouteTo (dest, Ipv4Mask::GetOnes (), nextHop, interface, metric);
 }
 
-void 
-Ipv4StaticRouting::AddHostRouteTo (Ipv4Address dest, 
+void
+Ipv4StaticRouting::AddHostRouteTo (Ipv4Address dest,
                                    uint32_t interface,
                                    uint32_t metric)
 {
@@ -108,8 +108,8 @@ Ipv4StaticRouting::AddHostRouteTo (Ipv4Address dest,
   AddNetworkRouteTo (dest, Ipv4Mask::GetOnes (), interface, metric);
 }
 
-void 
-Ipv4StaticRouting::SetDefaultRoute (Ipv4Address nextHop, 
+void
+Ipv4StaticRouting::SetDefaultRoute (Ipv4Address nextHop,
                                     uint32_t interface,
                                     uint32_t metric)
 {
@@ -117,7 +117,7 @@ Ipv4StaticRouting::SetDefaultRoute (Ipv4Address nextHop,
   AddNetworkRouteTo (Ipv4Address ("0.0.0.0"), Ipv4Mask::GetZero (), nextHop, interface, metric);
 }
 
-void 
+void
 Ipv4StaticRouting::AddMulticastRoute (Ipv4Address origin,
                                       Ipv4Address group,
                                       uint32_t inputInterface,
@@ -125,7 +125,7 @@ Ipv4StaticRouting::AddMulticastRoute (Ipv4Address origin,
 {
   NS_LOG_FUNCTION (this << origin << " " << group << " " << inputInterface << " " << &outputInterfaces);
   Ipv4MulticastRoutingTableEntry *route = new Ipv4MulticastRoutingTableEntry ();
-  *route = Ipv4MulticastRoutingTableEntry::CreateMulticastRoute (origin, group, 
+  *route = Ipv4MulticastRoutingTableEntry::CreateMulticastRoute (origin, group,
                                                                  inputInterface, outputInterfaces);
   m_multicastRoutes.push_back (route);
 }
@@ -133,7 +133,7 @@ Ipv4StaticRouting::AddMulticastRoute (Ipv4Address origin,
 // default multicast routes are stored as a network route
 // these routes are _not_ consulted in the forwarding process-- only
 // for originating packets
-void 
+void
 Ipv4StaticRouting::SetDefaultMulticastRoute (uint32_t outputInterface)
 {
   NS_LOG_FUNCTION (this << outputInterface);
@@ -146,7 +146,7 @@ Ipv4StaticRouting::SetDefaultMulticastRoute (uint32_t outputInterface)
   m_networkRoutes.push_back (make_pair (route,0));
 }
 
-uint32_t 
+uint32_t
 Ipv4StaticRouting::GetNMulticastRoutes (void) const
 {
   NS_LOG_FUNCTION (this);
@@ -163,9 +163,9 @@ Ipv4StaticRouting::GetMulticastRoute (uint32_t index) const
   if (index < m_multicastRoutes.size ())
     {
       uint32_t tmp = 0;
-      for (MulticastRoutesCI i = m_multicastRoutes.begin (); 
-           i != m_multicastRoutes.end (); 
-           i++) 
+      for (MulticastRoutesCI i = m_multicastRoutes.begin ();
+           i != m_multicastRoutes.end ();
+           i++)
         {
           if (tmp  == index)
             {
@@ -183,9 +183,9 @@ Ipv4StaticRouting::RemoveMulticastRoute (Ipv4Address origin,
                                          uint32_t inputInterface)
 {
   NS_LOG_FUNCTION (this << origin << " " << group << " " << inputInterface);
-  for (MulticastRoutesI i = m_multicastRoutes.begin (); 
-       i != m_multicastRoutes.end (); 
-       i++) 
+  for (MulticastRoutesI i = m_multicastRoutes.begin ();
+       i != m_multicastRoutes.end ();
+       i++)
     {
       Ipv4MulticastRoutingTableEntry *route = *i;
       if (origin == route->GetOrigin () &&
@@ -200,14 +200,14 @@ Ipv4StaticRouting::RemoveMulticastRoute (Ipv4Address origin,
   return false;
 }
 
-void 
+void
 Ipv4StaticRouting::RemoveMulticastRoute (uint32_t index)
 {
   NS_LOG_FUNCTION (this << index);
   uint32_t tmp = 0;
-  for (MulticastRoutesI i = m_multicastRoutes.begin (); 
-       i != m_multicastRoutes.end (); 
-       i++) 
+  for (MulticastRoutesI i = m_multicastRoutes.begin ();
+       i != m_multicastRoutes.end ();
+       i++)
     {
       if (tmp  == index)
         {
@@ -227,6 +227,8 @@ Ipv4StaticRouting::LookupStatic (Ipv4Address dest, Ptr<NetDevice> oif)
   uint16_t longest_mask = 0;
   uint32_t shortest_metric = 0xffffffff;
   /* when sending on local multicast, there have to be interface specified */
+  //std::cout << "Hong Jiaming: Ipv4StaticRouting::LookupStatic: Fuck" << std::endl;
+
   if (dest.IsLocalMulticast ())
     {
       NS_ASSERT_MSG (oif, "Try to send on link-local multicast address, and no interface index is given!");
@@ -239,25 +241,30 @@ Ipv4StaticRouting::LookupStatic (Ipv4Address dest, Ptr<NetDevice> oif)
       return rtentry;
     }
 
-
-  for (NetworkRoutesI i = m_networkRoutes.begin (); 
-       i != m_networkRoutes.end (); 
-       i++) 
+  std::cout << "Hong Jiaming: Ipv4StaticRouting::LookupStatic: dest == " << dest << " oif == " << oif << std::endl;
+  for(int i = 0; i < m_ipv4->GetNInterfaces();i++){
+    std::cout << " --- Hong Jimaing: interface " << i << " :" <<  m_ipv4->GetNetDevice(i) << std::endl;
+  }
+  for (NetworkRoutesI i = m_networkRoutes.begin (); i != m_networkRoutes.end (); i++)
     {
       Ipv4RoutingTableEntry *j=i->first;
+      std::cout << "Hong Jiaming: checking routing entry: \n";
+      std::cout << j->GetDest() << " " << j->GetDestNetwork() << " " << j->GetInterface () << " " << j->GetGateway() << std::endl;
       uint32_t metric =i->second;
       Ipv4Mask mask = (j)->GetDestNetworkMask ();
       uint16_t masklen = mask.GetPrefixLength ();
       Ipv4Address entry = (j)->GetDestNetwork ();
       NS_LOG_LOGIC ("Searching for route to " << dest << ", checking against route to " << entry << "/" << masklen);
-      if (mask.IsMatch (dest, entry)) 
+      if (mask.IsMatch (dest, entry))
         {
           NS_LOG_LOGIC ("Found global network route " << j << ", mask length " << masklen << ", metric " << metric);
+          std::cout << "Hong Jiaming 5: j->GetInterface () == " << j->GetInterface () << " ,m_ipv4->GetNetDevice (j->GetInterface ()) == "
+                    << m_ipv4->GetNetDevice (j->GetInterface ()) << ", oif == " << oif << std::endl;
           if (oif != 0)
             {
               if (oif != m_ipv4->GetNetDevice (j->GetInterface ()))
                 {
-                  NS_LOG_LOGIC ("Not on requested interface, skipping");
+                  NS_LOG_LOGIC ("Hong Jiaming WTF Ipv4StaticRouting::LookupStatic Not on requested interface, skipping");
                   continue;
                 }
             }
@@ -303,20 +310,20 @@ Ipv4StaticRouting::LookupStatic (Ipv4Address dest, Ptr<NetDevice> oif)
 
 Ptr<Ipv4MulticastRoute>
 Ipv4StaticRouting::LookupStatic (
-  Ipv4Address origin, 
+  Ipv4Address origin,
   Ipv4Address group,
   uint32_t    interface)
 {
   NS_LOG_FUNCTION (this << origin << " " << group << " " << interface);
   Ptr<Ipv4MulticastRoute> mrtentry = 0;
 
-  for (MulticastRoutesI i = m_multicastRoutes.begin (); 
-       i != m_multicastRoutes.end (); 
-       i++) 
+  for (MulticastRoutesI i = m_multicastRoutes.begin ();
+       i != m_multicastRoutes.end ();
+       i++)
     {
       Ipv4MulticastRoutingTableEntry *route = *i;
 //
-// We've been passed an origin address, a multicast group address and an 
+// We've been passed an origin address, a multicast group address and an
 // interface index.  We have to decide if the current route in the list is
 // a match.
 //
@@ -330,7 +337,7 @@ Ipv4StaticRouting::LookupStatic (
         }
       if (group == route->GetGroup ())
         {
-          if (interface == Ipv4::IF_ANY || 
+          if (interface == Ipv4::IF_ANY ||
               interface == route->GetInputInterface ())
             {
               NS_LOG_LOGIC ("Found multicast route" << *i);
@@ -353,7 +360,7 @@ Ipv4StaticRouting::LookupStatic (
   return mrtentry;
 }
 
-uint32_t 
+uint32_t
 Ipv4StaticRouting::GetNRoutes (void) const
 {
   NS_LOG_FUNCTION (this);
@@ -368,9 +375,9 @@ Ipv4StaticRouting::GetDefaultRoute ()
   Ipv4Address dest ("0.0.0.0");
   uint32_t shortest_metric = 0xffffffff;
   Ipv4RoutingTableEntry *result = 0;
-  for (NetworkRoutesI i = m_networkRoutes.begin (); 
-       i != m_networkRoutes.end (); 
-       i++) 
+  for (NetworkRoutesI i = m_networkRoutes.begin ();
+       i != m_networkRoutes.end ();
+       i++)
     {
       Ipv4RoutingTableEntry *j = i->first;
       uint32_t metric = i->second;
@@ -397,14 +404,14 @@ Ipv4StaticRouting::GetDefaultRoute ()
     }
 }
 
-Ipv4RoutingTableEntry 
+Ipv4RoutingTableEntry
 Ipv4StaticRouting::GetRoute (uint32_t index) const
 {
   NS_LOG_FUNCTION (this << index);
   uint32_t tmp = 0;
-  for (NetworkRoutesCI j = m_networkRoutes.begin (); 
-       j != m_networkRoutes.end (); 
-       j++) 
+  for (NetworkRoutesCI j = m_networkRoutes.begin ();
+       j != m_networkRoutes.end ();
+       j++)
     {
       if (tmp  == index)
         {
@@ -423,8 +430,8 @@ Ipv4StaticRouting::GetMetric (uint32_t index) const
   NS_LOG_FUNCTION (this << index);
   uint32_t tmp = 0;
   for (NetworkRoutesCI j = m_networkRoutes.begin ();
-       j != m_networkRoutes.end (); 
-       j++) 
+       j != m_networkRoutes.end ();
+       j++)
     {
       if (tmp == index)
         {
@@ -436,14 +443,14 @@ Ipv4StaticRouting::GetMetric (uint32_t index) const
   // quiet compiler.
   return 0;
 }
-void 
+void
 Ipv4StaticRouting::RemoveRoute (uint32_t index)
 {
   NS_LOG_FUNCTION (this << index);
   uint32_t tmp = 0;
-  for (NetworkRoutesI j = m_networkRoutes.begin (); 
-       j != m_networkRoutes.end (); 
-       j++) 
+  for (NetworkRoutesI j = m_networkRoutes.begin ();
+       j != m_networkRoutes.end ();
+       j++)
     {
       if (tmp == index)
         {
@@ -456,37 +463,38 @@ Ipv4StaticRouting::RemoveRoute (uint32_t index)
   NS_ASSERT (false);
 }
 
-Ptr<Ipv4Route> 
+Ptr<Ipv4Route>
 Ipv4StaticRouting::RouteOutput (Ptr<Packet> p, const Ipv4Header &header, Ptr<NetDevice> oif, Socket::SocketErrno &sockerr)
 {
   NS_LOG_FUNCTION (this << p<< header << oif << sockerr);
   Ipv4Address destination = header.GetDestination ();
   Ptr<Ipv4Route> rtentry = 0;
-
+  //std::cout << "Hong Jiaming: Ipv4StaticRouting::RouteOutput: Fuck" << std::endl;
   // Multicast goes here
   if (destination.IsMulticast ())
     {
       // Note:  Multicast routes for outbound packets are stored in the
       // normal unicast table.  An implication of this is that it is not
       // possible to source multicast datagrams on multiple interfaces.
-      // This is a well-known property of sockets implementation on 
+      // This is a well-known property of sockets implementation on
       // many Unix variants.
       // So, we just log it and fall through to LookupStatic ()
       NS_LOG_LOGIC ("RouteOutput()::Multicast destination");
     }
+  //std::cout << "Hong Jiaming: Ipv4StaticRouting::RouteOutput: destination == " << destination << " oif == " << oif << std::endl;
   rtentry = LookupStatic (destination, oif);
   if (rtentry)
-    { 
+    {
       sockerr = Socket::ERROR_NOTERROR;
     }
   else
-    { 
+    {
       sockerr = Socket::ERROR_NOROUTETOHOST;
     }
   return rtentry;
 }
 
-bool 
+bool
 Ipv4StaticRouting::RouteInput  (Ptr<const Packet> p, const Ipv4Header &ipHeader, Ptr<const NetDevice> idev,
                                 UnicastForwardCallback ucb, MulticastForwardCallback mcb,
                                 LocalDeliverCallback lcb, ErrorCallback ecb)
@@ -494,9 +502,9 @@ Ipv4StaticRouting::RouteInput  (Ptr<const Packet> p, const Ipv4Header &ipHeader,
   NS_LOG_FUNCTION (this << p << ipHeader << ipHeader.GetSource () << ipHeader.GetDestination () << idev << &ucb << &mcb << &lcb << &ecb);
 
   NS_ASSERT (m_ipv4 != 0);
-  // Check if input device supports IP 
+  // Check if input device supports IP
   NS_ASSERT (m_ipv4->GetInterfaceForDevice (idev) >= 0);
-  uint32_t iif = m_ipv4->GetInterfaceForDevice (idev); 
+  uint32_t iif = m_ipv4->GetInterfaceForDevice (idev);
 
   // Multicast recognition; handle local delivery here
 
@@ -569,15 +577,15 @@ void
 Ipv4StaticRouting::DoDispose (void)
 {
   NS_LOG_FUNCTION (this);
-  for (NetworkRoutesI j = m_networkRoutes.begin (); 
-       j != m_networkRoutes.end (); 
-       j = m_networkRoutes.erase (j)) 
+  for (NetworkRoutesI j = m_networkRoutes.begin ();
+       j != m_networkRoutes.end ();
+       j = m_networkRoutes.erase (j))
     {
       delete (j->first);
     }
-  for (MulticastRoutesI i = m_multicastRoutes.begin (); 
-       i != m_multicastRoutes.end (); 
-       i = m_multicastRoutes.erase (i)) 
+  for (MulticastRoutesI i = m_multicastRoutes.begin ();
+       i != m_multicastRoutes.end ();
+       i = m_multicastRoutes.erase (i))
     {
       delete (*i);
     }
@@ -585,7 +593,7 @@ Ipv4StaticRouting::DoDispose (void)
   Ipv4RoutingProtocol::DoDispose ();
 }
 
-void 
+void
 Ipv4StaticRouting::NotifyInterfaceUp (uint32_t i)
 {
   NS_LOG_FUNCTION (this << i);
@@ -604,7 +612,7 @@ Ipv4StaticRouting::NotifyInterfaceUp (uint32_t i)
     }
 }
 
-void 
+void
 Ipv4StaticRouting::NotifyInterfaceDown (uint32_t i)
 {
   NS_LOG_FUNCTION (this << i);
@@ -623,7 +631,7 @@ Ipv4StaticRouting::NotifyInterfaceDown (uint32_t i)
     }
 }
 
-void 
+void
 Ipv4StaticRouting::NotifyAddAddress (uint32_t interface, Ipv4InterfaceAddress address)
 {
   NS_LOG_FUNCTION (this << interface << " " << address.GetLocal ());
@@ -641,7 +649,7 @@ Ipv4StaticRouting::NotifyAddAddress (uint32_t interface, Ipv4InterfaceAddress ad
                          networkMask, interface);
     }
 }
-void 
+void
 Ipv4StaticRouting::NotifyRemoveAddress (uint32_t interface, Ipv4InterfaceAddress address)
 {
   NS_LOG_FUNCTION (this << interface << " " << address.GetLocal ());
@@ -670,7 +678,7 @@ Ipv4StaticRouting::NotifyRemoveAddress (uint32_t interface, Ipv4InterfaceAddress
     }
 }
 
-void 
+void
 Ipv4StaticRouting::SetIpv4 (Ptr<Ipv4> ipv4)
 {
   NS_LOG_FUNCTION (this << ipv4);

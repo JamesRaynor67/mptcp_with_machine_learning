@@ -1040,18 +1040,20 @@ Ptr<const TcpOptionMpTcpMain> MpTcpSubflow::GetMptcpOptionWithSubtype (const Tcp
 Ptr<NetDevice>
 MpTcpSubflow::MapIpv4ToDevice (Ipv4Address addr) const
 {
-  NS_LOG_DEBUG(addr);
-  cout << "MpTcpSubflow::MapIpv4ToDevice " << addr << endl;
+  NS_LOG_FUNCTION (this << "Find the device that mapped to an Ipv4 address: " << addr);
   Ptr<Ipv4> ipv4client = m_node->GetObject<Ipv4>();
 
   for (uint32_t n = 0; n < ipv4client->GetNInterfaces(); n++)
   {
     for (uint32_t a = 0; a < ipv4client->GetNAddresses(n); a++)
     {
-      //NS_LOG_UNCOND( "Client addr " << n <<"/" << a << "=" << ipv4client->GetAddress(n,a));
+      /* original code, but seems to be wrong in some case that m_node->GetDevice(n) is different from ipv4client->GetNetDevice(n)*/
+      // if(addr ==ipv4client->GetAddress(n,a).GetLocal()) {
+      //   return m_node->GetDevice(n);
+      /* original code end */
       if(addr ==ipv4client->GetAddress(n,a).GetLocal()) {
-        //NS_LOG_UNCOND("EUREKA same ip=" << addr);
-        return m_node->GetDevice(n);
+        NS_LOG_LOGIC ("Found that " << addr << " is mapping to device " << ipv4client->GetNetDevice(n));
+        return ipv4client->GetNetDevice(n);
       }
     }
   }
@@ -1088,11 +1090,12 @@ MpTcpSubflow::Bind (const Address &address)
 
   if (InetSocketAddress::IsMatchingType (address) && result ==0)
   {
-    cout << "MpTcpSubflow::Bind address == " << address;
-    cout << ", m_endPoint == " << m_endPoint << endl;
+    cout << "Hong Jiaming 3: MpTcpSubflow::Bind address == " << address;
+    cout << ", m_endPoint == " << m_endPoint << " details:"<< m_endPoint->GetLocalAddress() << ":" << m_endPoint->GetLocalPort()
+         << " -> " << m_endPoint->GetPeerAddress() << ":" << m_endPoint->GetPeerAddress() << endl;
 
     Ptr<NetDevice> dev = MapIpv4ToDevice(m_endPoint->GetLocalAddress());
-
+    cout << "Hong Jiaming 4: the return value of MapIpv4ToDevice(): " << dev<< std::endl;
     if(dev) {
       m_endPoint->BindToNetDevice(dev);
       m_boundnetdevice = dev;
