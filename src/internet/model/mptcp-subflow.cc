@@ -534,7 +534,7 @@ MpTcpSubflow::AddOptionMpTcp3WHS(TcpHeader& hdr) const
         mpc->SetPeerKey(GetMeta()->GetPeerKey());
         break;
       default:
-        std::cout<< "Hong Jiaming debug 1: "<< hdr.FlagsToString(hdr.GetFlags()) << endl;
+        // std::cout<< "Hong Jiaming debug 1: "<< hdr.FlagsToString(hdr.GetFlags()) << endl;
         NS_FATAL_ERROR("Should never happen");
         break;
     };

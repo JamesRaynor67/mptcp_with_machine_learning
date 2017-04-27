@@ -227,7 +227,7 @@ Ipv4StaticRouting::LookupStatic (Ipv4Address dest, Ptr<NetDevice> oif)
   uint16_t longest_mask = 0;
   uint32_t shortest_metric = 0xffffffff;
   /* when sending on local multicast, there have to be interface specified */
-  //std::cout << "Hong Jiaming: Ipv4StaticRouting::LookupStatic: Fuck" << std::endl;
+  //// std::cout << "Hong Jiaming: Ipv4StaticRouting::LookupStatic: Fuck" << std::endl;
 
   if (dest.IsLocalMulticast ())
     {
@@ -241,15 +241,15 @@ Ipv4StaticRouting::LookupStatic (Ipv4Address dest, Ptr<NetDevice> oif)
       return rtentry;
     }
 
-  std::cout << "Hong Jiaming: Ipv4StaticRouting::LookupStatic: dest == " << dest << " oif == " << oif << std::endl;
+  // std::cout << "Hong Jiaming: Ipv4StaticRouting::LookupStatic: dest == " << dest << " oif == " << oif << std::endl;
   for(int i = 0; i < m_ipv4->GetNInterfaces();i++){
-    std::cout << " --- Hong Jimaing: interface " << i << " :" <<  m_ipv4->GetNetDevice(i) << std::endl;
+    // std::cout << " --- Hong Jimaing: interface " << i << " :" <<  m_ipv4->GetNetDevice(i) << std::endl;
   }
   for (NetworkRoutesI i = m_networkRoutes.begin (); i != m_networkRoutes.end (); i++)
     {
       Ipv4RoutingTableEntry *j=i->first;
-      std::cout << "Hong Jiaming: checking routing entry: \n";
-      std::cout << j->GetDest() << " " << j->GetDestNetwork() << " " << j->GetInterface () << " " << j->GetGateway() << std::endl;
+      // std::cout << "Hong Jiaming: checking routing entry: \n";
+      // std::cout << j->GetDest() << " " << j->GetDestNetwork() << " " << j->GetInterface () << " " << j->GetGateway() << std::endl;
       uint32_t metric =i->second;
       Ipv4Mask mask = (j)->GetDestNetworkMask ();
       uint16_t masklen = mask.GetPrefixLength ();
@@ -258,8 +258,8 @@ Ipv4StaticRouting::LookupStatic (Ipv4Address dest, Ptr<NetDevice> oif)
       if (mask.IsMatch (dest, entry))
         {
           NS_LOG_LOGIC ("Found global network route " << j << ", mask length " << masklen << ", metric " << metric);
-          std::cout << "Hong Jiaming 5: j->GetInterface () == " << j->GetInterface () << " ,m_ipv4->GetNetDevice (j->GetInterface ()) == "
-                    << m_ipv4->GetNetDevice (j->GetInterface ()) << ", oif == " << oif << std::endl;
+          // std::cout << "Hong Jiaming 5: j->GetInterface () == " << j->GetInterface () << " ,m_ipv4->GetNetDevice (j->GetInterface ()) == "
+                  //  << m_ipv4->GetNetDevice (j->GetInterface ()) << ", oif == " << oif << std::endl;
           if (oif != 0)
             {
               if (oif != m_ipv4->GetNetDevice (j->GetInterface ()))
@@ -469,7 +469,7 @@ Ipv4StaticRouting::RouteOutput (Ptr<Packet> p, const Ipv4Header &header, Ptr<Net
   NS_LOG_FUNCTION (this << p<< header << oif << sockerr);
   Ipv4Address destination = header.GetDestination ();
   Ptr<Ipv4Route> rtentry = 0;
-  //std::cout << "Hong Jiaming: Ipv4StaticRouting::RouteOutput: Fuck" << std::endl;
+  //// std::cout << "Hong Jiaming: Ipv4StaticRouting::RouteOutput: Fuck" << std::endl;
   // Multicast goes here
   if (destination.IsMulticast ())
     {
@@ -481,7 +481,7 @@ Ipv4StaticRouting::RouteOutput (Ptr<Packet> p, const Ipv4Header &header, Ptr<Net
       // So, we just log it and fall through to LookupStatic ()
       NS_LOG_LOGIC ("RouteOutput()::Multicast destination");
     }
-  //std::cout << "Hong Jiaming: Ipv4StaticRouting::RouteOutput: destination == " << destination << " oif == " << oif << std::endl;
+  //// std::cout << "Hong Jiaming: Ipv4StaticRouting::RouteOutput: destination == " << destination << " oif == " << oif << std::endl;
   rtentry = LookupStatic (destination, oif);
   if (rtentry)
     {
