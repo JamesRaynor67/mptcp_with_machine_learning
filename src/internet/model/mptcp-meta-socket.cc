@@ -175,6 +175,7 @@ MpTcpMetaSocket::MpTcpMetaSocket() :  TcpSocketImpl()
                                     , m_timeWaitEvent()
 {
   NS_LOG_FUNCTION(this);
+  std::cout << "Hong Jiaming 14.4" << std::endl;
 
   m_rxBuffer = CreateObject<TcpRxBuffer64>();
   m_txBuffer = CreateObject<TcpTxBuffer64>();
@@ -189,6 +190,7 @@ MpTcpMetaSocket::MpTcpMetaSocket() :  TcpSocketImpl()
   m_subflowAdded = MakeNullCallback<void, Ptr<MpTcpSubflow>, bool> ();
 
   m_tcpParams->m_mptcpEnabled = true;
+  std::cout << "Hong Jiaming 14.5" << std::endl;
 }
 
 MpTcpMetaSocket::MpTcpMetaSocket(const MpTcpMetaSocket& sock) : TcpSocketImpl(sock)
@@ -762,7 +764,7 @@ Ptr<MpTcpSubflow>
 MpTcpMetaSocket::CreateSubflow(bool masterSocket)
 {
   NS_LOG_FUNCTION (this << m_subflowTypeId.GetName());
-
+  std::cout << "Hong Jiaming 12: in MpTcpMetaSocket::CreateSubflow" << std::endl;
   Ptr<Socket> socket = m_tcp->CreateSocket(m_congestionControl, m_subflowTypeId);
   Ptr<MpTcpSubflow> subflow = DynamicCast<MpTcpSubflow>(socket);
 

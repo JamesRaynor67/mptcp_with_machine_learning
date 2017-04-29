@@ -14,7 +14,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * 
+ *
  */
 
 
@@ -30,7 +30,7 @@ namespace ns3 {
                                   , m_maxWinSize (0)
                                   , m_mptcpEnabled (false)
                                   , m_winScalingEnabled (false)
-                                  , m_timestampEnabled (false)
+                                  , m_timestampEnabled (false) // Hong Jiaming: it's false here
                                   , m_cnTimeout (Seconds (0.0))
                                   , m_synRetries (0)
                                   , m_dataRetries (0)
@@ -42,11 +42,11 @@ namespace ns3 {
                                   , m_closeOnEmpty (false)
                                   , m_shutdownSend (false)
                                   , m_shutdownRecv (false)
-  
+
   {
-    
+
   }
-  
+
   TcpParameters::TcpParameters (const TcpParameters& params) :  m_msl (params.m_msl)
                                                               , m_nullIsn (params.m_nullIsn)
                                                               , m_minRto (params.m_minRto)
@@ -73,7 +73,7 @@ namespace ns3 {
 
   TcpParameters::~TcpParameters ()
   {
-    
+
   }
-  
+
 }

@@ -136,7 +136,7 @@ TcpL4Protocol::NotifyNewAggregate ()
           Ptr<TcpSocketFactoryImpl> tcpFactory = CreateObject<TcpSocketFactoryImpl> ();
           tcpFactory->SetTcp (this);
           node->AggregateObject (tcpFactory);
-        
+
           Ptr<MpTcpSocketFactory> mptcpFactory = CreateObject<MpTcpSocketFactory> ();
           mptcpFactory->SetTcp (this);
           node->AggregateObject (mptcpFactory);
@@ -200,7 +200,7 @@ TcpL4Protocol::CreateSocket (TypeId congestionTypeId, TypeId socketTypeId)
 
   return CreateSocket(algo, socketTypeId);
 }
-  
+
 Ptr<Socket>
 TcpL4Protocol::CreateSocket (Ptr<TcpCongestionOps> algo, TypeId socketTypeId)
 {
@@ -209,27 +209,35 @@ TcpL4Protocol::CreateSocket (Ptr<TcpCongestionOps> algo, TypeId socketTypeId)
   ObjectFactory socketFactory;
   rttFactory.SetTypeId (m_rttTypeId);
   socketFactory.SetTypeId(socketTypeId);
-  
+
+  std::cout << "Hong Jiaming 14.0" << std::endl;
   Ptr<RttEstimator> rtt = rttFactory.Create<RttEstimator> ();
-  
+  std::cout << "Hong Jiaming 14.1" << std::endl;
+
   Ptr<TcpSocketImpl> socket;
-  
+  std::cout << "Hong Jiaming 14.2" << std::endl;
+
   socket = socketFactory.Create<TcpSocketImpl> ();
-  
+  std::cout << "Hong Jiaming 15" << std::endl;
+
   socket->SetNode (m_node);
+  std::cout << "Hong Jiaming 16" << std::endl;
   socket->SetTcp (this);
+  std::cout << "Hong Jiaming 17" << std::endl;
   socket->SetRtt (rtt);
-  
+  std::cout << "Hong Jiaming 18" << std::endl;
+
   socket->SetCongestionControlAlgorithm (algo);
-  
+  std::cout << "Hong Jiaming 19" << std::endl;
+
   if (socketTypeId == MpTcpMetaSocket::GetTypeId())
   {
     Ptr<MpTcpMetaSocket> meta = DynamicCast<MpTcpMetaSocket>(socket);
     meta->CreateMasterSubflow();
   }
-  
+
   m_sockets.push_back(socket);
-  
+
   return socket;
 }
 
@@ -465,7 +473,7 @@ TcpL4Protocol::LookupMpTcpToken (uint32_t token)
     return m_mptcpMetaSockets[token];
   }
 }
-  
+
 void TcpL4Protocol::AddTokenMapping(uint32_t token, Ptr<MpTcpMetaSocket> meta)
 {
   NS_LOG_FUNCTION (this << token << meta);
@@ -500,7 +508,7 @@ TcpL4Protocol::Receive (Ptr<Packet> packet,
                                    incomingIpHeader.GetSource (),
                                    incomingTcpHeader.GetSourcePort (),
                                    incomingInterface);
-  
+
   if (endPoints.empty ())
     {
       if (this->GetObject<Ipv6L3Protocol> () != 0)
@@ -818,4 +826,3 @@ TcpL4Protocol::GetDownTarget6 (void) const
 }
 
 } // namespace ns3
-

@@ -29,7 +29,9 @@ TcpSocketImpl::TcpSocketImpl () : TcpSocket ()
                                   , m_rtt (0)
                                   , m_congestionControl (0)
 {
+  std::cout << "Hong Jiaming 14.3" << std::endl;
   m_tcpParams = Create<TcpParameters>();
+  std::cout << "Hong Jiaming 14.6" << std::endl;
 }
 
 TcpSocketImpl::TcpSocketImpl(const TcpSocketImpl& sock) : TcpSocket (sock)
@@ -319,6 +321,8 @@ bool TcpSocketImpl::GetWindowScalingEnabled () const
 
 void TcpSocketImpl::SetTimestampEnabled (bool flag)
 {
+  // Hong Jiaming 11:
+  std::cout << "Hong Jiaming 11: m_tcpParams->m_timestampEnabled changed to " << flag << std::endl;
   m_tcpParams->m_timestampEnabled = flag;
 }
 
