@@ -221,11 +221,8 @@ TcpL4Protocol::CreateSocket (Ptr<TcpCongestionOps> algo, TypeId socketTypeId)
   std::cout << "Hong Jiaming 15" << std::endl;
 
   socket->SetNode (m_node);
-  std::cout << "Hong Jiaming 16" << std::endl;
   socket->SetTcp (this);
-  std::cout << "Hong Jiaming 17" << std::endl;
   socket->SetRtt (rtt);
-  std::cout << "Hong Jiaming 18" << std::endl;
 
   socket->SetCongestionControlAlgorithm (algo);
   std::cout << "Hong Jiaming 19" << std::endl;

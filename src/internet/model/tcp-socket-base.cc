@@ -2069,7 +2069,6 @@ TcpSocketBase::GenerateEmptyPacketHeader(TcpHeader& header, uint8_t flags)
       header.SetSourcePort (m_endPoint6->GetLocalPort ());
       header.SetDestinationPort (m_endPoint6->GetPeerPort ());
     }
-  //std::cout << "TcpSocketBase::GenerateEmptyPacketHeader 1: " << AdvertisedWindowSize () << std::endl;
 
   // Hong Jiaming: originally is just header.SetWindowSize (AdvertisedWindowSize ());
   if(flags & TcpHeader::SYN){
@@ -2078,8 +2077,6 @@ TcpSocketBase::GenerateEmptyPacketHeader(TcpHeader& header, uint8_t flags)
   else{
     header.SetWindowSize (AdvertisedWindowSize ());
   }
-  //std::cout << "TcpSocketBase::GenerateEmptyPacketHeader 2: " << header.GetWindowSize() << std::endl;
-
 }
 
 
