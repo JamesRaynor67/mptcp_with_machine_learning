@@ -491,17 +491,19 @@ MpTcpSubflow::AddOptions (TcpHeader& header)
 void
 MpTcpSubflow::AddMpTcpOptions (TcpHeader& header)
 {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION(this << "m_dssFlags == " << m_dssFlags);
 
   if((header.GetFlags () & TcpHeader::SYN))
   {
     AddOptionMpTcp3WHS (header);
+    // return;// Hong Jiaming Added by Hong Jiaming
   }
   // as long as we've not received an ack from the peer we
   // send an MP_CAPABLE with both keys
   else if(!GetMeta()->FullyEstablished())
   {
     AddOptionMpTcp3WHS (header);
+    // return;// Hong Jiaming Added by Hong Jiaming
   }
 
   /// Constructs DSS if necessary
@@ -516,8 +518,33 @@ MpTcpSubflow::AddMpTcpOptions (TcpHeader& header)
 void
 MpTcpSubflow::AddOptionMpTcp3WHS(TcpHeader& hdr) const
 {
+  // typedef enum {
+  //   CLOSED = 0,   /**< Socket is finished                                     */
+  //   LISTEN,       /**< Listening for a connection                             */
+  //   SYN_SENT,     /**< Sent a connection request, waiting for ack             */
+  //   SYN_RCVD,     /**< Received a connection request, sent ack,
+  //                   *  waiting for final ack in three-way handshake.          */
+  //   ESTABLISHED,  /**< Connection established                                 */
+  //   CLOSE_WAIT,   /**< Remote side has shutdown and is waiting for
+  //                   *  us to finish writing our data and to shutdown
+  //                   *  (we have to close() to move on to LAST_ACK)            */
+  //   LAST_ACK,     /**< Our side has shutdown after remote has
+  //                   *  shutdown.  There may still be data in our
+  //                   *  buffer that we have to finish sending                  */
+  //   FIN_WAIT_1,   /**< Our side has shutdown, waiting to complete
+  //                   *  transmission of remaining buffered data                */
+  //   FIN_WAIT_2,   /**< All buffered data sent, waiting for remote to shutdown */
+  //   CLOSING,      /**< Both sides have shutdown but we still have
+  //                   *  data we have to finish sending                         */
+  //   TIME_WAIT,    /**< Timeout to catch resent junk before entering
+  //                   *  closed, can only be entered from FIN_WAIT2
+  //                   *  or CLOSING.  Required because the other end
+  //                   *  may not have gotten our last ACK causing it
+  //                   *  to retransmit the data packet (which we ignore)        */
+  //   LAST_STATE    /**< Last state, used only in debug messages                */
+  // } TcpStates_t;
   //NS_ASSERT(m_state == SYN_SENT || m_state == SYN_RCVD);
-  NS_LOG_FUNCTION(this << hdr << hdr.FlagsToString(hdr.GetFlags()));
+  NS_LOG_FUNCTION(this << hdr << " " << hdr.FlagsToString(hdr.GetFlags()) << " m_state==" << m_state);
 
   if(IsMaster())
   {
@@ -526,15 +553,29 @@ MpTcpSubflow::AddOptionMpTcp3WHS(TcpHeader& hdr) const
     switch(hdr.GetFlags())
     {
       case TcpHeader::SYN:
+        std::cout << "Hong Jiaming 17.0" << std::endl;
       case (TcpHeader::SYN | TcpHeader::ACK):
+        std::cout << "Hong Jiaming 17.1" << std::endl;
         mpc->SetSenderKey(GetMeta()->GetLocalKey());
         break;
+      // case TcpHeader::ACK:
+      //   std::cout << "Hong Jiaming 17.2" << std::endl;
+      //   mpc->SetSenderKey(GetMeta()->GetLocalKey());
+      //   mpc->SetPeerKey(GetMeta()->GetPeerKey());
+      //   break;
       case TcpHeader::ACK:
-        mpc->SetSenderKey(GetMeta()->GetLocalKey());
-        mpc->SetPeerKey(GetMeta()->GetPeerKey());
+        // std::cout << "Hong Jiaming 17.2" << std::endl;
+        // The following two lines are commented out by Hong Jiaming
+        // If added, the TS option can not be added to TCP header due to option's length over 40 Bytes
+        // According to RFC6824 they are needed, but here I just skip to workaround
+        // Kind + length + subtype + subversion + reserved == 4 Bytes
+        // Sender's Key                                    == 8 Bytes
+        // Receiver's Key                                  == 8 Bytes
+        // mpc->SetSenderKey(GetMeta()->GetLocalKey());
+        // mpc->SetPeerKey(GetMeta()->GetPeerKey());
         break;
       default:
-        // std::cout<< "Hong Jiaming debug 1: "<< hdr.FlagsToString(hdr.GetFlags()) << endl;
+        //std::cout<< "Hong Jiaming debug 1: "<< hdr.FlagsToString(hdr.GetFlags()) << endl;
         NS_FATAL_ERROR("Should never happen");
         break;
     };

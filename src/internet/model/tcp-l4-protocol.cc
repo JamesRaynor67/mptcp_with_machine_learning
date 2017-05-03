@@ -210,22 +210,22 @@ TcpL4Protocol::CreateSocket (Ptr<TcpCongestionOps> algo, TypeId socketTypeId)
   rttFactory.SetTypeId (m_rttTypeId);
   socketFactory.SetTypeId(socketTypeId);
 
-  std::cout << "Hong Jiaming 14.0" << std::endl;
+ //std::cout << "Hong Jiaming 14.0" << std::endl;
   Ptr<RttEstimator> rtt = rttFactory.Create<RttEstimator> ();
-  std::cout << "Hong Jiaming 14.1" << std::endl;
+ //std::cout << "Hong Jiaming 14.1" << std::endl;
 
   Ptr<TcpSocketImpl> socket;
-  std::cout << "Hong Jiaming 14.2" << std::endl;
+ //std::cout << "Hong Jiaming 14.2" << std::endl;
 
   socket = socketFactory.Create<TcpSocketImpl> ();
-  std::cout << "Hong Jiaming 15" << std::endl;
+ //std::cout << "Hong Jiaming 15" << std::endl;
 
   socket->SetNode (m_node);
   socket->SetTcp (this);
   socket->SetRtt (rtt);
 
   socket->SetCongestionControlAlgorithm (algo);
-  std::cout << "Hong Jiaming 19" << std::endl;
+ //std::cout << "Hong Jiaming 19" << std::endl;
 
   if (socketTypeId == MpTcpMetaSocket::GetTypeId())
   {

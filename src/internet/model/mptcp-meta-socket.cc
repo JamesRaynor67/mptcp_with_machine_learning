@@ -764,7 +764,7 @@ Ptr<MpTcpSubflow>
 MpTcpMetaSocket::CreateSubflow(bool masterSocket)
 {
   NS_LOG_FUNCTION (this << m_subflowTypeId.GetName());
-  std::cout << "Hong Jiaming 12: in MpTcpMetaSocket::CreateSubflow" << std::endl;
+  //std::cout << "Hong Jiaming 12: in MpTcpMetaSocket::CreateSubflow" << std::endl;
   Ptr<Socket> socket = m_tcp->CreateSocket(m_congestionControl, m_subflowTypeId);
   Ptr<MpTcpSubflow> subflow = DynamicCast<MpTcpSubflow>(socket);
 

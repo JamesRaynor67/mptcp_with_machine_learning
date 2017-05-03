@@ -472,24 +472,27 @@ TcpHeader::AppendOption (Ptr<TcpOption> option)
 {
   if (m_optionsLen + option->GetSerializedSize () <= m_maxOptionsLen)
     {
+      std::cout << "Hong Jiaming 15.0" << std::endl;
       if (!TcpOption::IsKindKnown (option->GetKind ()))
         {
+          std::cout << "Hong Jiaming 15.1" << std::endl;
           NS_LOG_WARN ("The option kind " << static_cast<int> (option->GetKind ()) << " is unknown");
           return false;
         }
 
       if (option->GetKind () != TcpOption::END)
         {
+          std::cout << "Hong Jiaming 15.2" << std::endl;
           m_options.push_back (option);
           m_optionsLen += option->GetSerializedSize ();
 
           uint32_t totalLen = 20 + 3 + m_optionsLen;
           m_length = totalLen >> 2;
         }
-
+        std::cout << "Hong Jiaming 15.3: Has TS option == " << this->HasOption(TcpOption::TS) << " Header length: " << this->GetSerializedSize() << std::endl;
       return true;
     }
-
+    std::cout << "Hong Jiaming 15.4" << std::endl;
   return false;
 }
 
@@ -514,7 +517,7 @@ TcpHeader::GetOptions (TcpHeader::TcpOptionList& l) const
 {
   l = m_options;
 }
-  
+
 bool
 TcpHeader::HasOption (uint8_t kind) const
 {

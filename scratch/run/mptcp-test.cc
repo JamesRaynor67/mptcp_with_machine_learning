@@ -388,13 +388,13 @@ using namespace ns3;
 
 Ptr<Ipv4StaticRouting> GetNodeStaticRoutingProtocol(Ptr<Node> node)
 {
-  std::cout << "WTF 1" << std::endl;
+  //std::cout << "WTF 1" << std::endl;
   Ptr<Ipv4> nodeIpv4 = node->GetObject<Ipv4> ();
   Ptr<Ipv4RoutingProtocol> routingProtocol = nodeIpv4->GetRoutingProtocol();
   Ptr<Ipv4ListRouting> listRouting = DynamicCast<Ipv4ListRouting>(routingProtocol);
   int16_t priority;
   Ptr<Ipv4StaticRouting> routing = DynamicCast<Ipv4StaticRouting>(listRouting->GetRoutingProtocol(0, priority));
-  std::cout << "WTF 2" << std::endl;
+  //std::cout << "WTF 2" << std::endl;
   return routing;
 }
 
@@ -494,10 +494,10 @@ main(int argc, char *argv[])
 
   // install internet stack
   InternetStackHelper stackHelper;
-  Ipv4ListRoutingHelper listRoutingHelper;
-  Ipv4StaticRoutingHelper staticRoutingHelper;
-  listRoutingHelper.Add(staticRoutingHelper, 10);
-  stackHelper.SetRoutingHelper(listRoutingHelper);
+  // Ipv4ListRoutingHelper listRoutingHelper;
+  // Ipv4StaticRoutingHelper staticRoutingHelper;
+  // listRoutingHelper.Add(staticRoutingHelper, 10);
+  // stackHelper.SetRoutingHelper(listRoutingHelper);
   stackHelper.Install (networkNodes);
 
   Ipv4AddressHelper address;
@@ -516,13 +516,51 @@ main(int argc, char *argv[])
   Ptr<Ipv4> ipv4c = staWifiNode->GetObject<Ipv4>();
   Ipv4Address addrc = ipv4c->GetAddress(1,0).GetLocal();
   Address clientAddress(InetSocketAddress(addrc, 4000));
-  std::cout << "Node Id:"<< staWifiNode->GetId() << "client sta Ip: " << addrc << "\nNode Id:"<< apWifiNode->GetId() << "server ap Ip: " << addrs << std::endl;
+  //std::cout << "Node Id:"<< staWifiNode->GetId() << "client sta Ip: " << addrc << "\nNode Id:"<< apWifiNode->GetId() << "server ap Ip: " << addrs << std::endl;
 
-  // config routing
-  Ptr<Ipv4StaticRouting> serverRouting = GetNodeStaticRoutingProtocol(apWifiNode);
-  serverRouting->AddHostRouteTo(addrc, addrc, 1);
-  Ptr<Ipv4StaticRouting> clientRouting = GetNodeStaticRoutingProtocol(staWifiNode);
-  clientRouting->AddHostRouteTo(addrs, addrs, 1);
+  // // config routing
+  // Ptr<Ipv4StaticRouting> serverRouting = GetNodeStaticRoutingProtocol(apWifiNode);
+  // serverRouting->AddHostRouteTo(addrc, addrc, 1);
+  // Ptr<Ipv4StaticRouting> clientRouting = GetNodeStaticRoutingProtocol(staWifiNode);
+  // clientRouting->AddHostRouteTo(addrs, addrs, 1);
+
+      // ----------------- wired connectioin: -----------------
+      NodeContainer linkedNodes;
+      linkedNodes.Add(apWifiNode);
+      linkedNodes.Add(staWifiNode);
+
+      PointToPointHelper pointToPoint;
+      pointToPoint.SetDeviceAttribute ("DataRate", DataRateValue (DataRate("3Mbps")));
+      pointToPoint.SetChannelAttribute ("Delay", TimeValue (Time("5ms")));
+
+      TrafficControlHelper tchRed;
+      tchRed.SetRootQueueDisc ("ns3::RedQueueDisc",
+                               "MeanPktSize", UintegerValue(1424),
+                               "LinkBandwidth", DataRateValue (DataRate("3Mbps")),
+                               "LinkDelay", TimeValue (Time("5ms")));
+
+      pointToPoint.SetQueue("ns3::DropTailQueue", "MaxPackets", UintegerValue(1));
+
+      NetDeviceContainer linkedDevices;
+      linkedDevices = pointToPoint.Install (linkedNodes);
+
+      tchRed.Install(linkedDevices);
+      // address.SetBase ("10.10.1.0", "255.255.255.0");
+      address.Assign(linkedDevices);
+
+      Ptr<Ipv4> ipv4s_wired = apWifiNode->GetObject<Ipv4>();
+      Ipv4Address addrs_wired = ipv4s_wired->GetAddress(2, 0).GetLocal();
+      // Address serverAddress(InetSocketAddress(addrs_wired, 4001));
+      Ptr<Ipv4> ipv4c_wired = staWifiNode->GetObject<Ipv4>();
+      Ipv4Address addrc_wired = ipv4c_wired->GetAddress(2, 0).GetLocal();
+      // Address clientAddress(InetSocketAddress(addrc_wired, 4001));
+      // // config routing
+      // Ptr<Ipv4StaticRouting> serverRouting_wired = GetNodeStaticRoutingProtocol(apWifiNode);
+      // serverRouting_wired->AddHostRouteTo(addrc_wired, addrc_wired, 2);
+      // Ptr<Ipv4StaticRouting> clientRouting_wired = GetNodeStaticRoutingProtocol(staWifiNode);
+      // clientRouting_wired->AddHostRouteTo(addrs_wired, addrs_wired, 2);
+
+      // ----------------- wired connectioin: end -----------------
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
   Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("debug-routing-mptcp.routes", std::ios::out);
@@ -548,8 +586,10 @@ main(int argc, char *argv[])
   /* Start Applications */
   // sink = sinkApp.Get(0);
   sinkApp.Start (Seconds (0.0));
-  Simulator::Schedule(Seconds(1), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(2), &PrintMonitorStates);
+
+  for(int i = 0;i < 11;i++){
+    Simulator::Schedule(Seconds(i/1.0), &PrintMonitorStates);
+  }
   // mpOnOff.Start (Seconds (1.0));
   // Simulator::Schedule (Seconds (1.1), &CalculateThroughput);
 
@@ -573,6 +613,6 @@ main(int argc, char *argv[])
   //     NS_LOG_ERROR ("Obtained throughput is not in the expected boundaries!");
   //     exit (1);
   //   }
-  // std::cout << "\nAverage throughtput: " << averageThroughput << " Mbit/s" << std::endl;
+  //std::cout << "\nAverage throughtput: " << averageThroughput << " Mbit/s" << std::endl;
   return 0;
 }

@@ -133,11 +133,11 @@ void TraceMonitorStates(const string& outputDir){
   monitor->CheckForLostPackets ();
   Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmon.GetClassifier ());
   FlowMonitor::FlowStatsContainer stats = monitor->GetFlowStats ();
-  // std::cout << "Hong Jiaming: 0 " << endl;
+  //std::cout << "Hong Jiaming: 0 " << endl;
   for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i){
-    // std::cout << "Hong Jiaming: 1 " << i->first << endl;
+    //std::cout << "Hong Jiaming: 1 " << i->first << endl;
     Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);
-    // std::cout << "Hong Jiaming: 2 " << i->first << endl;
+    //std::cout << "Hong Jiaming: 2 " << i->first << endl;
     *(logFile->GetStream()) << Simulator::Now().GetNanoSeconds() << ","
                             << i->first << ","
                             << t.sourceAddress << ","
@@ -156,7 +156,7 @@ void TraceMonitorStates(const string& outputDir){
       *(logFile->GetStream()) << "," <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM];
     }
     *(logFile->GetStream()) << "\n";
-    // std::cout << "Hong Jiaming: 3 " << i->first << endl;
+    //std::cout << "Hong Jiaming: 3 " << i->first << endl;
   }
 }
 
@@ -188,7 +188,7 @@ void PrintMonitorStates(void){
       std::cout << ", Bad_checksum: " <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM];
     }
     std::cout << endl;
-    // std::cout << "Hong Jiaming: 3 " << i->first << endl;
+    //std::cout << "Hong Jiaming: 3 " << i->first << endl;
   }
   std::cout << endl;
 }

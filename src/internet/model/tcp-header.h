@@ -184,7 +184,7 @@ public:
    * \return Whether the header contains a specific kind of option, or 0
    */
   Ptr<TcpOption> GetOption (uint8_t kind) const;
-  
+
   typedef std::list< Ptr<TcpOption> > TcpOptionList; //!< List of TcpOption
 
   /**
@@ -193,7 +193,7 @@ public:
    * \param options Return a copy of the options
    */
   void GetOptions (TcpHeader::TcpOptionList& options) const;
-  
+
   /**
    * \brief Get the total length of appended options
    * \return the total length of options appended to this TcpHeader
@@ -349,7 +349,7 @@ private:
   bool m_calcChecksum;    //!< Flag to calculate checksum
   bool m_goodChecksum;    //!< Flag to indicate that checksum is correct
 
-  static const uint8_t m_maxOptionsLen = 40;         //!< Maximum options length
+  static const uint8_t m_maxOptionsLen = 40;         //!< Maximum options length Hong Jiaming!!!!!!!!!!!
   TcpOptionList m_options;     //!< TcpOption present in the header
   uint8_t m_optionsLen;        //!< Tcp options length.
 };

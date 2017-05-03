@@ -74,10 +74,10 @@ void EnableLogging ()
   LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
   LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
   LogComponentEnable("MpTcpSubflow", LOG_LEVEL_ALL);
-  // //
-  LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_ALL);
-  LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
-  LogComponentEnable ("Ipv4EndPoint", LOG_LEVEL_ALL);
+  // // //
+  // LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_ALL);
+  // LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
+  // LogComponentEnable ("Ipv4EndPoint", LOG_LEVEL_ALL);
 }
 
 };

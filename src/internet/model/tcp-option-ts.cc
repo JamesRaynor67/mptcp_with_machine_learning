@@ -58,7 +58,7 @@ TcpOptionTS::GetInstanceTypeId (void) const
 void
 TcpOptionTS::Print (std::ostream &os) const
 {
-  os << m_timestamp << ";" << m_echo;
+  os << "m_timestamp == " << m_timestamp << "; m_echo == " << m_echo;
 }
 
 uint32_t
@@ -109,6 +109,7 @@ TcpOptionTS::GetKind (void) const
 uint32_t
 TcpOptionTS::GetTimestamp (void) const
 {
+  std::cout << "Hong Jiaming 18: TcpOptionTS::GetTimestamp m_timestamp == " << m_timestamp << std::endl;
   return m_timestamp;
 }
 

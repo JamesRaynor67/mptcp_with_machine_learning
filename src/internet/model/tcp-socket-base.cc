@@ -220,7 +220,7 @@ TcpSocketBase::TcpSocketBase (void)
   ok = m_tcb->TraceConnectWithoutContext ("HighestSequence",
                                           MakeCallback (&TcpSocketBase::UpdateHighTxMark, this));
   NS_ASSERT (ok == true);
-  std::cout << "Hong Jiaming 13: End of TcpSocketBase::TcpSocketBase (void)" << std::endl;
+  //std::cout << "Hong Jiaming 13: End of TcpSocketBase::TcpSocketBase (void)" << std::endl;
 }
 
 TcpSocketBase::TcpSocketBase (const TcpSocketBase& sock)
@@ -1056,6 +1056,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
   // Peel off TCP header and do validity checking
   TcpHeader tcpHeader;
   uint32_t bytesRemoved = packet->RemoveHeader (tcpHeader);
+  NS_LOG_LOGIC ("Hong Jiaming: tcpHeader size == " << tcpHeader.GetSerializedSize());
   SequenceNumber32 seq = tcpHeader.GetSequenceNumber ();
   if (bytesRemoved == 0 || bytesRemoved > 60)
     {
@@ -1080,7 +1081,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
 
 
   m_rxTrace (packet, tcpHeader, this);
-  NS_LOG_LOGIC("Hong Jiaming 10: TcpSocketBase::DoForwardUp " << tcpHeader << " m_timestampEnabled == " << m_tcpParams->m_timestampEnabled);
+  NS_LOG_LOGIC("Hong Jiaming 10: TcpSocketBase::DoForwardUp tcpHeader == " << tcpHeader << " m_timestampEnabled == " << m_tcpParams->m_timestampEnabled);
   if (tcpHeader.GetFlags () & TcpHeader::SYN)
     {
       /* The window field in a segment where the SYN bit is set (i.e., a <SYN>
@@ -1102,6 +1103,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
       if (tcpHeader.HasOption (TcpOption::TS) && m_tcpParams->m_timestampEnabled)
         {
           // Hong Jiaming: for wireless connection, program goes here!!!
+          NS_LOG_LOGIC("Hong Jiaming 10: TcpSocketBase::DoForwardUp tcpHeader.GetOption (TcpOption::TS) == " << DynamicCast<const TcpOptionTS>(tcpHeader.GetOption (TcpOption::TS))->GetTimestamp());
           ProcessOptionTimestamp (tcpHeader.GetOption (TcpOption::TS),
                                   tcpHeader.GetSequenceNumber ());
         }
@@ -1132,7 +1134,8 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
               NS_LOG_LOGIC ("At state " << TcpStateName[m_state] <<
                             " received packet of seq [" << seq <<
                             ":" << seq + packet->GetSize () <<
-                            ") without TS option. Silently discard it");
+                            ") without TS option. Silently discard it." <<
+                            " Hong Jiaming: tcpHeader size == " << tcpHeader.GetSerializedSize());
               return;
             }
           else
@@ -2151,8 +2154,11 @@ TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
                          m_endPoint6->GetPeerAddress (), m_boundnetdevice);
     }
 
-
-  if ((header.GetFlags() & TcpHeader::ACK) && !m_delAckEvent.IsExpired())
+  std::cout << "Hong Jiaming 20.1: m_highTxAck == " << m_highTxAck << "header.GetAckNumber () == " << header.GetAckNumber ()
+            << ", (header.GetFlags() & TcpHeader::ACK) == " << (header.GetFlags() & TcpHeader::ACK)
+            << ", !m_delAckEvent.IsExpired() == " << !m_delAckEvent.IsExpired() << std::endl;
+  if ((header.GetFlags() & TcpHeader::ACK) != 0 && m_delAckEvent.IsExpired()) // Hong Jiaming: modified by Hong Jiaming
+  // if ((header.GetFlags() & TcpHeader::ACK) && !m_delAckEvent.IsExpired())// Hong Jimaing: This is original code
     { // If sending an ACK, cancel the delayed ACK as well
       m_delAckEvent.Cancel ();
       m_delAckCount = 0;
@@ -3176,6 +3182,7 @@ TcpSocketBase::AddOptions (TcpHeader& header)
 
   if (m_tcpParams->m_timestampEnabled)
   {
+    std::cout << "Hong Jiaming 16. It should be here to add timestamp!" << std::endl;
     AddOptionTimestamp (header);
   }
 }
@@ -3253,9 +3260,11 @@ TcpSocketBase::ProcessOptionTimestamp (const Ptr<const TcpOption> option,
 
   Ptr<const TcpOptionTS> ts = DynamicCast<const TcpOptionTS> (option);
 
+  std::cout << "Hong Jiaming 20.0: seq == " << seq << ", m_rxBuffer->NextRxSequence () == " << m_rxBuffer->NextRxSequence () << " ,m_highTxAck == " << m_highTxAck << std::endl;
   if (seq == m_rxBuffer->NextRxSequence () && seq <= m_highTxAck)
     {
-      m_timestampToEcho = ts->GetTimestamp ();
+      std::cout << "Hong Jiaming 20: Set m_timestampToEcho" << std::endl;
+      m_timestampToEcho = ts->GetTimestamp (); // Hong Jiaming 18: this is the problem, not arrive here at all
     }
 
   NS_LOG_INFO (m_node->GetId () << " Got timestamp=" <<
@@ -3314,7 +3323,8 @@ TcpSocketBase::AddOptionTimestamp (TcpHeader& header)
   option->SetTimestamp (TcpOptionTS::NowToTsValue ());
   option->SetEcho (m_timestampToEcho);
 
-  header.AppendOption (option);
+  bool tsAdded = header.AppendOption (option);
+  std::cout << "Hong Jiaming 15 TS added: " << tsAdded << std::endl;
   NS_LOG_INFO (m_node->GetId () << " Add option TS, ts=" <<
                option->GetTimestamp () << " echo=" << m_timestampToEcho);
 }
