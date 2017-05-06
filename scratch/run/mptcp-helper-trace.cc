@@ -47,7 +47,6 @@ void TraceMacRx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
       << tcpHeader.GetSequenceNumber() << "," << tcpHeader.GetAckNumber()
       << "," << copy->GetSize() << "," << packet->GetSize()
       << "," << isSyn << "," << isFin << endl;
-
     }
   }
 }
@@ -116,6 +115,85 @@ void TraceQueueItemDrop(Ptr<OutputStreamWrapper> stream, Ptr<const QueueItem> it
   }
 }
 
+void ConfigureTracing (const string& outputDir, const NodeContainer& server,
+                       const NodeContainer& client, const NodeContainer& middle,
+                       const NodeContainer& other_servers, const NodeContainer& other_clients){
+  // Create an output directory
+  CheckAndCreateDirectory(outputDir);
+
+  // Configure for clients
+  stringstream devicePath;
+  devicePath << "/NodeList/" << client.Get(0)->GetId() << "/DeviceList/*/$ns3::PointToPointNetDevice/"; // Hong Jiaming: Should change for Wi-Fi
+
+  stringstream tfile;
+  tfile << outputDir << "/mptcp_client";
+  Ptr<OutputStreamWrapper> throughputFile = Create<OutputStreamWrapper>(tfile.str(), std::ios::out);
+  *(throughputFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
+
+  Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, throughputFile));
+  Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, throughputFile));
+
+  // configure for server
+  uint32_t serverId = server.Get(0)->GetId();
+  devicePath.str("");
+  devicePath << "/NodeList/" << serverId << "/DeviceList/*/$ns3::PointToPointNetDevice/";
+
+  stringstream sfile;
+  sfile << outputDir << "/mptcp_server";
+  Ptr<OutputStreamWrapper> serverFile = Create<OutputStreamWrapper>(sfile.str(), std::ios::out);
+  *(serverFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
+  Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, serverFile));
+  Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, serverFile));
+
+  // configure for droped packets
+  stringstream dfile;
+  dfile << outputDir << "/mptcp_drops";
+  Ptr<OutputStreamWrapper> dropsFile = Create<OutputStreamWrapper>(dfile.str(), std::ios::out);
+  *(dropsFile->GetStream()) << "timestamp,seqno,ackno,isSyn,isFin" << endl;
+  Config::ConnectWithoutContext("/NodeList/*/$ns3::TrafficControlLayer/RootQueueDiscList/*/Drop",
+                                MakeBoundCallback(TraceQueueItemDrop, dropsFile));
+
+  uint32_t clientId = client.Get(0)->GetId();
+  cout << "server node is: " << serverId << endl;
+  cout << "client node is: " << clientId << endl;
+  cout << "middle node are: ";
+  for(int i = 0; i < middle.GetN(); ++i){
+    cout << " " << middle.Get(i)->GetId();
+  }
+  cout << endl;
+  cout << "other_servers node are: ";
+  for(int i = 0; i < other_servers.GetN(); ++i){
+    cout << " " << other_servers.Get(i)->GetId();
+  }
+  cout << endl;
+  cout << "other_clients node are: ";
+  for(int i = 0; i < other_clients.GetN(); ++i){
+    cout << " " << other_clients.Get(i)->GetId();
+  }
+  cout << endl;
+
+  for(uint32_t i = 0; i < server.GetN(); ++i)
+  {
+    PrintRoutingTable(server.Get(i), outputDir, "srv" + to_string(i));
+  }
+  for(uint32_t i = 0; i < client.GetN(); ++i)
+  {
+    PrintRoutingTable(client.Get(i), outputDir, "cl" + to_string(i));
+  }
+  for (uint32_t  i = 0; i < middle.GetN(); ++i)
+  {
+    PrintRoutingTable(middle.Get(i), outputDir, "middle" + to_string(i));
+  }
+  for (uint32_t  i = 0; i < other_servers.GetN(); ++i)
+  {
+    PrintRoutingTable(other_servers.Get(i), outputDir, "other_servers" + to_string(i));
+  }
+  for (uint32_t  i = 0; i < other_clients.GetN(); ++i)
+  {
+    PrintRoutingTable(other_clients.Get(i), outputDir, "other_clients" + to_string(i));
+  }
+}
+
 void TraceMonitorStates(const string& outputDir){
   //Create flow monitor
   static FlowMonitorHelper flowmon;
@@ -124,7 +202,6 @@ void TraceMonitorStates(const string& outputDir){
   static Ptr<OutputStreamWrapper> logFile;
 
   if(!initialized){
-    // monitor = flowmon.InstallAll();
     logFile = Create<OutputStreamWrapper>(outputDir + "/mptcp_server_cWnd", std::ios::out);
     *(logFile->GetStream()) << "Timestamp,FlowId,From,To,TxPackets,TxBytes,RxPackets,RxBytes,DelaySum,JitterSum,LostPacketSum,TTL_expire,Bad_checksum" << endl;
     initialized = true;
@@ -133,11 +210,8 @@ void TraceMonitorStates(const string& outputDir){
   monitor->CheckForLostPackets ();
   Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmon.GetClassifier ());
   FlowMonitor::FlowStatsContainer stats = monitor->GetFlowStats ();
-  //std::cout << "Hong Jiaming: 0 " << endl;
   for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i){
-    //std::cout << "Hong Jiaming: 1 " << i->first << endl;
     Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);
-    //std::cout << "Hong Jiaming: 2 " << i->first << endl;
     *(logFile->GetStream()) << Simulator::Now().GetNanoSeconds() << ","
                             << i->first << ","
                             << t.sourceAddress << ","
@@ -191,86 +265,6 @@ void PrintMonitorStates(void){
     //std::cout << "Hong Jiaming: 3 " << i->first << endl;
   }
   std::cout << endl;
-}
-
-
-
-void ConfigureTracing (const string& outputDir, const NodeContainer& server,
-                       const NodeContainer& client, const NodeContainer& isps,
-                       const NodeContainer& ixs)
-{
-  //Create an output directory
-  CheckAndCreateDirectory(outputDir);
-
-  // configure for clients
-  stringstream devicePath;
-  devicePath << "/NodeList/" << client.Get(0)->GetId() << "/DeviceList/*/$ns3::PointToPointNetDevice/";
-
-  stringstream tfile;
-  tfile << outputDir << "/mptcp_client";
-  Ptr<OutputStreamWrapper> throughputFile = Create<OutputStreamWrapper>(tfile.str(), std::ios::out);
-  //Write the column labels into the file
-  *(throughputFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
-
-  Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, throughputFile));
-  Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, throughputFile));
-
-  // configure for server
-  uint32_t serverId = server.Get(0)->GetId();
-  devicePath.str("");
-  devicePath << "/NodeList/" << serverId << "/DeviceList/*/$ns3::PointToPointNetDevice/";
-
-  stringstream sfile;
-  sfile << outputDir << "/mptcp_server";
-  Ptr<OutputStreamWrapper> serverFile = Create<OutputStreamWrapper>(sfile.str(), std::ios::out);
-  //Write the column labels into the file
-  *(serverFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
-  Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, serverFile));
-  Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, serverFile));
-
-  // configure for droped packets
-  stringstream dfile;
-  dfile << outputDir << "/mptcp_drops";
-  Ptr<OutputStreamWrapper> dropsFile = Create<OutputStreamWrapper>(dfile.str(), std::ios::out);
-  //Write the column labels into the file
-  *(dropsFile->GetStream()) << "timestamp,seqno,ackno,isSyn,isFin" << endl;
-
-  Config::ConnectWithoutContext("/NodeList/*/$ns3::TrafficControlLayer/RootQueueDiscList/*/Drop",
-                                MakeBoundCallback(TraceQueueItemDrop, dropsFile));
-
-
-  uint32_t clientId = client.Get(0)->GetId();
-  cout << "client node is: " << clientId << endl;
-  cout << "server node is: " << serverId << endl;
-  cout << "isps node are: ";
-  for(int i = 0; i < isps.GetN(); ++i){
-    cout << " " << isps.Get(i)->GetId();
-  }
-  cout << endl;
-  cout << "ixs node are: ";
-  for(int i = 0; i < ixs.GetN(); ++i){
-    cout << " " << ixs.Get(i)->GetId();
-  }
-  cout << endl;
-
-  //Print the nodes' routing tables
-  //Print the nodes' routing tables
-  for(uint32_t i = 0; i < server.GetN(); ++i)
-  {
-    PrintRoutingTable(server.Get(i), outputDir, "srv" + to_string(i));
-  }
-  for(uint32_t i = 0; i < client.GetN(); ++i)
-  {
-    PrintRoutingTable(client.Get(i), outputDir, "cl" + to_string(i));
-  }
-  for (uint32_t  i = 0; i < isps.GetN(); ++i)
-  {
-    PrintRoutingTable(isps.Get(i), outputDir, "isps" + to_string(i));
-  }
-  for (uint32_t  i = 0; i < ixs.GetN(); ++i)
-  {
-    PrintRoutingTable(ixs.Get(i), outputDir, "ixs" + to_string(i));
-  }
 }
 
 };

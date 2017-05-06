@@ -483,6 +483,8 @@ TcpL4Protocol::Receive (Ptr<Packet> packet,
                         Ipv4Header const &incomingIpHeader,
                         Ptr<Ipv4Interface> incomingInterface)
 {
+  // Hong Jiaming: there is a bug that for classic network.
+  // A package sent for 192.169.11.2 in node 2 will be passed an incomingInterface belongs to 192.168.9.2 in node 2
   NS_LOG_FUNCTION (this << packet << incomingIpHeader << incomingInterface);
 
   TcpHeader incomingTcpHeader;
@@ -508,6 +510,16 @@ TcpL4Protocol::Receive (Ptr<Packet> packet,
 
   if (endPoints.empty ())
     {
+      std::cout << "Hong Jiaming 32: " << incomingIpHeader.GetSource () << ":" << incomingTcpHeader.GetSourcePort () << "->"
+                << incomingIpHeader.GetDestination () << ":" << incomingTcpHeader.GetDestinationPort () << "  incomingInterface: " << incomingInterface << std::endl;
+      std::cout << "Hong Jiaming 32: m_endPoints: " << std::endl;
+      Ipv4EndPointDemux::EndPoints ep = m_endPoints->GetAllEndPoints();
+      for(auto it = ep.begin();it != ep.end();it++){
+        std::cout << (*it) << " "
+        << (*it)->GetLocalAddress() << ":" << (*it)->GetLocalPort() << "->"
+        << (*it)->GetPeerAddress() << ":" << (*it)->GetPeerPort() << std::endl;
+      }
+
       if (this->GetObject<Ipv6L3Protocol> () != 0)
         {
           NS_LOG_LOGIC ("  No Ipv4 endpoints matched on TcpL4Protocol, trying Ipv6 " << this);

@@ -10,13 +10,18 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/traffic-control-module.h"
 
+#include "ns3/aodv-module.h"
 
 namespace ns3{
 
 InternetStackHelper GetInternetStackHelper ()
 {
   //Create the internet stack helper, and install the internet stack on the client node
+  AodvHelper aodv;
+  Ipv4ListRoutingHelper list;
+  list.Add (aodv, 100);
   InternetStackHelper stackHelper;
+  stackHelper.SetRoutingHelper (list);
   // //Set the routing protocol to static routing
   // Ipv4ListRoutingHelper listRoutingHelper;
   // Ipv4GlobalRoutingHelper globalRoutingHelper;

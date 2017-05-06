@@ -2154,9 +2154,9 @@ TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
                          m_endPoint6->GetPeerAddress (), m_boundnetdevice);
     }
 
-  std::cout << "Hong Jiaming 20.1: m_highTxAck == " << m_highTxAck << "header.GetAckNumber () == " << header.GetAckNumber ()
-            << ", (header.GetFlags() & TcpHeader::ACK) == " << (header.GetFlags() & TcpHeader::ACK)
-            << ", !m_delAckEvent.IsExpired() == " << !m_delAckEvent.IsExpired() << std::endl;
+  // std::cout << "Hong Jiaming 20.1: m_highTxAck == " << m_highTxAck << "header.GetAckNumber () == " << header.GetAckNumber ()
+  //           << ", (header.GetFlags() & TcpHeader::ACK) == " << (header.GetFlags() & TcpHeader::ACK)
+  //           << ", !m_delAckEvent.IsExpired() == " << !m_delAckEvent.IsExpired() << std::endl;
   if ((header.GetFlags() & TcpHeader::ACK) != 0 && m_delAckEvent.IsExpired()) // Hong Jiaming: modified by Hong Jiaming
   // if ((header.GetFlags() & TcpHeader::ACK) && !m_delAckEvent.IsExpired())// Hong Jimaing: This is original code
     { // If sending an ACK, cancel the delayed ACK as well

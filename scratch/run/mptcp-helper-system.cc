@@ -70,11 +70,12 @@ void EnableLogging ()
 {
   // LogComponentEnable("Ipv4StaticRouting", LOG_LEVEL_ALL);
   // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_ALL);
-  LogComponentEnable("TcpL4Protocol", LOG_LEVEL_ALL);
-  LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
-  LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
-  LogComponentEnable("MpTcpSubflow", LOG_LEVEL_ALL);
-  // // //
+  // LogComponentEnable("TcpL4Protocol", LOG_LEVEL_ALL);
+  // LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
+  // LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
+  // LogComponentEnable("MpTcpSubflow", LOG_LEVEL_ALL);
+  // LogComponentEnable("Ipv4EndPointDemux", LOG_LEVEL_ALL);
+  // // // //
   // LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_ALL);
   // LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
   // LogComponentEnable ("Ipv4EndPoint", LOG_LEVEL_ALL);

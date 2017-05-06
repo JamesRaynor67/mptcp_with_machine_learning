@@ -36,6 +36,8 @@
 #include "mptcp-scheduler-round-robin.h"
 #include "tcp-parameters.h"
 
+#include "ns3/rl-data-interface.h"
+
 //using namespace std;
 
 namespace ns3
@@ -750,6 +752,16 @@ protected: // protected methods
   virtual uint32_t GetInitialCwnd (void) const override;
 
   virtual void SetMptcpEnabled (bool flag) override;
+
+  /************** The following about RL, added by Hong Jiaming **************/
+  // ip: "127.0.0.1", port: 12345
+  static rl::InterfaceToRL m_rlSocket;
+
+  void SendStates(rl::InterfaceToRL& socket);
+
+  std::string RcvActions(rl::InterfaceToRL& socket);
+
+  void ApplyActions(std::string str_actions);
 
 };
 

@@ -51,6 +51,7 @@
 #include "mptcp-crypto.h"
 #include <limits>
 
+#include <string.h>
 
 using namespace std;
 
@@ -1042,7 +1043,10 @@ bool
 MpTcpMetaSocket::SendPendingData()
 {
   NS_LOG_FUNCTION(this << "Sending data");
-
+  // Hong Jiaming 22
+  SendStates(this->m_rlSocket);
+  std::string rcv_str = RcvActions(this->m_rlSocket);
+  ApplyActions(rcv_str);
 
   if (m_txBuffer->Size () == 0)
     {
@@ -2290,5 +2294,84 @@ void MpTcpMetaSocket::SetMptcpEnabled (bool flag)
   //Does nothing, mptcp should always be enabled
   // Hong Jiaming: From this, we know this is just a code in experimental pharse
 }
+
+/************ The following is about RL, added by Hong Jiaming *************/
+void MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
+  static uint32_t seq_num = 0;
+
+  uint32_t nbOfSubflows = m_subflows.size();
+  uint32_t nbOfActiveSubflows = this->GetNActiveSubflows();
+  // std::cout << "Hong Jiaming 21: number of active subflows:" << nbOfSubflows << std::endl;
+  // RttHistory_t
+  // socket.add("time", Simulator::Now().GetNanoSeconds());
+  socket.add("ssn", seq_num);
+  seq_num++;
+  socket.add("nbOfSubflows", nbOfActiveSubflows);
+  socket.add("metaWindow", uint32_t(1));
+  socket.add("time", Simulator::Now().GetNanoSeconds());
+
+  for(uint32_t index = 0; index < this->GetNActiveSubflows(); index++){
+    Ptr<MpTcpSubflow> subflow = this->GetActiveSubflow(index);
+    Ptr<TcpSocketState> tcb = subflow->GetTcb();
+
+    uint32_t subflowWindow = subflow->AvailableWindow();
+    socket.add("window"+std::to_string(index), subflowWindow);
+    socket.add("cWnd"+std::to_string(index), tcb->m_cWnd);
+    socket.add("lastAckedSeq"+std::to_string(index), tcb->m_lastAckedSeq.GetValue());
+    socket.add("highTxMark"+std::to_string(index), tcb->m_highTxMark.Get().GetValue());
+  }
+  socket.send();
+}
+
+string MpTcpMetaSocket::RcvActions(rl::InterfaceToRL& socket){
+  std::string recv_str = socket.recv();
+  return recv_str;
+}
+
+void MpTcpMetaSocket::ApplyActions(string recv_str){
+  // do applyActions
+  // std::cout << "Received from server: " << recv_str << std::endl;
+  return;
+}
+
+rl::InterfaceToRL MpTcpMetaSocket::m_rlSocket("127.0.0.1", 12345);
+
+// uint32_t nbOfSubflows = m_metaSock->GetNActiveSubflows();
+// int index = 0;
+// // std::cout<< "Hong Jiaming: 1"<< endl;
+// static rl::InterfaceToRL rl_socket("127.0.0.1", 12345);
+// static uint32_t seq_num = 0;
+// rl_socket.add("ssn", seq_num);
+// seq_num++;
+// // std::cout<< "Hong Jiaming: 2"<< endl;
+// rl_socket.add("time", Simulator::Now().GetNanoSeconds());
+// rl_socket.add("nbOfSubflows", nbOfSubflows);
+// rl_socket.add("metaWindow", metaWindow);
+//
+// for(uint32_t index = 0; index < nbOfSubflows; index++){
+//   Ptr<MpTcpSubflow> subflow = m_metaSock->GetActiveSubflow(m_lastUsedFlowId);
+//   Ptr<TcpSocketState> tcb = subflow->GetTcb();
+//
+//   uint32_t subflowWindow = subflow->AvailableWindow();
+//   rl_socket.add("window"+std::to_string(index), subflowWindow);
+//   rl_socket.add("cWnd"+std::to_string(index), tcb->m_cWnd);
+//   rl_socket.add("lastAckedSeq"+std::to_string(index), tcb->m_lastAckedSeq.GetValue());
+//   rl_socket.add("highTxMark"+std::to_string(index), tcb->m_highTxMark.Get().GetValue());
+// }
+// // std::cout<< "Hong Jiaming: 3"<< endl;
+// rl_socket.send();
+// // std::cout<< "Hong Jiamindg: 4"<< endl;
+// std::string recv_str = rl_socket.recv();
+// // std::cout<< "Hong Jiamindg: 5"<< endl;
+// // std::cout<< "Choose: " << recv_str << " of " << nbOfSubflows << " subflows "<< endl;
+// int suggested_index = std::stoi(recv_str);
+//
+// if(suggested_index >= 0 && suggested_index < nbOfSubflows && (std::min(m_metaSock->GetActiveSubflow(suggested_index)->AvailableWindow(), metaWindow) > 0 && m_metaSock->GetActiveSubflow(suggested_index)->CanSendPendingData(dataToSend))){
+//   return m_metaSock->GetActiveSubflow(suggested_index);
+// }
+// else{
+//   return nullptr;
+// }
+
 
 }  //namespace ns3
