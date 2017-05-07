@@ -23,6 +23,8 @@
 #ifndef MPTCP_SOCKET_BASE_H
 #define MPTCP_SOCKET_BASE_H
 
+#include <utility> // std::pair
+#include <vector>
 #include "ns3/callback.h"
 #include "mptcp-mapping.h"
 #include "tcp-socket-impl.h"
@@ -108,7 +110,6 @@ even if that subflow got closed during the MpTcpConnection.
 
 **/
 class MpTcpMetaSocket : public TcpSocketImpl
-
 {
 public:
 
@@ -418,7 +419,7 @@ public:
   /**
    *
    */
-  void GetAllAdvertisedDestinations(vector<InetSocketAddress>& );
+  void GetAllAdvertisedDestinations(std::vector<InetSocketAddress>& );
 
 
   virtual void CompleteFork(Ptr<Packet> p, const TcpHeader& h,
@@ -659,7 +660,7 @@ protected: // protected methods
   //  virtual void OnAddAddress(MpTcpAddressInfo);
   //  virtual void OnRemAddress();
 
-  virtual void CreateScheduler(TypeId schedulerTypeId);
+  // virtual void CreateScheduler(TypeId schedulerTypeId);
 
   /**
    * Generate a unique key for this host
@@ -668,7 +669,7 @@ protected: // protected methods
    */
   virtual uint64_t GenerateUniqueMpTcpKey();
 
-  typedef vector<Ptr<MpTcpSubflow>> SubflowList;
+  typedef std::vector<Ptr<MpTcpSubflow>> SubflowList;
   SubflowList GetSubflowsWithState(TcpStates_t state);
 
   Callback<void, Ptr<MpTcpSubflow> > m_subflowConnectionSucceeded;  //!< connection succeeded callback
@@ -701,9 +702,6 @@ protected: // protected methods
   Ptr<TcpRxBuffer64>        m_rxBuffer;       //!< Rx buffer (reordering buffer)
   Ptr<TcpTxBuffer64>        m_txBuffer;       //!< Tx buffer
 
-
-  Ptr<MpTcpScheduler> m_scheduler;  //!<
-
   MpTcpMetaSocketState m_state;
 
   uint64_t m_localKey;    //!< Store local host token, generated during the 3-way handshake
@@ -718,6 +716,8 @@ protected: // protected methods
   // Hong Jiaming: tag is a conception in ns3. ns3 has two kinds of tag:
   //               tag of packets and tag of bytes. Here is the former one.
   bool     m_tagSubflows;  //!<Whether or not to add the subflow packet tag
+
+  Ptr<MpTcpScheduler> m_scheduler;  //!<
 
   //!
   TypeId m_subflowTypeId;
@@ -756,6 +756,7 @@ protected: // protected methods
   /************** The following about RL, added by Hong Jiaming **************/
   // ip: "127.0.0.1", port: 12345
   static rl::InterfaceToRL m_rlSocket;
+  std::vector<std::pair<Ptr<MpTcpScheduler>,TypeId> > m_schedulerArmoury; // Hong Jiaming: Added just for RL
 
   void SendStates(rl::InterfaceToRL& socket);
 
@@ -763,6 +764,10 @@ protected: // protected methods
 
   void ApplyActions(std::string str_actions);
 
+  virtual void CreateSchedulerArmoury();
+
+  virtual void ChooseOneScheduler(TypeId const * const type = NULL);
+  virtual void ChooseOneScheduler(const uint32_t index);
 };
 
 }   //namespace ns3

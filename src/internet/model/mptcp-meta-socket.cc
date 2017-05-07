@@ -24,6 +24,7 @@
 #define NS_LOG_APPEND_CONTEXT \
   if (m_node) { std::clog << Simulator::Now ().GetSeconds () << " [node " << m_node->GetId () << "] "; }
 
+#include <utility> // std::pair
 #include <algorithm>
 #include <stdlib.h>
 #include <iostream>
@@ -39,6 +40,7 @@
 #include "ns3/pointer.h"
 #include "ns3/drop-tail-queue.h"
 #include "ns3/object-vector.h"
+#include "ns3/mptcp-scheduler-fastest-rtt.h"
 #include "ns3/mptcp-scheduler-round-robin.h"
 #include "ns3/mptcp-id-manager.h"
 #include "ns3/mptcp-id-manager-impl.h"
@@ -52,6 +54,7 @@
 #include <limits>
 
 #include <string.h>
+#include <random>
 
 using namespace std;
 
@@ -150,7 +153,7 @@ void MpTcpSubflowTag::SetDestToken (uint32_t token)
 MpTcpMetaSocket::MpTcpMetaSocket() :  TcpSocketImpl()
                                     , m_remotePathIdManager(0)
                                     , m_master (0)
-                                    , m_scheduler (0)
+                                    // , m_scheduler (0)
                                     , m_state (MptcpMetaClosed)
                                     , m_localKey(0)
                                     , m_localToken(0)
@@ -161,7 +164,7 @@ MpTcpMetaSocket::MpTcpMetaSocket() :  TcpSocketImpl()
                                     , m_connected (false)
                                     , m_tagSubflows(false)
                                     , m_subflowTypeId(MpTcpSubflow::GetTypeId ())
-                                    , m_schedulerTypeId(MpTcpSchedulerRoundRobin::GetTypeId())
+                                    // , m_schedulerTypeId(MpTcpSchedulerRoundRobin::GetTypeId())
                                     , m_rWnd(0)
                                     , m_initialCWnd(0)
                                     , m_initialSsThresh(0)
@@ -176,7 +179,7 @@ MpTcpMetaSocket::MpTcpMetaSocket() :  TcpSocketImpl()
                                     , m_timeWaitEvent()
 {
   NS_LOG_FUNCTION(this);
-  std::cout << "Hong Jiaming 14.4" << std::endl;
+  // std::cout << "Hong Jiaming 14.4" << std::endl;
 
   m_rxBuffer = CreateObject<TcpRxBuffer64>();
   m_txBuffer = CreateObject<TcpTxBuffer64>();
@@ -184,20 +187,22 @@ MpTcpMetaSocket::MpTcpMetaSocket() :  TcpSocketImpl()
   //not considered as an Object
   m_remotePathIdManager = Create<MpTcpPathIdManagerImpl>();
 
-  CreateScheduler(m_schedulerTypeId);
+  CreateSchedulerArmoury();
+  ChooseOneScheduler();
+  // CreateScheduler(m_schedulerTypeId);
 
   m_subflowConnectionSucceeded  = MakeNullCallback<void, Ptr<MpTcpSubflow> >();
   m_subflowConnectionFailure    = MakeNullCallback<void, Ptr<MpTcpSubflow> >();
   m_subflowAdded = MakeNullCallback<void, Ptr<MpTcpSubflow>, bool> ();
 
   m_tcpParams->m_mptcpEnabled = true;
-  std::cout << "Hong Jiaming 14.5" << std::endl;
+  // std::cout << "Hong Jiaming 14.5" << std::endl;
 }
 
 MpTcpMetaSocket::MpTcpMetaSocket(const MpTcpMetaSocket& sock) : TcpSocketImpl(sock)
                                                               , m_remotePathIdManager(0)
                                                               , m_master (0)
-                                                              , m_scheduler (0)
+                                                              // , m_scheduler (0)
                                                               , m_state(sock.m_state)
                                                               , m_localKey(0)
                                                               , m_localToken(0)
@@ -208,7 +213,7 @@ MpTcpMetaSocket::MpTcpMetaSocket(const MpTcpMetaSocket& sock) : TcpSocketImpl(so
                                                               , m_connected (sock.m_connected)
                                                               , m_tagSubflows(sock.m_tagSubflows)
                                                               , m_subflowTypeId(sock.m_subflowTypeId)
-                                                              , m_schedulerTypeId(sock.m_schedulerTypeId)
+                                                              // , m_schedulerTypeId(sock.m_schedulerTypeId)
                                                               , m_rWnd(0)
                                                               , m_initialCWnd(sock.m_initialCWnd)
                                                               , m_initialSsThresh(sock.m_initialSsThresh)
@@ -236,8 +241,8 @@ MpTcpMetaSocket::MpTcpMetaSocket(const MpTcpMetaSocket& sock) : TcpSocketImpl(so
   //! Scheduler may have some states, thus generate a new one
   m_remotePathIdManager = Create<MpTcpPathIdManagerImpl>();
 
-
-  CreateScheduler(m_schedulerTypeId);
+  CreateSchedulerArmoury();
+  ChooseOneScheduler(&sock.m_schedulerTypeId);
 
   //Generate a new connection key for the copied meta socket.
   GenerateUniqueMpTcpKey();
@@ -321,16 +326,16 @@ void MpTcpMetaSocket::SetTagSubflows (bool value)
   m_tagSubflows = value;
 }
 
-// Hong Jiaming: I don't know why not receive a scheduler from outside but creating one here.
-void
-MpTcpMetaSocket::CreateScheduler(TypeId schedulerTypeId)
-{
-  NS_LOG_FUNCTION(this);
-  ObjectFactory schedulerFactory;
-  schedulerFactory.SetTypeId(m_schedulerTypeId);
-  m_scheduler = schedulerFactory.Create<MpTcpScheduler>();
-  m_scheduler->SetMeta(this);
-}
+// // Hong Jiaming: I don't know why not receive a scheduler from outside but creating one here.
+// void
+// MpTcpMetaSocket::CreateScheduler(TypeId schedulerTypeId)
+// {
+//   NS_LOG_FUNCTION(this);
+//   ObjectFactory schedulerFactory;
+//   schedulerFactory.SetTypeId(m_schedulerTypeId);
+//   m_scheduler = schedulerFactory.Create<MpTcpScheduler>();
+//   m_scheduler->SetMeta(this);
+// }
 
 // Jiaming: Important function
 int
@@ -346,7 +351,8 @@ MpTcpMetaSocket::ConnectNewSubflow(const Address &local, const Address &remote)
   NS_ASSERT(sf);
   AddSubflow(sf, false);
 
-  // TODO account for this error as well ? Jiaming: I don't understand what's the "error" mean
+  // TODO account for this error as well ?
+  // Hong Jiaming: I don't understand what's the "error" mean
   int ret = sf->Bind(local);
   NS_ASSERT(ret == 0);
   ret = sf->Connect(remote);
@@ -414,7 +420,6 @@ MpTcpMetaSocket::OwnIP(const Address& address) const
   Ptr<Node> node = GetNode();
   Ptr<Ipv4L3Protocol> ipv4 = node->GetObject<Ipv4L3Protocol>();
   return (ipv4->GetInterfaceForAddress(ip) >= 0);
-  return false;
 }
 
 void
@@ -518,7 +523,7 @@ uint32_t MpTcpMetaSocket::GetNSubflows () const
 void
 MpTcpMetaSocket::SetPeerKey(uint64_t remoteKey)
 {
-  uint64_t idsn = 0;
+  uint64_t idsn = 0; // Initial Data Sequence Number
   m_peerKey = remoteKey;
 
   GenerateTokenForKey(HMAC_SHA1, m_peerKey, m_peerToken, idsn);
@@ -532,13 +537,12 @@ MpTcpMetaSocket::SetPeerKey(uint64_t remoteKey)
     idsn = 0;
   }
 
-//  m_rxBuffer->SetNextRxSequence(SequenceNumber32( (uint32_t)idsn ));
+  // m_rxBuffer->SetNextRxSequence(SequenceNumber32( (uint32_t)idsn ));
 }
 
 bool
 MpTcpMetaSocket::UpdateWindowSize(uint32_t windowSize)
 {
-  //!
   NS_LOG_FUNCTION(this);
   m_rWnd = windowSize;
   NS_LOG_DEBUG("Meta Receiver window=" << m_rWnd);
@@ -556,9 +560,9 @@ MpTcpMetaSocket::OnSubflowClosed(Ptr<MpTcpSubflow> subflow, bool reset)
     NS_FATAL_ERROR("Case not handled yet.");
   }
 
-//  SubflowList::iterator it = find(m_subflows[Closing].begin(), m_subflows[Closing].end(), subflow);
-// m_containers[Closing].erase(it);
-//NS_ASSERT(it != m_subflows[Closing].end());
+  // SubflowList::iterator it = find(m_subflows[Closing].begin(), m_subflows[Closing].end(), subflow);
+  // m_containers[Closing].erase(it);
+  // NS_ASSERT(it != m_subflows[Closing].end());
   SubflowList::iterator it = remove(m_subflows.begin(), m_subflows.end(), subflow);
 }
 
@@ -584,6 +588,7 @@ bool MpTcpMetaSocket::AddToReceiveBuffer(Ptr<MpTcpSubflow> sf,
                                          const TcpHeader& tcpHeader,
                                          Ptr<MpTcpMapping> mapping)
 {
+  // Hong Jiaming: Note that variable "sf" is not used at all
   //Add the packet to the receive buffer.
   //We shouldn't use HeadDSN, but rather the actual dsn number based on the SSN.
   SequenceNumber64 dsn = mapping->GetDSNFromSSN(tcpHeader.GetSequenceNumber());
@@ -640,21 +645,18 @@ TODO check that it autodisconnects when we destroy the object ?
 void
 MpTcpMetaSocket::OnSubflowUpdateCwnd(Ptr<MpTcpSubflow> subflow, uint32_t oldCwnd, uint32_t newCwnd)
 {
-  NS_LOG_LOGIC("Subflow updated window from " << oldCwnd << " to " << newCwnd
-//        << " (context=" << context << ")"
-        );
+  NS_LOG_LOGIC("Subflow updated window from " << oldCwnd << " to " << newCwnd);
 
   //TODO: this was used to compute total cwnd, that is not really valid for a meta socket.
 
   if ((newCwnd > oldCwnd) && (!m_sendPendingDataEvent.IsRunning ()))
   {
-    m_sendPendingDataEvent = Simulator::Schedule (TimeStep (1),
-                                                  &MpTcpMetaSocket::SendPendingData,
-                                                  this);
+    m_sendPendingDataEvent = Simulator::Schedule (TimeStep (1), &MpTcpMetaSocket::SendPendingData, this);
   }
 }
 
-  MpTcpMetaSocket::SubflowList MpTcpMetaSocket::GetSubflowsWithState(TcpStates_t state)
+MpTcpMetaSocket::SubflowList
+MpTcpMetaSocket::GetSubflowsWithState(TcpStates_t state)
 {
   SubflowList subflows;
   for (SubflowList::iterator it = m_subflows.begin(); it != m_subflows.end(); ++it)
@@ -667,8 +669,6 @@ MpTcpMetaSocket::OnSubflowUpdateCwnd(Ptr<MpTcpSubflow> subflow, uint32_t oldCwnd
   }
   return subflows;
 }
-
-
 
 /**
 TODO add a MakeBoundCallback that accepts a member function as first input
@@ -695,7 +695,7 @@ We need a MakeBoundCallback
 */
 void
 MpTcpMetaSocket::OnSubflowNewState(Ptr<MpTcpSubflow> sf,
-                                   TcpSocket::TcpStates_t  oldState,
+                                   TcpSocket::TcpStates_t oldState,
                                    TcpSocket::TcpStates_t newState)
 {
   NS_LOG_LOGIC("subflow " << sf << " state changed from " << TcpStateName[oldState] << " to " << TcpStateName[newState]);
@@ -766,7 +766,7 @@ MpTcpMetaSocket::CreateSubflow(bool masterSocket)
 {
   NS_LOG_FUNCTION (this << m_subflowTypeId.GetName());
   //std::cout << "Hong Jiaming 12: in MpTcpMetaSocket::CreateSubflow" << std::endl;
-  Ptr<Socket> socket = m_tcp->CreateSocket(m_congestionControl, m_subflowTypeId);
+  Ptr<Socket> socket = m_tcp->CreateSocket(m_congestionControl, m_subflowTypeId); // Hong Jiaming: Important
   Ptr<MpTcpSubflow> subflow = DynamicCast<MpTcpSubflow>(socket);
 
   //Set the subflow parameters
@@ -796,7 +796,8 @@ void MpTcpMetaSocket::CreateMasterSubflow ()
   AddSubflow(CreateSubflow(true), true);
 
   //If we haven't generated the key yet, do it here
-  // Hong Jiaming: Shouldn't it be already generated? This is master subflow!
+  // Hong Jiaming: Shouldn't it be already generated? This is master subflow
+  // But program fails if I put it in constructor
   if (m_localKey == 0)
   {
     GenerateUniqueMpTcpKey();
@@ -808,12 +809,10 @@ MpTcpMetaSocket::AddSubflow(Ptr<MpTcpSubflow> sflow, bool isMaster)
 {
   NS_LOG_FUNCTION(sflow);
 
-  //Let the meta socket know when the subflow TCP state has changed.
-  // Hong Jiaming: Important!
+  //Let the meta socket know when the subflow TCP state has changed. Hong Jiaming: Important!
   sflow->TraceConnectWithoutContext ("State", MakeBoundCallback(&MpTcpMetaSocket::NotifySubflowNewState, this, sflow));
 
-  //The meta socket should be notified when a subflow's congestion window changes so it can attempt to send pending data
-  // Hong Jiaming: Important!
+  //The meta socket should be notified when a subflow's congestion window changes so it can attempt to send pending data Hong Jiaming: Important!
   sflow->TraceConnectWithoutContext ("CongestionWindow", MakeBoundCallback(&MpTcpMetaSocket::NotifySubflowUpdateCwnd, this, sflow));
 
   sflow->SetDataSentCallback (MakeCallback(&MpTcpMetaSocket::NotifySubflowDataSent, this));
@@ -873,7 +872,7 @@ bool MpTcpMetaSocket::NotifySubflowConnectionRequest(Ptr<Socket> socket, const A
   {
     //This is a join request, dealt with in MpTcpSubflow ProcessListen seperately, which
     //calls the NotifyJoinRequest callback. Should never be called.
-    NS_FATAL_ERROR("Shouldn't be called");
+    NS_FATAL_ERROR("Connection request sent to slave subflow, shouldn't be called");
     return true;
   }
 }
@@ -2296,7 +2295,8 @@ void MpTcpMetaSocket::SetMptcpEnabled (bool flag)
 }
 
 /************ The following is about RL, added by Hong Jiaming *************/
-void MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
+void
+MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
   static uint32_t seq_num = 0;
 
   uint32_t nbOfSubflows = m_subflows.size();
@@ -2323,15 +2323,87 @@ void MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
   socket.send();
 }
 
-string MpTcpMetaSocket::RcvActions(rl::InterfaceToRL& socket){
+string
+MpTcpMetaSocket::RcvActions(rl::InterfaceToRL& socket){
   std::string recv_str = socket.recv();
   return recv_str;
 }
 
-void MpTcpMetaSocket::ApplyActions(string recv_str){
+void
+MpTcpMetaSocket::ApplyActions(string recv_str){
   // do applyActions
-  // std::cout << "Received from server: " << recv_str << std::endl;
+  uint32_t index = uint32_t(std::stoi(recv_str));
+  ChooseOneScheduler(index);
+  std::cout << "Sechduler changed to: " << index << std::endl;
   return;
+}
+
+void
+MpTcpMetaSocket::CreateSchedulerArmoury()
+{
+  NS_LOG_FUNCTION(this);
+  NS_ASSERT(m_schedulerArmoury.size() == 0);
+  TypeId schedulerTypeId;
+  ObjectFactory schedulerFactory;
+  Ptr<MpTcpScheduler> scheduler;
+
+  schedulerTypeId = MpTcpSchedulerRoundRobin::GetTypeId();
+  schedulerFactory.SetTypeId(schedulerTypeId);
+  scheduler = schedulerFactory.Create<MpTcpScheduler>();
+  scheduler->SetMeta(this);
+  m_schedulerArmoury.push_back(std::make_pair(scheduler, MpTcpSchedulerRoundRobin::GetTypeId()));
+
+  schedulerTypeId = MpTcpSchedulerFastestRTT::GetTypeId();
+  schedulerFactory.SetTypeId(schedulerTypeId);
+  scheduler = schedulerFactory.Create<MpTcpScheduler>();
+  scheduler->SetMeta(this);
+  m_schedulerArmoury.push_back(std::make_pair(scheduler, MpTcpSchedulerFastestRTT::GetTypeId()));
+
+  // We can add more like Random, Largest window size, etc.
+}
+
+// Hong Jiaming: currently, it's randomly choosed. In the feature, decision made by RL should be passed in
+void
+MpTcpMetaSocket::ChooseOneScheduler(TypeId const * const type)
+{
+  NS_LOG_FUNCTION(this);
+  NS_ASSERT(m_schedulerArmoury.size() > 0);
+  // std::cout << "Hong Jiaming fuck 1" << std::endl;
+  static std::mt19937 rng;
+  // setting seed for rng is skipped
+  static std::uniform_int_distribution<std::mt19937::result_type> dist(0, m_schedulerArmoury.size()-1);
+  // std::cout << "Hong Jiaming fuck 2" << std::endl;
+  if(type == NULL){
+    // std::cout << "Hong Jiaming fuck 3" << std::endl;
+    m_scheduler = m_schedulerArmoury[dist(rng)].first;
+    m_schedulerTypeId = m_schedulerArmoury[dist(rng)].second;
+    // std::cout << "Hong Jiaming fuck 4" << std::endl;
+    return;
+  }
+  else{
+    // std::cout << "Hong Jiaming fuck 5" << std::endl;
+    for(auto it = m_schedulerArmoury.begin(); it != m_schedulerArmoury.end(); it++){
+      // std::cout << "Hong Jiaming fuck 6" << std::endl;
+      if(it->second == (*type)){
+        // std::cout << "Hong Jiaming fuck 7" << std::endl;
+        m_scheduler = it->first;
+        m_schedulerTypeId = it->second;
+        return;
+      }
+    }
+    NS_FATAL_ERROR("Required scheduler not found!");
+  }
+}
+
+// Hong Jiaming: currently, it's randomly choosed. In the feature, decision made by RL should be passed in
+void
+MpTcpMetaSocket::ChooseOneScheduler(const uint32_t index)
+{
+  NS_LOG_FUNCTION(this);
+  NS_ASSERT(m_schedulerArmoury.size() > index && index >= 0);
+
+  m_scheduler = m_schedulerArmoury[index].first;
+  m_schedulerTypeId = m_schedulerArmoury[index].second;
 }
 
 rl::InterfaceToRL MpTcpMetaSocket::m_rlSocket("127.0.0.1", 12345);
