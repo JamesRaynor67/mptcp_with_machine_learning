@@ -38,3 +38,9 @@ client node is 0 switch id 1 server id 2
 0.0.0.0
 10.10.0.1
 10.10.0.3
+
+4. NetAnim
+Need to install NetAnim first. Then execute "NetAnim" in terminal directly is OK.
+
+5. Wireless simulation
+Position of node is VERY important. If distance between nodes are too large (like 100). The bandwidth between them is 0 in fact.
