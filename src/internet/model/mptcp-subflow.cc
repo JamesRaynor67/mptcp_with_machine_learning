@@ -553,9 +553,9 @@ MpTcpSubflow::AddOptionMpTcp3WHS(TcpHeader& hdr) const
     switch(hdr.GetFlags())
     {
       case TcpHeader::SYN:
-        std::cout << "Hong Jiaming 17.0" << std::endl;
+        // std::cout << "Hong Jiaming 17.0" << std::endl;
       case (TcpHeader::SYN | TcpHeader::ACK):
-        std::cout << "Hong Jiaming 17.1" << std::endl;
+        // std::cout << "Hong Jiaming 17.1" << std::endl;
         mpc->SetSenderKey(GetMeta()->GetLocalKey());
         break;
       // case TcpHeader::ACK:
@@ -1131,12 +1131,12 @@ MpTcpSubflow::Bind (const Address &address)
 
   if (InetSocketAddress::IsMatchingType (address) && result ==0)
   {
-    cout << "Hong Jiaming 3: MpTcpSubflow::Bind address == " << address;
-    cout << ", m_endPoint == " << m_endPoint << " details:"<< m_endPoint->GetLocalAddress() << ":" << m_endPoint->GetLocalPort()
-         << " -> " << m_endPoint->GetPeerAddress() << ":" << m_endPoint->GetPeerAddress() << endl;
+    // cout << "Hong Jiaming 3: MpTcpSubflow::Bind address == " << address;
+    // cout << ", m_endPoint == " << m_endPoint << " details:"<< m_endPoint->GetLocalAddress() << ":" << m_endPoint->GetLocalPort()
+    //      << " -> " << m_endPoint->GetPeerAddress() << ":" << m_endPoint->GetPeerAddress() << endl;
 
     Ptr<NetDevice> dev = MapIpv4ToDevice(m_endPoint->GetLocalAddress());
-    cout << "Hong Jiaming 4: the return value of MapIpv4ToDevice(): " << dev<< std::endl;
+    // cout << "Hong Jiaming 4: the return value of MapIpv4ToDevice(): " << dev<< std::endl;
     if(dev) {
       m_endPoint->BindToNetDevice(dev);
       m_boundnetdevice = dev;
@@ -1502,10 +1502,17 @@ MpTcpSubflow::ReceivedAck(Ptr<Packet> p, const TcpHeader& header)
   AppendDSSAck();
 }
 
-/* Functions for RL-MPTCP only */
+/* Hong Jiaming: below is added for RL-MPTCP only */
 Ptr<TcpSocketState>
 MpTcpSubflow::GetTcb(void){
   return this->m_tcb;
+}
+
+double
+MpTcpSubflow::GetDelayBandwidthProduct(void){
+  // delay: this->GetRttEstimator()->GetEstimate().GetMicroSecond()
+  // bandwidth (congestion window in fact): this->GetTcb()->GetCwnd()
+  return (this->GetRttEstimator()->GetEstimate().GetMicroSeconds()) * (this->GetTcb()->GetCwnd());
 }
 
 } // end of ns3

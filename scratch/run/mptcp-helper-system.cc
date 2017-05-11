@@ -33,8 +33,11 @@ void SetConfigDefaults (std::string linkRate, std::string linkDelay,
   //Set the receive window size to the maximum possible
   Config::SetDefault ("ns3::TcpSocket::RcvBufSize", UintegerValue(1<<30));
 
+  //I need timestap to be enabled to calculate RTT correctly
+  Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(true));
+
   //Disable the timestamp option
-  Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(false));
+  // Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(false));
 
   //Set the mptcp option
   Config::SetDefault("ns3::TcpSocketImpl::EnableMpTcp", BooleanValue(true));
@@ -75,7 +78,7 @@ void EnableLogging ()
   // LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
   // LogComponentEnable("MpTcpSubflow", LOG_LEVEL_ALL);
   // LogComponentEnable("Ipv4EndPointDemux", LOG_LEVEL_ALL);
-  // // // //
+  // // //
   // LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_ALL);
   // LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
   // LogComponentEnable ("Ipv4EndPoint", LOG_LEVEL_ALL);

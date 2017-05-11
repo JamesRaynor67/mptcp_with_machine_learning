@@ -27,7 +27,7 @@
 #include "ns3/sequence-number.h"
 
 namespace ns3 {
-  
+
 class TcpSocketImpl;
 
 class TcpSocketState : public Object
@@ -39,15 +39,15 @@ public:
    * \return the object TypeId
    */
   static TypeId GetTypeId (void);
-  
+
   TcpSocketState ();
-  
+
   /**
    * \brief Copy constructor.
    * \param other object to copy.
    */
   TcpSocketState (const TcpSocketState &other);
-  
+
   /**
    * \brief Definition of the Congestion state machine
    *
@@ -75,7 +75,7 @@ public:
     CA_LOSS,      /**< CWND was reduced due to RTO timeout or SACK reneging. */
     CA_LAST_STATE /**< Used only in debug messages */
   } TcpCongState_t;
-  
+
   /**
    * \ingroup tcp
    * TracedValue Callback signature for TcpCongState_t
@@ -85,28 +85,28 @@ public:
    */
   typedef void (* TcpCongStatesTracedValueCallback)(const TcpCongState_t oldValue,
                       const TcpCongState_t newValue);
-  
+
   /**
    * \brief Literal names of TCP states for use in log messages
    */
   static const char* const TcpCongStateName[TcpSocketState::CA_LAST_STATE];
-  
+
   // Congestion control
   TracedValue<uint32_t>  m_cWnd;            //!< Congestion window
   TracedValue<uint32_t>  m_ssThresh;        //!< Slow start threshold
   uint32_t               m_initialCWnd;     //!< Initial cWnd value
   uint32_t               m_initialSsThresh; //!< Initial Slow Start Threshold value
-  
+
   // Segment
   uint32_t               m_segmentSize;     //!< Segment size
   SequenceNumber32       m_lastAckedSeq;    //!< Last sequence ACKed
-  
+
   Ptr<TcpSocketImpl>     m_socket;          //!< Pointer to socket, usually Null
-  
+
   TracedValue<TcpCongState_t> m_congState;    //!< State in the Congestion state machine
   TracedValue<SequenceNumber32> m_highTxMark; //!< Highest seqno ever sent, regardless of ReTx
   TracedValue<SequenceNumber32> m_nextTxSequence; //!< Next seqnum to be sent (SND.NXT), ReTx pushes it back
-  
+
   /**
    * \brief Get cwnd in segments rather than bytes
    *
@@ -116,7 +116,7 @@ public:
   {
     return m_cWnd / m_segmentSize;
   }
-  
+
   /**
    * \brief Get slow start thresh in segments rather than bytes
    *
@@ -126,7 +126,17 @@ public:
   {
     return m_ssThresh / m_segmentSize;
   }
+
+  /********  Hong Jiaming: Below added for RL only  ********/
+  // Get congestion window
+  uint32_t GetCwnd() const{
+    return m_cWnd;
+  }
+
+  uint32_t GetSSThresh() const{
+    return m_ssThresh;
+  }
 };
-  
+
 }
 #endif /* TCP_SOCKET_STATE_H */

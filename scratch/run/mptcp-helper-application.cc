@@ -66,14 +66,16 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
     Ipv4Address addr = iaddr.GetLocal();
     Address remoteAddress(InetSocketAddress(addr, portNum));
     FileTransferHelper fileHelper(remoteAddress);
-    fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
-    fileHelper.SetAttribute("FileSize", UintegerValue(2*10e6)); // The setting of FileSize should be careful, flowmonitor may fail to trace if too small
+    fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
+    // fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
+    fileHelper.SetAttribute("FileSize", UintegerValue(5*10e6)); // The setting of FileSize should be careful, flowmonitor may fail to trace if too small
 
     // Install on server
     ApplicationContainer apps = fileHelper.Install(servers.Get(i));
 
     // Install on client
-    PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
+    PacketSinkHelper packetSink("ns3::TcpSocketFactory", remoteAddress);
+    // PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
     packetSink.Install(clients.Get(i));
 
     portNum++;

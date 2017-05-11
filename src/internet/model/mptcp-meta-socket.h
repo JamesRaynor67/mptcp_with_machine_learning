@@ -35,7 +35,7 @@
 
 //#include "ns3/mp-tcp-cc.h"
 #include "ns3/inet-socket-address.h"
-#include "mptcp-scheduler-round-robin.h"
+#include "mptcp-scheduler.h"
 #include "tcp-parameters.h"
 
 #include "ns3/rl-data-interface.h"

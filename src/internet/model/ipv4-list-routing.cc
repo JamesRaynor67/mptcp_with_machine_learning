@@ -81,7 +81,6 @@ Ipv4ListRouting::PrintRoutingTable (Ptr<OutputStreamWrapper> stream) const
        i != m_routingProtocols.end (); i++)
     {
       *stream->GetStream () << "  Priority: " << (*i).first << " Protocol: " << (*i).second->GetInstanceTypeId () << std::endl;
-      std::cout<< "Hong Jiaming: Ipv4ListRouting::PrintRoutingTable: " << (*i).second->GetTypeId() << std::endl;
       (*i).second->PrintRoutingTable (stream);
     }
 }

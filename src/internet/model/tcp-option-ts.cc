@@ -109,7 +109,7 @@ TcpOptionTS::GetKind (void) const
 uint32_t
 TcpOptionTS::GetTimestamp (void) const
 {
-  std::cout << "Hong Jiaming 18: TcpOptionTS::GetTimestamp m_timestamp == " << m_timestamp << std::endl;
+  // std::cout << "Hong Jiaming 18: TcpOptionTS::GetTimestamp m_timestamp == " << m_timestamp << std::endl;
   return m_timestamp;
 }
 

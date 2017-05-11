@@ -27,10 +27,10 @@
 
 namespace ns3
 {
- 
+
 NS_LOG_COMPONENT_DEFINE("MpTcpSchedulerFastestRTT");
 NS_OBJECT_ENSURE_REGISTERED(MpTcpSchedulerFastestRTT);
-  
+
 TypeId
 MpTcpSchedulerFastestRTT::GetTypeId (void)
 {
@@ -38,7 +38,7 @@ MpTcpSchedulerFastestRTT::GetTypeId (void)
                               .SetParent<MpTcpScheduler> ()
                               .AddConstructor<MpTcpSchedulerFastestRTT> ()
                       ;
-  
+
   return tid;
 }
 
@@ -59,26 +59,26 @@ MpTcpSchedulerFastestRTT::GetAvailableControlSubflow()
   NS_ASSERT(m_metaSock->GetNActiveSubflows() > 0);
   return  m_metaSock->GetActiveSubflow(0);
 }
-  
+
 Ptr<MpTcpSubflow> MpTcpSchedulerFastestRTT::GetAvailableSubflow (uint32_t dataToSend, uint32_t metaWindow)
 {
   NS_LOG_FUNCTION(this);
   NS_ASSERT(m_metaSock);
-  
+
   uint32_t subflowCount = m_metaSock->GetNActiveSubflows();
   Time lowestEstimate = Time::Max();
-  
+
   Ptr<MpTcpSubflow> available = nullptr;
-  
+
   for(uint32_t index = 0; index < subflowCount; ++index)
   {
     Ptr<MpTcpSubflow> subflow = m_metaSock->GetActiveSubflow(index);
     uint32_t subflowWindow = subflow->AvailableWindow();
-    
+
     NS_LOG_DEBUG("subflow AvailableWindow  [" << subflowWindow << "]");
     uint32_t canSend = std::min(subflowWindow, metaWindow);
     //uint32_t canSend = subflowWindow;
-    
+
     //Check whether we can send (check silly window)
     if(canSend > 0 && subflow->CanSendPendingData(dataToSend))
     {
@@ -91,9 +91,8 @@ Ptr<MpTcpSubflow> MpTcpSchedulerFastestRTT::GetAvailableSubflow (uint32_t dataTo
       }
     }
   }
-  
+
   return available;
 }
-  
-} // namespace ns3
 
+} // namespace ns3

@@ -12,8 +12,8 @@ void TraceMacTx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet);
 void TraceQueueItemDrop(Ptr<OutputStreamWrapper> stream, Ptr<const QueueItem> item);
 
 void ConfigureTracing (const string& outputDir, const NodeContainer& server,
-                       const NodeContainer& client, const NodeContainer& isps,
-                       const NodeContainer& ixs);
+                       const NodeContainer& client, const NodeContainer& middle,
+                       const NodeContainer& other_servers, const NodeContainer& other_clients);
 
 void TraceMonitorStates(const std::string& outputDir);
 

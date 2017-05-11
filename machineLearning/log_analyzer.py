@@ -48,7 +48,7 @@ def analyze_client_end_node(file_path):
     subflow_1, = plt.plot(x[0], y[0], 'ro')
     subflow_2, = plt.plot(x[1], y[1], 'bo')
     plt.legend([subflow_1, subflow_2], ['client side subflow 1', 'client side subflow 2'], loc='upper left')
-    plt.title('Client Side Time-Seqence number')
+    plt.title('Client Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
     plt.xlabel('Time / s', fontsize = 14, color = 'black')
     plt.ylabel('Seqence number', fontsize = 14, color = 'black')
 
@@ -79,31 +79,48 @@ def analyze_server_end_point(file_path):
     plt.ylabel('Seqence number', fontsize = 14, color = 'black')
 
 def analyze_flow(file_path):
+    mptcp_subflow_id = [-1]*4
     record = []
     with open(file_path, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
-            timestamp = int(row[0])/10e8
+            timestamp = int(row[0])/10e8    
             flowId = int(row[1])
+            From = row[2]
+            To = row[3]
             TxPacket = int(row[4])
             RxPacket = int(row[6])
             delaySum = float(row[8][1:-2])/10e8
             lostPackets = int(row[10])
-            record.append([timestamp, flowId, TxPacket, RxPacket, delaySum, lostPackets])
 
+            record.append([timestamp, flowId, TxPacket, RxPacket, delaySum, lostPackets])
+            if -1 in mptcp_subflow_id:
+                if flowId not in mptcp_subflow_id:
+                    if From == '192.168.0.1' and To == '192.168.9.2':
+                        mptcp_subflow_id[1] = flowId
+                    elif From == '192.168.9.2' and To == '192.168.0.1':
+                        mptcp_subflow_id[0] = flowId
+                    elif From == '192.168.0.1' and To == '192.168.11.2':
+                        mptcp_subflow_id[3] = flowId
+                    elif From == '192.168.11.2' and To == '192.168.0.1':
+                        mptcp_subflow_id[2] = flowId
+
+    print 'mptcp subflow ids: ', mptcp_subflow_id
     record.sort(key=lambda ele:ele[0])
-    x = [[],[],[],[],[]]
-    y = [[],[],[],[],[]]
+    
+    x = [[],[],[],[]]
+    y = [[],[],[],[]]
     for row in record:
         # flow id is from 1 to N,
-        x[row[1]].append(row[0]) # append time stamp for flow with id row[1]
-        y[row[1]].append(row[2]) # append TxPacket num for flow with id row[1]
+        if row[1] in mptcp_subflow_id:
+            x[mptcp_subflow_id.index(row[1])].append(row[0]) # append time stamp for flow with id row[1]
+            y[mptcp_subflow_id.index(row[1])].append(row[2]) # append TxPacket num for flow with id row[1]
 
-    s_c_subflow_1, = plt.plot(x[1], y[1], 'r-', linewidth=2.0) # s->c 1
-    c_s_subflow_1, = plt.plot(x[2], y[2], 'r-.', linewidth=2.0) # c->s 1
-    s_c_subflow_2, = plt.plot(x[3], y[3], 'b-', linewidth=2.0) # s->c 2
-    c_s_subflow_2, = plt.plot(x[4], y[4], 'b-.', linewidth=2.0) # c->s 2
+    s_c_subflow_1, = plt.plot(x[0], y[0], 'r-', linewidth=2.0) # s->c 1
+    c_s_subflow_1, = plt.plot(x[1], y[1], 'r-.', linewidth=2.0) # c->s 1
+    s_c_subflow_2, = plt.plot(x[2], y[2], 'b-', linewidth=2.0) # s->c 2
+    c_s_subflow_2, = plt.plot(x[3], y[3], 'b-.', linewidth=2.0) # c->s 2
     plt.legend([s_c_subflow_1, c_s_subflow_1, s_c_subflow_2, c_s_subflow_2],
                ['server to client packet number over subflow 1', 'client to server packet number over subflow 1',
                 'server to client packet number over subflow 2', 'client to server packet number over subflow 2'], loc='upper left')

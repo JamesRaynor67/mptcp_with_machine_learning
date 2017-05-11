@@ -172,26 +172,26 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   }
   cout << endl;
 
-  for(uint32_t i = 0; i < server.GetN(); ++i)
-  {
-    PrintRoutingTable(server.Get(i), outputDir, "srv" + to_string(i));
-  }
-  for(uint32_t i = 0; i < client.GetN(); ++i)
-  {
-    PrintRoutingTable(client.Get(i), outputDir, "cl" + to_string(i));
-  }
-  for (uint32_t  i = 0; i < middle.GetN(); ++i)
-  {
-    PrintRoutingTable(middle.Get(i), outputDir, "middle" + to_string(i));
-  }
-  for (uint32_t  i = 0; i < other_servers.GetN(); ++i)
-  {
-    PrintRoutingTable(other_servers.Get(i), outputDir, "other_servers" + to_string(i));
-  }
-  for (uint32_t  i = 0; i < other_clients.GetN(); ++i)
-  {
-    PrintRoutingTable(other_clients.Get(i), outputDir, "other_clients" + to_string(i));
-  }
+  // for(uint32_t i = 0; i < server.GetN(); ++i)
+  // {
+  //   PrintRoutingTable(server.Get(i), outputDir, "srv" + to_string(i));
+  // }
+  // for(uint32_t i = 0; i < client.GetN(); ++i)
+  // {
+  //   PrintRoutingTable(client.Get(i), outputDir, "cl" + to_string(i));
+  // }
+  // for (uint32_t  i = 0; i < middle.GetN(); ++i)
+  // {
+  //   PrintRoutingTable(middle.Get(i), outputDir, "middle" + to_string(i));
+  // }
+  // for (uint32_t  i = 0; i < other_servers.GetN(); ++i)
+  // {
+  //   PrintRoutingTable(other_servers.Get(i), outputDir, "other_servers" + to_string(i));
+  // }
+  // for (uint32_t  i = 0; i < other_clients.GetN(); ++i)
+  // {
+  //   PrintRoutingTable(other_clients.Get(i), outputDir, "other_clients" + to_string(i));
+  // }
 }
 
 void TraceMonitorStates(const string& outputDir){

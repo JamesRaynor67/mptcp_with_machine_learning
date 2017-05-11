@@ -239,6 +239,7 @@ public:
 
   /* Following public functions are just for RL-MPTCP */
   Ptr<TcpSocketState> GetTcb(void);
+  double GetDelayBandwidthProduct(void);
 
 protected:
   friend class MpTcpMetaSocket;

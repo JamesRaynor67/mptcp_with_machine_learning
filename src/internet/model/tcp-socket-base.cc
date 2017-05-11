@@ -1110,6 +1110,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
       else
         {
           // Hong Jiaming: for wired connection, program goes here!!!
+          NS_LOG_LOGIC("Hong Jiaming 10: TcpSocketBase::DoForwardUp m_timestampEnabled is set to be false ");
           m_tcpParams->m_timestampEnabled = false;
         }
 
@@ -3182,7 +3183,7 @@ TcpSocketBase::AddOptions (TcpHeader& header)
 
   if (m_tcpParams->m_timestampEnabled)
   {
-    std::cout << "Hong Jiaming 16. It should be here to add timestamp!" << std::endl;
+    // std::cout << "Hong Jiaming 16. It should be here to add timestamp!" << std::endl;
     AddOptionTimestamp (header);
   }
 }
@@ -3260,10 +3261,10 @@ TcpSocketBase::ProcessOptionTimestamp (const Ptr<const TcpOption> option,
 
   Ptr<const TcpOptionTS> ts = DynamicCast<const TcpOptionTS> (option);
 
-  std::cout << "Hong Jiaming 20.0: seq == " << seq << ", m_rxBuffer->NextRxSequence () == " << m_rxBuffer->NextRxSequence () << " ,m_highTxAck == " << m_highTxAck << std::endl;
+  // std::cout << "Hong Jiaming 20.0: seq == " << seq << ", m_rxBuffer->NextRxSequence () == " << m_rxBuffer->NextRxSequence () << " ,m_highTxAck == " << m_highTxAck << std::endl;
   if (seq == m_rxBuffer->NextRxSequence () && seq <= m_highTxAck)
     {
-      std::cout << "Hong Jiaming 20: Set m_timestampToEcho" << std::endl;
+      // std::cout << "Hong Jiaming 20: Set m_timestampToEcho" << std::endl;
       m_timestampToEcho = ts->GetTimestamp (); // Hong Jiaming 18: this is the problem, not arrive here at all
     }
 
@@ -3324,7 +3325,7 @@ TcpSocketBase::AddOptionTimestamp (TcpHeader& header)
   option->SetEcho (m_timestampToEcho);
 
   bool tsAdded = header.AppendOption (option);
-  std::cout << "Hong Jiaming 15 TS added: " << tsAdded << std::endl;
+  // std::cout << "Hong Jiaming 15 TS added: " << tsAdded << std::endl;
   NS_LOG_INFO (m_node->GetId () << " Add option TS, ts=" <<
                option->GetTimestamp () << " echo=" << m_timestampToEcho);
 }

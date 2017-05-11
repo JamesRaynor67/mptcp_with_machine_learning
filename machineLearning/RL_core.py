@@ -204,61 +204,55 @@ class DeepQNetwork:
 
 
 def extract_observation(dataRecorder):
-    # dataRecorder:
-    #     self.next_seq_num = 0
-    #     self.train_data = {}
-    #     def add_one_record(self, str_data):
-    #     def get_subflow_data_dic(self):
-    #     def get_latest_subflow_data(self):
-    #     def print_all_train_data(self):
-    #     def print_latest_train_data(self):
-
     # let's set return value "observation" to be a np array with fixed length
-    value_dic = dataRecorder.get_latest_subflow_data()
-    observation = np.zeros((2))
+    value_dic = dataRecorder.get_latest_data()
+    observation = np.zeros((4))
     for i in range(value_dic["nbOfSubflows"]):
         name = "window" + str(i)
-        observation[i] = value_dic[name]
-    # if value_dic["nbOfSubflows"] == 1:
-    #     observation = str(value_dic["window0"])
-    # elif value_dic["nbOfSubflows"] == 2:
-    #     observation = str(value_dic["window0"] + value_dic["window1"])
-    # else:
-    #     assert 1 is not 1
+        observation[i*2] = value_dic[name]
+        name = "cWnd" + str(i)
+        observation[i*2+1] = value_dic[name]
     return observation
 
 def action_translator(dataRecorder, action):
-    # let's set return value "action" to be a np array with fixed length
-    # actions=["use subflow 0", "use subflow 1"]
+    # action is a numpy array, so we need translator
+    # let's set return value "action" to be an integer
+    # 0 choose subflow 0
+    # 1 choose subflow 1
+    # 2 choose subflow 2
     # print type(action), action
     return str(int(action))
 
 def apply_action(interacter_socket, dataRecorder, action):
     dataRecorder.action.append(action)
+    tx_str = action_translator(dataRecorder, action)
     # print dataRecorder.get_latest_subflow_data()
-    # print '-- apply action'
-    interacter_socket.send(action_translator(dataRecorder, action)) # apply action
+    # print '-- apply action: dfdfddf'
+    interacter_socket.send(tx_str) # apply action
 
 def calculate_reward(dataRecorder, reset = False):
     if reset == False:
-        last_record = dataRecorder.get_latest_subflow_data()
+        last_record = dataRecorder.get_latest_data()
         # print last_record
         # print '--calculate_reward'
+        # print 'old lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
         reward = 0
-        if "lastAckedSeq1" not in last_record:
-            reward = last_record["lastAckedSeq0"] - calculate_reward.lastAckedSeqSum
-            calculate_reward.lastAckedSeqSum = last_record["lastAckedSeq0"]
-        else:
-            reward = (last_record["lastAckedSeq0"] + last_record["lastAckedSeq1"]) - calculate_reward.lastAckedSeqSum
-            calculate_reward.lastAckedSeqSum = last_record["lastAckedSeq0"] + last_record["lastAckedSeq1"]
+        for i in range(last_record['nbOfSubflows']):
+            reward += last_record["lastAckedSeq" + str(i)]
+        reward -= calculate_reward.lastAckedSeqSum
+
+        calculate_reward.lastAckedSeqSum = 0
+        for i in range(last_record['nbOfSubflows']):
+            calculate_reward.lastAckedSeqSum += last_record["lastAckedSeq" + str(i)]
 
         # if dataRecorder.action or dataRecorder.action[-1] != 'not send':
         #     reward -= 10
-
+        # print 'new lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
+        # print 'reward == ' + str(reward)
         return reward
         # don't condiser seq_num wrap
     else:
-        print 'In last episode, calculate_reward.lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
+        # print 'In last episode, calculate_reward.lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
         calculate_reward.lastAckedSeqSum = 0
 
 calculate_reward.lastAckedSeqSum = 0

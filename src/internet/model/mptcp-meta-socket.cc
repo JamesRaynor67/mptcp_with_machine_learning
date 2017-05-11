@@ -41,7 +41,9 @@
 #include "ns3/drop-tail-queue.h"
 #include "ns3/object-vector.h"
 #include "ns3/mptcp-scheduler-fastest-rtt.h"
+#include "ns3/mptcp-scheduler-random.h"
 #include "ns3/mptcp-scheduler-round-robin.h"
+#include "ns3/mptcp-scheduler-largest-dbp.h"
 #include "ns3/mptcp-id-manager.h"
 #include "ns3/mptcp-id-manager-impl.h"
 #include "ns3/mptcp-subflow.h"
@@ -196,7 +198,7 @@ MpTcpMetaSocket::MpTcpMetaSocket() :  TcpSocketImpl()
   m_subflowAdded = MakeNullCallback<void, Ptr<MpTcpSubflow>, bool> ();
 
   m_tcpParams->m_mptcpEnabled = true;
-  // std::cout << "Hong Jiaming 14.5" << std::endl;
+  // std::cout << "Hong Jiaming 14.5: MpTcpMetaSocket initialization end" << std::endl;
 }
 
 MpTcpMetaSocket::MpTcpMetaSocket(const MpTcpMetaSocket& sock) : TcpSocketImpl(sock)
@@ -1045,7 +1047,9 @@ MpTcpMetaSocket::SendPendingData()
   // Hong Jiaming 22
   SendStates(this->m_rlSocket);
   std::string rcv_str = RcvActions(this->m_rlSocket);
+  rcv_str = "1";
   ApplyActions(rcv_str);
+  // ApplyActions("0");
 
   if (m_txBuffer->Size () == 0)
     {
@@ -2299,22 +2303,21 @@ void
 MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
   static uint32_t seq_num = 0;
 
-  uint32_t nbOfSubflows = m_subflows.size();
-  uint32_t nbOfActiveSubflows = this->GetNActiveSubflows();
+  uint32_t nbOfSubflows = this->GetNSubflows();
+  NS_ASSERT (nbOfSubflows == m_subflows.size()); // Hong Jiaming: Just for debug
   // std::cout << "Hong Jiaming 21: number of active subflows:" << nbOfSubflows << std::endl;
   // RttHistory_t
   // socket.add("time", Simulator::Now().GetNanoSeconds());
   socket.add("ssn", seq_num);
   seq_num++;
-  socket.add("nbOfSubflows", nbOfActiveSubflows);
-  socket.add("metaWindow", uint32_t(1));
-  socket.add("time", Simulator::Now().GetNanoSeconds());
+  socket.add("nbOfSubflows", nbOfSubflows);
+  socket.add("time", Simulator::Now().GetMicroSeconds());
 
-  for(uint32_t index = 0; index < this->GetNActiveSubflows(); index++){
-    Ptr<MpTcpSubflow> subflow = this->GetActiveSubflow(index);
+  for(uint32_t index = 0; index < this->GetNSubflows(); index++){
+    Ptr<MpTcpSubflow> subflow = this->GetSubflow(index);
     Ptr<TcpSocketState> tcb = subflow->GetTcb();
 
-    uint32_t subflowWindow = subflow->AvailableWindow();
+    uint32_t subflowWindow = subflow->AvailableWindow(); // AvailableWindow = cWnd - (SND.NXT - SND.UNA)
     socket.add("window"+std::to_string(index), subflowWindow);
     socket.add("cWnd"+std::to_string(index), tcb->m_cWnd);
     socket.add("lastAckedSeq"+std::to_string(index), tcb->m_lastAckedSeq.GetValue());
@@ -2330,11 +2333,11 @@ MpTcpMetaSocket::RcvActions(rl::InterfaceToRL& socket){
 }
 
 void
-MpTcpMetaSocket::ApplyActions(string recv_str){
+  MpTcpMetaSocket::ApplyActions(string recv_str){
   // do applyActions
   uint32_t index = uint32_t(std::stoi(recv_str));
   ChooseOneScheduler(index);
-  std::cout << "Sechduler changed to: " << index << std::endl;
+  // std::cout << "Sechduler changed to: " << index << std::endl;
   return;
 }
 
@@ -2359,6 +2362,17 @@ MpTcpMetaSocket::CreateSchedulerArmoury()
   scheduler->SetMeta(this);
   m_schedulerArmoury.push_back(std::make_pair(scheduler, MpTcpSchedulerFastestRTT::GetTypeId()));
 
+  schedulerTypeId = MpTcpSchedulerRandom::GetTypeId();
+  schedulerFactory.SetTypeId(schedulerTypeId);
+  scheduler = schedulerFactory.Create<MpTcpScheduler>();
+  scheduler->SetMeta(this);
+  m_schedulerArmoury.push_back(std::make_pair(scheduler, MpTcpSchedulerRandom::GetTypeId()));
+
+  schedulerTypeId = MpTcpSchedulerLargestDBP::GetTypeId();
+  schedulerFactory.SetTypeId(schedulerTypeId);
+  scheduler = schedulerFactory.Create<MpTcpScheduler>();
+  scheduler->SetMeta(this);
+  m_schedulerArmoury.push_back(std::make_pair(scheduler, MpTcpSchedulerLargestDBP::GetTypeId()));
   // We can add more like Random, Largest window size, etc.
 }
 

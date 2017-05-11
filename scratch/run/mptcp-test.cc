@@ -67,7 +67,6 @@ int main(int argc, char* argv[])
   // NodeContainer other_servers;
   // NodeContainer other_clients;
   // CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs, other_servers, other_clients);
-  // ConfigureTracing(outputDir, server, client, isps, ixs);
 
 
   NodeContainer server;
@@ -76,6 +75,8 @@ int main(int argc, char* argv[])
   NodeContainer other_servers;
   NodeContainer other_clients;
   CreateClassicNetwork (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  // CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  ConfigureTracing(outputDir, server, client, middle, other_servers, other_clients);
 
   //Create and install the applications on the server and client
   if(appType == onoff)
@@ -104,15 +105,21 @@ int main(int argc, char* argv[])
   Ipv4GlobalRoutingHelper g;
   Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("dynamic-global-routing-mptcp.routes", std::ios::out);
   g.PrintRoutingTableAllAt (Seconds (0.5), routingStream);
-
+  Ptr<OutputStreamWrapper> routingStream2 = Create<OutputStreamWrapper> ("dynamic-global-routing-mptcp.routes-16", std::ios::out);
+  g.PrintRoutingTableAllAt (Seconds (16), routingStream2);
   //Create an output directory and configure tracing
   AnimationInterface anim ("mptcp-animation.xml");
 
-  // Simulator::Schedule(Seconds(20), &TraceMonitorStates, outputDir);
-  Simulator::Schedule(Seconds(2), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(3), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(5), &PrintMonitorStates);
-  Simulator::Stop (Seconds(6.0));
+  // Simulator::Schedule(Seconds(4), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(8), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(12), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(16), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(20), &PrintMonitorStates);
+  for(int i = 0; i < 40 * 10;i++){
+    Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
+
+  }
+  Simulator::Stop (Seconds(40));
 
   for(int i = 0;i < client.GetN();i++){
     std::cout << "\nclient: " << "node " << client.Get(i)->GetId() << "\n";
@@ -133,6 +140,7 @@ int main(int argc, char* argv[])
       std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
     }
   }
+
   for(int i = 0;i < middle.GetN();i++){
     std::cout << "\nmiddle: " << "node " << middle.Get(i)->GetId() << "\n";
     Ptr<Node> node = middle.Get (i); // Get pointer to ith node in container
