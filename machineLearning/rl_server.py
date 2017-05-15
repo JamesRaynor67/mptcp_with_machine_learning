@@ -132,10 +132,10 @@ if __name__ == "__main__":
         # # print "sleep 30 seconds from now"
         # # sleep(30)
         episode_count += 1
-    RL.plot_cost()
+    # RL.plot_cost()
+    # # plt.figure()
+    # # plt.plot(dataRecorder.action, 'or')
+    # # plt.show()
     # plt.figure()
-    # plt.plot(dataRecorder.action, 'or')
+    # plt.plot(reward_record, 'ro')
     # plt.show()
-    plt.figure()
-    plt.plot(reward_record, 'ro')
-    plt.show()

@@ -37,7 +37,8 @@ def analyze_client_end_node(file_path):
                 timestamp = int(row[0])/10e8
                 subflowId = int(row[3])
                 seqnum = int(row[4])
-                record.append([timestamp, subflowId, seqnum])
+                if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
+                    record.append([timestamp, subflowId, seqnum])
 
     record.sort(key=lambda ele:ele[0])
     x, y = [[],[]], [[],[]]
@@ -59,11 +60,12 @@ def analyze_server_end_point(file_path):
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
-            if int(row[1]) == 1: # not send record
+            if int(row[1]) == 1: # not receive record
                 timestamp = int(row[0])/10e8
                 subflowId = int(row[3])
                 seqnum = int(row[4])
-                record.append([timestamp, subflowId, seqnum])
+                if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
+                    record.append([timestamp, subflowId, seqnum])
 
     record.sort(key=lambda ele:ele[0])
     x, y = [[],[]], [[],[]]
