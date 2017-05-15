@@ -21,7 +21,7 @@ python machineLearning/rl_server.py &
 bash RL-MPTCP_training_script.sh
 ```
 
-PS. Because of the modification of tcp part, some irrelevant tests of original 300+ test will fail if try to compile and run original test suit.
+PS. Because of the modification of tcp part, some irrelevant tests of original 300+ test will fail if try to compile and run original test suit. (Should be already fix)
 
 Env:
 gcc version 4.8.4 (Ubuntu 4.8.4-2ubuntu1~14.04.3)
