@@ -504,7 +504,7 @@ TcpL4Protocol::Receive (Ptr<Packet> packet,
                                    incomingTcpHeader.GetDestinationPort (),
                                    incomingIpHeader.GetSource (),
                                    incomingTcpHeader.GetSourcePort (),
-                                   incomingInterface);
+                                   incomingInterface); // Hong Jiaming: Lao Yuan, This is where the problem is
 
   if (endPoints.empty ())
     {

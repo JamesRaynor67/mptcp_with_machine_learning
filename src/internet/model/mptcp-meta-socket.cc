@@ -849,6 +849,7 @@ bool
 MpTcpMetaSocket::NotifyJoinRequest (const Address &from, const Address & toAddress)
 {
   NS_LOG_FUNCTION (this << &from);
+  // std::cout << "Hong Jiaming 41: from == " << from << " to == " << toAddress << std::endl;
   if (!m_joinRequest.IsNull ())
   {
     return m_joinRequest (this, from, toAddress);
@@ -859,6 +860,7 @@ MpTcpMetaSocket::NotifyJoinRequest (const Address &from, const Address & toAddre
     // this way people writing code don't have to do anything
     // special like register a callback that returns true
     // just to get incoming connections
+    // Hong Jiaming: m_joinRequest is Null currently, it always returns true
     return true;
   }
 }
@@ -931,6 +933,8 @@ void MpTcpMetaSocket::NotifySubflowDataSent(Ptr<Socket> socket, uint32_t dataSen
 
 void MpTcpMetaSocket::NotifyFullyEstablished ()
 {
+  NS_LOG_FUNCTION(this << " Hong Jiaming 54: m_connectionFullyEstablished == " <<  m_connectionFullyEstablished.IsNull());
+
   if (!m_connectionFullyEstablished.IsNull())
   {
     m_connectionFullyEstablished(this);
@@ -1045,9 +1049,10 @@ MpTcpMetaSocket::SendPendingData()
 {
   NS_LOG_FUNCTION(this << "Sending data");
   // Hong Jiaming 22
+  // The logic to make sure that every 100ms, sechduler is choosed one is done in RL python module
   SendStates(this->m_rlSocket);
   std::string rcv_str = RcvActions(this->m_rlSocket);
-  rcv_str = "1";
+  rcv_str = "3";
   ApplyActions(rcv_str);
   // ApplyActions("0");
 
@@ -1081,6 +1086,7 @@ MpTcpMetaSocket::SendPendingData()
       break;
     }
 
+    //std::cout << "Hong Jiaming 43: send from " << subflow->GetEndpoint()->GetLocalAddress() << ":" << subflow->GetEndpoint()->GetLocalPort() << " to " << subflow->GetEndpoint()->GetPeerAddress() << ":" << subflow->GetEndpoint()->GetPeerPort() << std::endl;
     uint32_t length = m_scheduler->GetSendSizeForSubflow(subflow, subflow->GetSegSize(), dataToSend);
 
     //Create the DSN->SSN mapping in the subflow

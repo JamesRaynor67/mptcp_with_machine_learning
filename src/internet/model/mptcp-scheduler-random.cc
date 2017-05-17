@@ -3,6 +3,7 @@
 #include "ns3/mptcp-subflow.h"
 #include "ns3/mptcp-meta-socket.h"
 #include "ns3/log.h"
+#include "ns3/random-variable-stream.h"
 
 namespace ns3
 {
@@ -43,6 +44,7 @@ Ptr<MpTcpSubflow> MpTcpSchedulerRandom::GetAvailableSubflow (uint32_t dataToSend
   NS_LOG_FUNCTION(this);
   NS_ASSERT(m_metaSock);
 
+  static Ptr<UniformRandomVariable> rdg = CreateObject<UniformRandomVariable> ();
   uint32_t subflowCount = m_metaSock->GetNActiveSubflows();
   vector<uint32_t> availableIndexRecord;
 
@@ -64,13 +66,15 @@ Ptr<MpTcpSubflow> MpTcpSchedulerRandom::GetAvailableSubflow (uint32_t dataToSend
   }
 
   if(availableIndexRecord.size() > 0){
-    std::uniform_int_distribution<std::mt19937::result_type> dist(0, availableIndexRecord.size()-1);
-    available = m_metaSock->GetActiveSubflow(availableIndexRecord[dist(this->rng)]);
+    // GetValue() gets the next random value, as a double in the specified range [min, max).
+    available = m_metaSock->GetActiveSubflow(availableIndexRecord[size_t(rdg->GetValue(0, availableIndexRecord.size()))]);
+    // std::uniform_int_distribution<std::mt19937::result_type> dist(0, availableIndexRecord.size()-1);
+    // available = m_metaSock->GetActiveSubflow(availableIndexRecord[dist(this->rng)]);
   }
 
   return available;
 }
 
-std::mt19937 MpTcpSchedulerRandom::rng(1); // set seed to be 1
+// std::mt19937 MpTcpSchedulerRandom::rng(1); // set seed to be 1
 
 } // namespace ns3

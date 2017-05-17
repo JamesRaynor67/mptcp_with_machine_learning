@@ -4,10 +4,6 @@
 
 namespace ns3{
 
-Ptr<Application> CreateApplication (Address& remoteAddress,
-                                    DataRate dataRate,
-                                    uint32_t packetSize);
-
 void InstallOnOffApplications(NodeContainer& servers,
                               NodeContainer& clients,
                               uint32_t packetSize);

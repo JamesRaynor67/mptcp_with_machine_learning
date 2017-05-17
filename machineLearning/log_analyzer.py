@@ -9,8 +9,8 @@ def analyze_application(file_path):
         next(spamreader)
         total_psize = 0
         for row in spamreader:
-            if int(row[1]) == 1: # not send record
-                timestamp = int(row[0])/10e8
+            if int(row[1]) == 0: # not send record
+                timestamp = int(row[0])/1e9
                 total_psize += int(row[7])
                 record.append([timestamp, total_psize])
 
@@ -33,8 +33,8 @@ def analyze_client_end_node(file_path):
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
-            if int(row[1]) == 0: # not send record
-                timestamp = int(row[0])/10e8
+            if int(row[1]) == 1: # not receive record
+                timestamp = int(row[0])/1e9
                 subflowId = int(row[3])
                 seqnum = int(row[4])
                 if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
@@ -46,6 +46,7 @@ def analyze_client_end_node(file_path):
         # subflow id is from 0 to n-1
         x[row[1]].append(row[0])
         y[row[1]].append(row[2])
+    print len(y),len(y[0]),len(y[1])
     subflow_1, = plt.plot(x[0], y[0], 'ro')
     subflow_2, = plt.plot(x[1], y[1], 'bo')
     plt.legend([subflow_1, subflow_2], ['client side subflow 1', 'client side subflow 2'], loc='upper left')
@@ -60,8 +61,8 @@ def analyze_server_end_point(file_path):
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
-            if int(row[1]) == 1: # not receive record
-                timestamp = int(row[0])/10e8
+            if int(row[1]) == 0: # not send record
+                timestamp = int(row[0])/1e9
                 subflowId = int(row[3])
                 seqnum = int(row[4])
                 if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
@@ -87,13 +88,13 @@ def analyze_flow(file_path):
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
-            timestamp = int(row[0])/10e8    
+            timestamp = int(row[0])/1e9
             flowId = int(row[1])
             From = row[2]
             To = row[3]
             TxPacket = int(row[4])
             RxPacket = int(row[6])
-            delaySum = float(row[8][1:-2])/10e8
+            delaySum = float(row[8][1:-2])/1e9
             lostPackets = int(row[10])
 
             record.append([timestamp, flowId, TxPacket, RxPacket, delaySum, lostPackets])
@@ -137,7 +138,7 @@ def analyze_reward(file_path):
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
-            timestamp = int(row[0])/10e9
+            timestamp = int(row[0])/1e9
             reward = int(row[1])
             record.append([timestamp, reward])
 
@@ -165,7 +166,7 @@ if __name__ == '__main__':
 
     batch_num = int(sys.argv[1])
     plt.subplot(4,1,1)
-    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
+    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
     # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data_wrong/' + str(batch_num) + '_mptcp_server')
     # analyze_flow('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server_cWnd')
     # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')

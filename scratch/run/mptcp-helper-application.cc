@@ -8,44 +8,88 @@
 
 namespace ns3{
 
-Ptr<Application> CreateApplication (Address& remoteAddress, DataRate dataRate, uint32_t packetSize)
-{
-  Ptr<MpOnOffApplication> onOff = CreateObject<MpOnOffApplication>();
-  onOff->SetAttribute("Protocol", StringValue("ns3::MpTcpSocketFactory"));
-  onOff->SetAttribute("Remote", AddressValue (remoteAddress));
-  onOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
-  onOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
-  onOff->SetAttribute("DataRate", DataRateValue (dataRate));
-  onOff->SetAttribute("PacketSize", UintegerValue (packetSize));
-  return onOff;
-}
-
 void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, uint32_t packetSize)
 {
-  //Create and install the applications on the server and client
+  // Create and install the applications on the server and client
+  static int mptcpAppNum = 1;
   NS_ASSERT(servers.GetN() == clients.GetN());
-  std::cout << "WTF InstallOnOffApplications 0" << endl;
 
-  static int portNum = 4000;
-  for(int i = 0; i < clients.GetN();i++){
-    std::cout << "InstallOnOffApplications 1" << endl;
-    Ptr<Ipv4> ipv4 = clients.Get(i)->GetObject<Ipv4>(); // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
+  static int sinkPort = 4000;
+  for(int i = 0; i < servers.GetN();i++){
+    Ptr<Ipv4> ipv4 = servers.Get(i)->GetObject<Ipv4>(); // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
     Ipv4InterfaceAddress iaddr = ipv4->GetAddress(1,0);
     Ipv4Address addr = iaddr.GetLocal();
-    std::cout << "InstallOnOffApplications 2" << endl;
-    Address remoteAddress(InetSocketAddress(addr, portNum));
-    std::cout << "From: " << servers.Get(i)->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() << " To: " << addr << endl;
+    Address sinkAddress(InetSocketAddress(addr, sinkPort));
+    std::cout << "From: " << clients.Get(i)->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() << " To: " << addr << endl;
 
     // Create application
-    Ptr<Application> mpOnOff = CreateApplication(remoteAddress, DataRate("0.3Mbps"), packetSize);
+    if(mptcpAppNum > 0){
+      mptcpAppNum--;
+      std::cout << "MPTCP OnOff App installed" << std::endl;
+      Ptr<Application> onOff;
+      Ptr<MpOnOffApplication> MpOnOff = CreateObject<MpOnOffApplication>();
+      MpOnOff->SetAttribute("Protocol", StringValue("ns3::MpTcpSocketFactory"));
+      MpOnOff->SetAttribute("Remote", AddressValue (sinkAddress));
+      MpOnOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
+      MpOnOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
+      MpOnOff->SetAttribute("DataRate", DataRateValue (DataRate("0.3Mbps")));
+      MpOnOff->SetAttribute("PacketSize", UintegerValue (packetSize));
+      onOff = ns3::DynamicCast<Application>(MpOnOff);
 
-    // Install on server
-    servers.Get(i)->AddApplication(mpOnOff);
+      // Install on server
+      clients.Get(i)->AddApplication(onOff);
 
-    // Install on client
-    PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
-    packetSink.Install(clients.Get(i));
-    portNum++;
+      // Install on client
+      PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
+      // PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", sinkAddress);
+      packetSink.Install(servers.Get(i));
+      sinkPort++;
+    }
+    else{
+      std::cout << "TCP OnOff App installed" << std::endl;
+      PacketSinkHelper packetSinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
+      ApplicationContainer sinkApps = packetSinkHelper.Install(servers.Get(i));
+      // sinkApps.Start (Seconds (0.));
+      // sinkApps.Stop (Seconds (60.));
+
+      OnOffHelper onOffHelper ("ns3::TcpSocketFactory", sinkAddress);
+      onOffHelper.SetAttribute ("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+      onOffHelper.SetAttribute ("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+      onOffHelper.SetAttribute ("DataRate",StringValue ("0.2Mbps"));
+      onOffHelper.SetAttribute ("PacketSize", UintegerValue (packetSize));
+
+      ApplicationContainer source;
+
+      source.Add (onOffHelper.Install (clients.Get(i)));
+      // source.Start (Seconds (1.1));
+      // source.Stop (Seconds (60.0));
+
+// ///////////////////////////////
+//
+//       std::cout << "TCP OnOff App installed" << std::endl;
+//       std::cout << "1" << std::endl;
+//       onOff->SetAttribute("Protocol", StringValue("ns3::TcpSocketFactory"));
+//       // onOff->SetAttribute("Remote", AddressValue (remoteAddress));
+//       std::cout << "2" << std::endl;
+//       onOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
+//       std::cout << "2.1" << std::endl;
+//       onOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
+//       std::cout << "2.2" << std::endl;
+//       onOff->SetAttribute("DataRate", DataRateValue (DataRate("0.1Mbps")));
+//       onOff->SetAttribute("PacketSize", UintegerValue (packetSize));
+//       std::cout << "3" << std::endl;
+//       // Install on server
+//       servers.Get(i)->AddApplication(onOff);
+//       std::cout << "4" << std::endl;
+//
+//       // Install on client
+//       PacketSinkHelper packetSink("ns3::TcpSocketFactory", remoteAddress);
+//       std::cout << "5" << std::endl;
+//       packetSink.Install(clients.Get(i));
+//       std::cout << "6" << std::endl;
+//       sinkPort++;
+//       std::cout << "TCP OnOff App installed, over" << std::endl;
+    }
   }
 }
 
@@ -68,7 +112,7 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
     FileTransferHelper fileHelper(remoteAddress);
     fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
     // fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
-    fileHelper.SetAttribute("FileSize", UintegerValue(5*10e6)); // The setting of FileSize should be careful, flowmonitor may fail to trace if too small
+    fileHelper.SetAttribute("FileSize", UintegerValue(5*10e7)); // The setting of FileSize should be careful, flowmonitor may fail to trace if too small
 
     // Install on server
     ApplicationContainer apps = fileHelper.Install(servers.Get(i));

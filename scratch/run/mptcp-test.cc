@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
   uint32_t type = 0;
   uint32_t appType = 0;
   string outputDir = "mptcp_output";
+  uint32_t simulationDuration = 40;
 
   CommandLine cmd;
   cmd.AddValue("outputDir", "The output directory to write the logs to.", outputDir);
@@ -74,8 +75,9 @@ int main(int argc, char* argv[])
   NodeContainer middle;
   NodeContainer other_servers;
   NodeContainer other_clients;
-  CreateClassicNetwork (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-  // CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  // CreateExtendedClassicNetwork (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  // CreateClassicNetworkWithOtherTraffic (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
   ConfigureTracing(outputDir, server, client, middle, other_servers, other_clients);
 
   //Create and install the applications on the server and client
@@ -110,16 +112,16 @@ int main(int argc, char* argv[])
   //Create an output directory and configure tracing
   AnimationInterface anim ("mptcp-animation.xml");
 
-  // Simulator::Schedule(Seconds(4), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(7.9), &PrintMonitorStates);
   // Simulator::Schedule(Seconds(8), &PrintMonitorStates);
   // Simulator::Schedule(Seconds(12), &PrintMonitorStates);
   // Simulator::Schedule(Seconds(16), &PrintMonitorStates);
   // Simulator::Schedule(Seconds(20), &PrintMonitorStates);
-  for(int i = 0; i < 40 * 10;i++){
+  for(int i = 0; i < simulationDuration * 10;i++){
     Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
 
   }
-  Simulator::Stop (Seconds(40));
+  Simulator::Stop (Seconds(simulationDuration));
 
   for(int i = 0;i < client.GetN();i++){
     std::cout << "\nclient: " << "node " << client.Get(i)->GetId() << "\n";

@@ -796,7 +796,7 @@ MpTcpSubflow::ProcessOptionMpTcpJoin(Ptr<const TcpOptionMpTcpMain> option)
   Ptr<const TcpOptionMpTcpJoin> join = DynamicCast<const TcpOptionMpTcpJoin>(option);
   // TODO should be less restrictive in case there is a loss
 
-  NS_ASSERT_MSG( join, "There must be an MP_JOIN option in the SYN Packet" );
+  NS_ASSERT_MSG(join, "There must be an MP_JOIN option in the SYN Packet" );
   // NS_ASSERT_MSG( join && join->GetMode() == TcpOptionMpTcpJoin::SynAck, "the MPTCP join option received is not of the expected 1 out of 3 MP_JOIN types." );
 
   uint8_t addressId = join->GetAddressId(); //!< each mptcp subflow has a uid assigned

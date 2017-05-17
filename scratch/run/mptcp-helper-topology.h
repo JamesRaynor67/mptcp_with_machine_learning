@@ -6,7 +6,7 @@
 
 namespace ns3{
 
-InternetStackHelper GetInternetStackHelper ();
+InternetStackHelper GetInternetStackHelper (bool useStaticRouting = false);
 
 NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
                                       Ptr<Node> endNode,
@@ -22,13 +22,6 @@ void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& other_servers,
                         NodeContainer& other_clients);
 
-void CreateClassicNetworkWithOtherTraffic (uint32_t packetSize,
-                        NodeContainer& server,
-                        NodeContainer& client,
-                        NodeContainer& middle,
-                        NodeContainer& other_servers,
-                        NodeContainer& other_clients);
-
 void CreateSimplestNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
@@ -37,6 +30,13 @@ void CreateSimplestNetwork (uint32_t packetSize,
                         NodeContainer& other_clients);
 
 void CreateClassicNetwork (uint32_t packetSize,
+                        NodeContainer& server,
+                        NodeContainer& client,
+                        NodeContainer& middle,
+                        NodeContainer& other_servers,
+                        NodeContainer& other_clients);
+
+void CreateExtendedClassicNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
                         NodeContainer& middle,

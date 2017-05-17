@@ -9,10 +9,6 @@ from RL_core import calculate_reward
 from RL_core import apply_action
 from shutil import copyfile
 
-'''
-This file implements Deep Q-learning Network (DQN)
-'''
-
 def IsInt(s):
     # A naive method, but enough here
     if "." in s:
@@ -103,7 +99,7 @@ if __name__ == "__main__":
             recv_str, this_episode_done = socket.recv() # get new observation and reward
 
             if this_episode_done is True:
-                break 
+                break
 
             dataRecorder.add_one_record(recv_str)
             observation_after_action = extract_observation(dataRecorder)

@@ -25,7 +25,7 @@ public:
 
 protected:
   // static std::random_device rd; // seed for rng
-  static std::mt19937 rng;
+  // static std::mt19937 rng;
 };
 
 } // end of 'ns3'

@@ -133,7 +133,7 @@ namespace ns3 {
   void MpOnOffApplication::StartApplication () // Called at time specified by Start
   {
     NS_LOG_FUNCTION (this);
-
+    NS_LOG_FUNCTION (this << " Hong Jiaming 55: Node Id == " << GetNode()->GetId() << " should set callback function for fully established");
     // Create the socket if not already
     // static int count = 0;
     // std::cout << "Start application count: " << count << endl;
@@ -168,10 +168,13 @@ namespace ns3 {
       {
         // std::cout << count << ": 4" << endl;
         //The initial interface bound to the subflow
+        // Hong Jiaming 40: It is right
+        NS_LOG_FUNCTION (this << " Hong Jiaming 56.1: Node Id == " << GetNode()->GetId() << " sets callback function for fully established");
         m_nextLocalAddress = 2;
         meta->SetFullyEstablishedCallback(MakeCallback(&MpOnOffApplication::ConnectionFullyEstablished, this));
       }
     }
+
     m_cbrRateFailSafe = m_cbrRate;
 
     // Make sure no pending event
@@ -324,25 +327,26 @@ namespace ns3 {
   {
     // Hong Jiaming
     // static int count = 0;
-    // std::cout << "ConnectionFullyEstablished count: " << count << endl;
 
     //Get the node's ipv4 interfaces
     Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
     NS_ASSERT(ipv4);
 
+    std::cout << "Hong Jiaming 50: ipv4->GetNInterfaces() == " << ipv4->GetNInterfaces() << " m_nextLocalAddress == " << m_nextLocalAddress << " Id == " << GetNode()->GetId() << endl;
     if(m_nextLocalAddress < ipv4->GetNInterfaces())
     {
       //Try to create a new subflow
+      std::cout << "Hong Jiaming 51: " << endl;
       Ipv4Address localAddress = ipv4->GetAddress(m_nextLocalAddress, 0).GetLocal();
 
       if(ipv4->IsUp (m_nextLocalAddress) &&
          ipv4->IsForwarding (m_nextLocalAddress))
       {
-
+        std::cout << "Hong Jiaming 52: " << endl;
         m_nextLocalAddress++;
 
         InetSocketAddress localSocketAddr(localAddress, 0);
-        socket->ConnectNewSubflow (localSocketAddr, m_peer);
+        socket->ConnectNewSubflow (localSocketAddr, m_peer); // Hong Jiaming: here, server uses multipath instead of client
       }
 
     }
