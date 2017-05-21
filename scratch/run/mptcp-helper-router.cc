@@ -20,4 +20,14 @@ void PrintRoutingTable(Ptr<Node> aNode, const string& outputDir, const string& f
   routing->PrintRoutingTable(rtableFile);
 }
 
+Ptr<Ipv4StaticRouting> GetNodeStaticRoutingProtocol(Ptr<Node> node)
+{
+  Ptr<Ipv4> nodeIpv4 = node->GetObject<Ipv4> ();
+  Ptr<Ipv4RoutingProtocol> routingProtocol = nodeIpv4->GetRoutingProtocol();
+  Ptr<Ipv4ListRouting> listRouting = DynamicCast<Ipv4ListRouting>(routingProtocol);
+  int16_t priority;
+  Ptr<Ipv4StaticRouting> routing = DynamicCast<Ipv4StaticRouting>(listRouting->GetRoutingProtocol(0, priority));
+  return routing;
+}
+
 };

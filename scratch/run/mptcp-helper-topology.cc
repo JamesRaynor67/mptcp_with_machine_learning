@@ -15,7 +15,7 @@
 
 namespace ns3{
 
-InternetStackHelper GetInternetStackHelper (bool useStaticRouting)
+InternetStackHelper GetInternetStackHelper (bool useStaticRouting = false)
 {
   // Create the internet stack helper, and install the internet stack on the client node
   // Tried olsr, dsdv, but neither of them work
@@ -255,13 +255,10 @@ void CreateSimplestNetwork (uint32_t packetSize,
 
   //Create the internet stack helper.
   client.Create(1);           // A, Alice
-  stackHelper.Install(client);
 
   server.Create(1);           // B, Bob
-  stackHelper.Install(server);
 
-  middle.Create(1);             // C
-  stackHelper.Install(middle);
+  middle.Create(1);           // C
 
   Ptr<Node> A = client.Get(0);
   Ptr<Node> B = server.Get(0);
@@ -274,12 +271,13 @@ void CreateSimplestNetwork (uint32_t packetSize,
   bool useStaticRouting = true;
   if(useStaticRouting == false){
     InternetStackHelper stackHelper = GetInternetStackHelper(useStaticRouting); // default value is false
+    stackHelper.Install(client);
+    stackHelper.Install(server);
+    stackHelper.Install(middle);
 
     //Create the address helper
     Ipv4AddressHelper addressHelper;
     // addressHelper.SetBase("192.168.0.0", "255.255.255.0");
-
-    Ipv4InterfaceContainer interfaces;
 
     addressHelper.SetBase("192.168.0.0", "255.255.255.0");
     addressHelper.Assign(PointToPointCreate(B, C, DataRate("300Kbps"), Time("6ms"), packetSize));
@@ -291,14 +289,119 @@ void CreateSimplestNetwork (uint32_t packetSize,
     addressHelper.Assign(PointToPointCreate(C, A, DataRate("100Kbps"), Time("15ms"), packetSize));
   }
   else{
-    // TODO(Hong Jiaming): static routing not finished
     InternetStackHelper stackHelper = GetInternetStackHelper(useStaticRouting);
+    stackHelper.Install(client);
+    stackHelper.Install(server);
+    stackHelper.Install(middle);
 
     //Create the address helper
     Ipv4AddressHelper addressHelper;
     // addressHelper.SetBase("192.168.0.0", "255.255.255.0");
 
+    NetDeviceContainer linkedDevices;
     Ipv4InterfaceContainer interfaces;
+    Ipv4InterfaceContainer clientInterfaces;
+    Ipv4InterfaceContainer routerInterfaces;
+    Ipv4InterfaceContainer serverInterfaces;
+
+    addressHelper.SetBase("192.168.0.0", "255.255.255.0");
+    linkedDevices = PointToPointCreate(B, C, DataRate("300Kbps"), Time("6ms"), packetSize);
+    interfaces = addressHelper.Assign(linkedDevices);
+    serverInterfaces.Add(interfaces.Get(0));
+    routerInterfaces.Add(interfaces.Get(1));
+
+    addressHelper.SetBase("192.168.9.0", "255.255.255.0");
+    linkedDevices = PointToPointCreate(C, A, DataRate("300Kbps"), Time("15ms"), packetSize);
+    interfaces = addressHelper.Assign(linkedDevices);
+    routerInterfaces.Add(interfaces.Get(0));
+    clientInterfaces.Add(interfaces.Get(1));
+
+    addressHelper.SetBase("192.168.11.0", "255.255.255.0");
+    linkedDevices = PointToPointCreate(C, A, DataRate("100Kbps"), Time("50ms"), packetSize);
+    addressHelper.Assign(linkedDevices);
+    interfaces = addressHelper.Assign(linkedDevices);
+    routerInterfaces.Add(interfaces.Get(0));
+    clientInterfaces.Add(interfaces.Get(1));
+
+    // Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
+    // ptr_em->SetRate(4*1e-4);
+    // // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+    // linkedDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+    // linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+
+
+    //void ns3::Ipv4StaticRouting::AddHostRouteTo	(Ipv4Address dest, Ipv4Address nextHop, uint32_t interface, uint32_t metric = 0)
+    // Notice that the 0th interface is bound to 127.0.0.0, and interface outgoing is from 1st.
+    std::cout << "Hong jiaming 58: clientInterfaces == " << clientInterfaces.GetN() << std::endl;
+    Ptr<Ipv4StaticRouting> routing;
+    routing = GetNodeStaticRoutingProtocol(A); // client
+    routing->AddHostRouteTo(serverInterfaces.GetAddress(0), routerInterfaces.GetAddress(0), 1);
+    routing->AddHostRouteTo(serverInterfaces.GetAddress(0), routerInterfaces.GetAddress(1), 2);
+
+    routing = GetNodeStaticRoutingProtocol(B); // server
+    routing->AddHostRouteTo(clientInterfaces.GetAddress(0), routerInterfaces.GetAddress(0), 1);
+    routing->AddHostRouteTo(clientInterfaces.GetAddress(1), routerInterfaces.GetAddress(0), 1);
+
+    routing = GetNodeStaticRoutingProtocol(C); // router
+    routing->AddHostRouteTo(serverInterfaces.GetAddress(0), serverInterfaces.GetAddress(0), 1);
+    routing->AddHostRouteTo(clientInterfaces.GetAddress(0), clientInterfaces.GetAddress(0), 2);
+    routing->AddHostRouteTo(clientInterfaces.GetAddress(1), clientInterfaces.GetAddress(1), 3);
+  }
+}
+
+void CreateSimplestNetworkWithOtherTraffic (uint32_t packetSize,
+                        NodeContainer& server,
+                        NodeContainer& client,
+                        NodeContainer& middle,
+                        NodeContainer& other_servers,
+                        NodeContainer& other_clients)
+{
+  //                   E(s)         D(c)
+  //                   \    ----   /
+  //                    \ /      \/
+  // (1, server) B ---  C        A (0, client)
+  //                     \      /
+  //                       ----
+
+  // #include "ns3/random-variable-stream.h"
+  // Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+
+  //Create the internet stack helper.
+  client.Create(1);           // A, Alice
+
+  server.Create(1);           // B, Bob
+
+  middle.Create(1);           // C
+
+  other_clients.Create(1);    // E
+
+  other_servers.Create(1);    // D
+
+  Ptr<Node> A = client.Get(0);
+  Ptr<Node> B = server.Get(0);
+  Ptr<Node> C = middle.Get(0);
+  Ptr<Node> D = other_clients.Get(0);
+  Ptr<Node> E = other_servers.Get(0);
+
+  AnimationInterface::SetConstantPosition	(B, 0, 200);
+  AnimationInterface::SetConstantPosition	(C, 200, 200);
+  AnimationInterface::SetConstantPosition	(A, 400, 200);
+  AnimationInterface::SetConstantPosition	(E, 100, 0);
+  AnimationInterface::SetConstantPosition	(D, 500, 0);
+
+
+  bool useStaticRouting = true;
+  if(useStaticRouting == false){
+    InternetStackHelper stackHelper = GetInternetStackHelper(useStaticRouting); // default value is false
+    stackHelper.Install(client);
+    stackHelper.Install(server);
+    stackHelper.Install(middle);
+    stackHelper.Install(other_clients);
+    stackHelper.Install(other_servers);
+
+    //Create the address helper
+    Ipv4AddressHelper addressHelper;
+    // addressHelper.SetBase("192.168.0.0", "255.255.255.0");
 
     addressHelper.SetBase("192.168.0.0", "255.255.255.0");
     addressHelper.Assign(PointToPointCreate(B, C, DataRate("300Kbps"), Time("6ms"), packetSize));
@@ -309,19 +412,98 @@ void CreateSimplestNetwork (uint32_t packetSize,
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
     addressHelper.Assign(PointToPointCreate(C, A, DataRate("100Kbps"), Time("15ms"), packetSize));
 
-    //Create a link between the switch and the client, assign IP addresses
-    NetDeviceContainer linkedDevices = PointToPointCreate(clients.Get(0), switches.Get(0), linkRate, delay, packetSize);
-    Ipv4InterfaceContainer interfaces = addressHelper.Assign(linkedDevices);
+    addressHelper.SetBase("192.168.12.0", "255.255.255.0");
+    addressHelper.Assign(PointToPointCreate(E, C, DataRate("100Kbps"), Time("15ms"), packetSize));
 
-    clientInterfaces.Add(interfaces.Get(0));
-    switchClientInterfaces.Add(interfaces.Get(1));
+    addressHelper.SetBase("192.168.13.0", "255.255.255.0");
+    addressHelper.Assign(PointToPointCreate(D, A, DataRate("100Kbps"), Time("15ms"), packetSize));
+  }
+  else{
+    InternetStackHelper stackHelper = GetInternetStackHelper(useStaticRouting);
+    stackHelper.Install(client);
+    stackHelper.Install(server);
+    stackHelper.Install(middle);
+    stackHelper.Install(other_clients);
+    stackHelper.Install(other_servers);
 
-    //We should do static routing, because we'd like to explicitly create 2 different paths through
-    //the switch.
-    PopulateServerRoutingTable(servers.Get(0), clientInterfaces, switchClientInterfaces, switchServerInterfaces);
-    PopulateSwitchRoutingTable(switches.Get(0), clientInterfaces, serverInterfaces,
-                               switchClientInterfaces, switchServerInterfaces);
-    PopulateClientRoutingTable(clients.Get(0), serverInterfaces, switchClientInterfaces, switchServerInterfaces);
+    //Create the address helper
+    Ipv4AddressHelper addressHelper;
+    // addressHelper.SetBase("192.168.0.0", "255.255.255.0");
+
+    NetDeviceContainer linkedDevices;
+    Ipv4InterfaceContainer interfaces;
+    Ipv4InterfaceContainer clientInterfaces;
+    Ipv4InterfaceContainer routerInterfaces;
+    Ipv4InterfaceContainer serverInterfaces;
+    Ipv4InterfaceContainer other_clientsInterfaces;
+    Ipv4InterfaceContainer other_serversInterfaces;
+
+    addressHelper.SetBase("192.168.0.0", "255.255.255.0");
+    linkedDevices = PointToPointCreate(B, C, DataRate("300Kbps"), Time("6ms"), packetSize);
+    interfaces = addressHelper.Assign(linkedDevices);
+    serverInterfaces.Add(interfaces.Get(0));
+    routerInterfaces.Add(interfaces.Get(1));
+
+    addressHelper.SetBase("192.168.9.0", "255.255.255.0");
+    linkedDevices = PointToPointCreate(C, A, DataRate("300Kbps"), Time("15ms"), packetSize);
+    interfaces = addressHelper.Assign(linkedDevices);
+    routerInterfaces.Add(interfaces.Get(0));
+    clientInterfaces.Add(interfaces.Get(1));
+
+    addressHelper.SetBase("192.168.11.0", "255.255.255.0");
+    linkedDevices = PointToPointCreate(C, A, DataRate("100Kbps"), Time("50ms"), packetSize);
+    addressHelper.Assign(linkedDevices);
+    interfaces = addressHelper.Assign(linkedDevices);
+    routerInterfaces.Add(interfaces.Get(0));
+    clientInterfaces.Add(interfaces.Get(1));
+
+    addressHelper.SetBase("192.168.12.0", "255.255.255.0");
+    linkedDevices = PointToPointCreate(E, C, DataRate("100Kbps"), Time("50ms"), packetSize);
+    addressHelper.Assign(linkedDevices);
+    interfaces = addressHelper.Assign(linkedDevices);
+    other_serversInterfaces.Add(interfaces.Get(0));
+    routerInterfaces.Add(interfaces.Get(1));
+
+    addressHelper.SetBase("192.168.13.0", "255.255.255.0");
+    linkedDevices = PointToPointCreate(D, A, DataRate("100Kbps"), Time("50ms"), packetSize);
+    addressHelper.Assign(linkedDevices);
+    interfaces = addressHelper.Assign(linkedDevices);
+    other_clientsInterfaces.Add(interfaces.Get(0));
+    clientInterfaces.Add(interfaces.Get(1));
+
+    // Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
+    // ptr_em->SetRate(4*1e-4);
+    // // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+    // linkedDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+    // linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+
+
+    //void ns3::Ipv4StaticRouting::AddHostRouteTo	(Ipv4Address dest, Ipv4Address nextHop, uint32_t interface, uint32_t metric = 0)
+    // Notice that the 0th interface is bound to 127.0.0.0, and interface outgoing is from 1st.
+    std::cout << "Hong jiaming 58: clientInterfaces == " << clientInterfaces.GetN() << std::endl;
+    Ptr<Ipv4StaticRouting> routing;
+    routing = GetNodeStaticRoutingProtocol(A); // client
+    routing->AddHostRouteTo(serverInterfaces.GetAddress(0), routerInterfaces.GetAddress(1), 1);
+    routing->AddHostRouteTo(serverInterfaces.GetAddress(0), routerInterfaces.GetAddress(2), 2);
+    routing->AddHostRouteTo(other_clientsInterfaces.GetAddress(0), other_clientsInterfaces.GetAddress(0), 3);
+    routing->AddHostRouteTo(other_serversInterfaces.GetAddress(0), routerInterfaces.GetAddress(1), 2);
+
+    routing = GetNodeStaticRoutingProtocol(B); // server
+    routing->AddHostRouteTo(clientInterfaces.GetAddress(0), routerInterfaces.GetAddress(0), 1);
+    routing->AddHostRouteTo(clientInterfaces.GetAddress(1), routerInterfaces.GetAddress(0), 1);
+
+    routing = GetNodeStaticRoutingProtocol(C); // router
+    routing->AddHostRouteTo(serverInterfaces.GetAddress(0), serverInterfaces.GetAddress(0), 1);
+    routing->AddHostRouteTo(clientInterfaces.GetAddress(0), clientInterfaces.GetAddress(0), 2);
+    routing->AddHostRouteTo(clientInterfaces.GetAddress(1), clientInterfaces.GetAddress(1), 3);
+    routing->AddHostRouteTo(other_clientsInterfaces.GetAddress(0), clientInterfaces.GetAddress(0), 2); // other traffic only use the upper path (9.1 to 9.2)
+    routing->AddHostRouteTo(other_serversInterfaces.GetAddress(0), other_serversInterfaces.GetAddress(0), 4);
+
+    routing = GetNodeStaticRoutingProtocol(D); // other_clients
+    routing->AddHostRouteTo(other_serversInterfaces.GetAddress(0), clientInterfaces.GetAddress(2), 1);
+
+    routing = GetNodeStaticRoutingProtocol(E); // other_servers
+    routing->AddHostRouteTo(other_clientsInterfaces.GetAddress(0), routerInterfaces.GetAddress(3), 1);
   }
 }
 
@@ -333,7 +515,15 @@ void CreateClassicNetwork (uint32_t packetSize,
                         NodeContainer& other_clients)
 {
   //Create the internet stack helper.
-  InternetStackHelper stackHelper = GetInternetStackHelper();
+  bool useStaticRouting = false;
+  InternetStackHelper stackHelper = GetInternetStackHelper(useStaticRouting);
+
+  //                        D ---- E
+  //                      /   \  /  \
+  // (1, server) B ---  C      /     A (0, client)
+  //                     \   /  \   /
+  //                       F ---- G
+
 
   client.Create(1);           // A
   stackHelper.Install(client);
@@ -341,84 +531,102 @@ void CreateClassicNetwork (uint32_t packetSize,
   server.Create(1);           // D
   stackHelper.Install(server);
 
-  middle.Create(4);             // B, C, E, F
+  middle.Create(5);             // B, C, E, F
   stackHelper.Install(middle);
 
   Ptr<Node> A = client.Get(0);
-  Ptr<Node> B = middle.Get(0);
-  Ptr<Node> C = middle.Get(1);
-  Ptr<Node> D = server.Get(0);
+  Ptr<Node> B = server.Get(0);
+  Ptr<Node> C = middle.Get(0);
+  Ptr<Node> D = middle.Get(1);
   Ptr<Node> E = middle.Get(2);
   Ptr<Node> F = middle.Get(3);
+  Ptr<Node> G = middle.Get(3);
 
-  other_servers.Add(B);
-  other_servers.Add(E);
-  other_clients.Add(F);
-  other_clients.Add(C);
+  // other_servers.Add(B);
+  // other_servers.Add(E);
+  // other_clients.Add(F);
+  // other_clients.Add(C);
 
-  AnimationInterface::SetConstantPosition	(A, 0, 400);
-  AnimationInterface::SetConstantPosition	(B, 200, 200);
-  AnimationInterface::SetConstantPosition	(C, 400, 200);
-  AnimationInterface::SetConstantPosition	(D, 600, 400);
-  AnimationInterface::SetConstantPosition	(E, 400, 600);
-  AnimationInterface::SetConstantPosition	(F, 200, 600);
+  AnimationInterface::SetConstantPosition	(A, 800, 200);
+  AnimationInterface::SetConstantPosition	(B, 0, 200);
+  AnimationInterface::SetConstantPosition	(C, 200, 200);
+  AnimationInterface::SetConstantPosition	(D, 400, 0);
+  AnimationInterface::SetConstantPosition	(E, 600, 0);
+  AnimationInterface::SetConstantPosition	(F, 400, 400);
+  AnimationInterface::SetConstantPosition	(F, 600, 400);
   /*--------------------------------------*/
 
   //Create the address helper
   Ipv4AddressHelper addressHelper;
   // addressHelper.SetBase("192.168.0.0", "255.255.255.0");
 
+  NetDeviceContainer linkedDevices;
   Ipv4InterfaceContainer interfaces;
+  Ipv4InterfaceContainer clientInterfaces;
+  Ipv4InterfaceContainer routerInterfaces;
+  Ipv4InterfaceContainer serverInterfaces;
 
   addressHelper.SetBase("192.168.0.0", "255.255.255.0");
-  addressHelper.Assign(PointToPointCreate(A, B, DataRate("1000Kbps"), Time("20ms"), packetSize));
+  linkedDevices = PointToPointCreate(B, C, DataRate("300Kbps"), Time("20ms"), packetSize);
+  interfaces = addressHelper.Assign(linkedDevices);
+  serverInterfaces.Add(interfaces.Get(0));
+  routerInterfaces.Add(interfaces.Get(1));
 
   addressHelper.SetBase("192.168.1.0", "255.255.255.0");
-  addressHelper.Assign(PointToPointCreate(A, F, DataRate("500Kbps"), Time("2ms"), packetSize)); // Not used
+  linkedDevices = PointToPointCreate(C, D, DataRate("200Kbps"), Time("2ms"), packetSize);
+  interfaces = addressHelper.Assign(linkedDevices);
+  routerInterfaces.Add(interfaces.Get(0));
+  routerInterfaces.Add(interfaces.Get(1));
+
+  addressHelper.SetBase("192.168.2.0", "255.255.255.0");
+  linkedDevices = PointToPointCreate(C, F, DataRate("150Kbps"), Time("5ms"), packetSize);
+  interfaces = addressHelper.Assign(linkedDevices);
+  routerInterfaces.Add(interfaces.Get(0));
+  routerInterfaces.Add(interfaces.Get(1));
+
+  addressHelper.SetBase("192.168.3.0", "255.255.255.0");
+  linkedDevices = PointToPointCreate(D, E, DataRate("100Kbps"), Time("5ms"), packetSize);
+  interfaces = addressHelper.Assign(linkedDevices);
+  routerInterfaces.Add(interfaces.Get(0));
+  routerInterfaces.Add(interfaces.Get(1));
 
   addressHelper.SetBase("192.168.4.0", "255.255.255.0");
-  addressHelper.Assign(PointToPointCreate(B, C, DataRate("700Kbps"), Time("5ms"), packetSize));
+  linkedDevices = PointToPointCreate(D, G, DataRate("100Kbps"), Time("5ms"), packetSize);
+  interfaces = addressHelper.Assign(linkedDevices);
+  routerInterfaces.Add(interfaces.Get(0));
+  routerInterfaces.Add(interfaces.Get(1));
 
   addressHelper.SetBase("192.168.5.0", "255.255.255.0");
-  addressHelper.Assign(PointToPointCreate(B, E, DataRate("300Kbps"), Time("5ms"), packetSize));
+  linkedDevices = PointToPointCreate(F, E, DataRate("50Kbps"), Time("5ms"), packetSize);
+  interfaces = addressHelper.Assign(linkedDevices);
+  routerInterfaces.Add(interfaces.Get(0));
+  routerInterfaces.Add(interfaces.Get(1));
 
   addressHelper.SetBase("192.168.6.0", "255.255.255.0");
-  addressHelper.Assign(PointToPointCreate(F, C, DataRate("200Kbps"), Time("5ms"), packetSize));
+  linkedDevices = PointToPointCreate(F, G, DataRate("50Kbps"), Time("5ms"), packetSize);
+  interfaces = addressHelper.Assign(linkedDevices);
+  routerInterfaces.Add(interfaces.Get(0));
+  routerInterfaces.Add(interfaces.Get(1));
 
-  addressHelper.SetBase("192.168.7.0", "255.255.255.0");
-  addressHelper.Assign(PointToPointCreate(F, E, DataRate("300Kbps"), Time("5ms"), packetSize));
-
-  // addressHelper.SetBase("192.168.9.0", "255.255.255.0");
-  // addressHelper.Assign(PointToPointCreate(C, D, DataRate("200Kbps"), Time("4.55ms"), packetSize));
-
-  // Hong Jiaming: Very strange, if I change the delay of this link from 4.55ms to 4.54ms , simulation changes dramatically.
-  // I suspect that the packets of aodv routing protocol may colliside in simulation if delay is too close.
-  // Or the protocol tends to pick the best path, while all the path performs extremely similar.
-  // I don't know whether this happens in real world or not.
   addressHelper.SetBase("192.168.9.0", "255.255.255.0");
-  NetDeviceContainer d_CD = PointToPointCreate(C, D, DataRate("200Kbps"), Time("4ms"), packetSize);
-  addressHelper.Assign(d_CD);
+  NetDeviceContainer d_EA = PointToPointCreate(E, A, DataRate("200Kbps"), Time("4ms"), packetSize);
+  interfaces = addressHelper.Assign(d_EA);
+  routerInterfaces.Add(interfaces.Get(0));
+  clientInterfaces.Add(interfaces.Get(1));
 
   addressHelper.SetBase("192.168.11.0", "255.255.255.0");
-  addressHelper.Assign(PointToPointCreate(E, D, DataRate("800Kbps"), Time("8ms"), packetSize));
-
-
-  Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
-  ptr_em->SetRate(2*1e-5);
-  // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-  d_CD.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-  d_CD.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-
-
+  NetDeviceContainer d_GA = PointToPointCreate(G, A, DataRate("150Kbps"), Time("8ms"), packetSize);
+  interfaces = addressHelper.Assign(d_GA);
+  routerInterfaces.Add(interfaces.Get(0));
+  clientInterfaces.Add(interfaces.Get(1));
   // Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
-  // ptr_em->SetRate(0.0001);
+  // ptr_em->SetRate(2*1e-5);
   // // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-  // d0_server0_Beijing.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-  //
-  // addressHelper.SetBase("192.168.99.0", "255.255.255.0");
-  // addressHelper.Assign(PointToPointCreate(other_clients.Get(0), other_servers.Get(0), DataRate("1Kbps"), Time("5ms"), packetSize));
-  // addressHelper.Assign(PointToPointCreate(isps.Get(0), isps.Get(5), DataRate("1000Kbps"), Time("5ms"), packetSize));
-  // addressHelper.Assign(PointToPointCreate(isp_icb, isp_cst, DataRate("1000Kbps"), Time("5ms"), packetSize));
+  // d_CD.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+  // d_CD.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+
+  std::cout << "Hong jiaming 58: clientInterfaces == " << clientInterfaces.GetN() << std::endl;
+
 
   // Ptr<Ipv4Interface> iface =  other_clients.Get(0)->GetObject<Ipv4>()->GetObject<Ipv4L3Protocol>()->GetInterface (2);
   // uint32_t address = iface->GetAddress(0).GetLocal().Get();

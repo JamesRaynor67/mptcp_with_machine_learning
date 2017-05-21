@@ -1052,7 +1052,7 @@ MpTcpMetaSocket::SendPendingData()
   // The logic to make sure that every 100ms, sechduler is choosed one is done in RL python module
   SendStates(this->m_rlSocket);
   std::string rcv_str = RcvActions(this->m_rlSocket);
-  rcv_str = "3";
+  rcv_str = "1";
   ApplyActions(rcv_str);
   // ApplyActions("0");
 

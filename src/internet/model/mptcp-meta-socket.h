@@ -427,6 +427,10 @@ public:
 
 protected: // protected methods
 
+  // Hong Jiaming: It is important that MpTcpSubflow being the friend class of MpTcpMetaSocket
+  // When a subflow is added, master mptcpMetaSocket will be copied as copy constructor says. And these
+  // multiple sublflows share some meta-parameter by pointer, but hold each's private state/infor
+  // by member variables
   friend class MpTcpSubflow;
 
   /*********************************************

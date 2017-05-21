@@ -1,4 +1,5 @@
 #include <random>
+#include <algorithm>
 #include "ns3/mptcp-scheduler-random.h"
 #include "ns3/mptcp-subflow.h"
 #include "ns3/mptcp-meta-socket.h"
@@ -65,12 +66,54 @@ Ptr<MpTcpSubflow> MpTcpSchedulerRandom::GetAvailableSubflow (uint32_t dataToSend
     }
   }
 
+  // ************ Random
   if(availableIndexRecord.size() > 0){
     // GetValue() gets the next random value, as a double in the specified range [min, max).
     available = m_metaSock->GetActiveSubflow(availableIndexRecord[size_t(rdg->GetValue(0, availableIndexRecord.size()))]);
     // std::uniform_int_distribution<std::mt19937::result_type> dist(0, availableIndexRecord.size()-1);
     // available = m_metaSock->GetActiveSubflow(availableIndexRecord[dist(this->rng)]);
   }
+
+  // ***********  This is to force choose sublflow 1 once it's established *******************
+  // NS_ASSERT(availableIndexRecord.size() <= 2); // assume at most two subflows
+  // static bool subflow2FullyEstablished = false; // GetNSubflows
+  //
+  // if(availableIndexRecord.size() > 0 && availableIndexRecord.size() <= 2){
+  //   if(m_metaSock->GetNSubflows() == 2){
+  //     subflow2FullyEstablished = true;
+  //   }
+  //   if(subflow2FullyEstablished == false){
+  //     NS_ASSERT(availableIndexRecord.size() <= 1);
+  //     if(availableIndexRecord.size() == 1){
+  //       available = m_metaSock->GetActiveSubflow(availableIndexRecord[0]);
+  //     }
+  //   }
+  //   else{
+  //     if(availableIndexRecord.size() == 2){
+  //       available = m_metaSock->GetActiveSubflow(availableIndexRecord[0])->GetSubflowId() == 0?m_metaSock->GetActiveSubflow(availableIndexRecord[1]):m_metaSock->GetActiveSubflow(availableIndexRecord[0]);
+  //     }
+  //     else{
+  //       if(availableIndexRecord.size() == 1 && m_metaSock->GetActiveSubflow(availableIndexRecord[0])->GetSubflowId() == 1){
+  //         available = m_metaSock->GetActiveSubflow(availableIndexRecord[0]);
+  //       }
+  //     }
+  //   }
+  // }
+  // ***********  Above is to force choose sublflow 1 once it's established *******************
+
+  // ********** Force choose master flow **********
+  // NS_ASSERT(availableIndexRecord.size() <= 2);
+  // if(!availableIndexRecord.empty()){
+  //   if(availableIndexRecord.size() == 2){
+  //     // std::cout << "Hong Jiaming 60" << std::endl;
+  //     available = m_metaSock->GetActiveSubflow(availableIndexRecord[0])->GetSubflowId() == 0?m_metaSock->GetActiveSubflow(availableIndexRecord[0]):m_metaSock->GetActiveSubflow(availableIndexRecord[1]);
+  //   }
+  //   else{
+  //     if(availableIndexRecord.size() == 1 && m_metaSock->GetActiveSubflow(availableIndexRecord[0])->GetSubflowId() == 0){
+  //       available = m_metaSock->GetActiveSubflow(availableIndexRecord[0]);
+  //     }
+  //   }
+  // }
 
   return available;
 }
