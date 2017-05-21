@@ -1,6 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 import sys
+import os
 
 def analyze_application(file_path):
     record = []
@@ -53,6 +54,7 @@ def analyze_client_end_node(file_path):
     plt.title('Client Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
     plt.xlabel('Time / s', fontsize = 14, color = 'black')
     plt.ylabel('Seqence number', fontsize = 14, color = 'black')
+    writeToCsv(sentBytes = sum([row[-1] for row in y]))
 
 def analyze_server_end_point(file_path):
     record = []
@@ -77,9 +79,10 @@ def analyze_server_end_point(file_path):
     subflow_1, = plt.plot(x[0], y[0], 'ro')
     subflow_2, = plt.plot(x[1], y[1], 'bo')
     plt.legend([subflow_1, subflow_2], ['server side subflow 1', 'server side subflow 2'], loc='upper left')
-    plt.title('Server Side Time-Seqence number')
+    plt.title('Server Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
     plt.xlabel('Time / s', fontsize = 14, color = 'black')
     plt.ylabel('Seqence number', fontsize = 14, color = 'black')
+    writeToCsv(receivedBytes = sum([row[-1] for row in y]))
 
 def analyze_flow(file_path):
     mptcp_subflow_id = [-1]*4
@@ -153,6 +156,40 @@ def analyze_reward(file_path):
     plt.xlabel('Time / s', fontsize = 14, color = 'black')
     plt.ylabel('Reward', fontsize = 14, color = 'black')
 
+def writeToCsv(sentBytes = None, receivedBytes = None):
+    if(len(sys.argv) >= 4 and sys.argv[2] == 'true'):
+        path = sys.argv[3]
+        scheduler = sys.argv[4]
+
+        assert os.path.isfile(path) 
+        new_rows = []
+        with open(path, 'rb') as csv_file:
+            r = csv.reader(csv_file)
+            row_num = 0
+            for row in r:
+                if row_num == 0 and scheduler == 'rr' and sentBytes is not None:
+                    row.append(sentBytes)
+                elif row_num == 1 and scheduler == 'rtt' and sentBytes is not None:
+                    row.append(sentBytes)
+                elif row_num == 2 and scheduler == 'rf' and sentBytes is not None:
+                    row.append(sentBytes)
+                elif row_num == 3 and scheduler == 'ldbp' and sentBytes is not None:
+                    row.append(sentBytes)
+                elif row_num == 4 and scheduler == 'rr' and receivedBytes is not None:
+                    row.append(receivedBytes)
+                elif row_num == 5 and scheduler == 'rtt' and receivedBytes is not None:
+                    row.append(receivedBytes)
+                elif row_num == 6 and scheduler == 'rf' and receivedBytes is not None:
+                    row.append(receivedBytes)
+                elif row_num == 7 and scheduler == 'ldbp' and receivedBytes is not None:
+                    row.append(receivedBytes)
+                row_num += 1
+                new_rows.append(row)
+
+        with open(path, 'wb') as csv_file:
+            w = csv.writer(csv_file)
+            w.writerows(new_rows)
+                
 if __name__ == '__main__':
     # plt.subplot(4,1,1)
     # analyze_application('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server')
@@ -164,16 +201,19 @@ if __name__ == '__main__':
     # analyze_flow('/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server_cWnd')
     # plt.show()
 
-    batch_num = int(sys.argv[1])
-    plt.subplot(4,1,1)
-    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data_wrong/' + str(batch_num) + '_mptcp_server')
+    # batch_num = int(sys.argv[1])
+    # plt.subplot(4,1,1)
+    # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    # # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data_wrong/' + str(batch_num) + '_mptcp_server')
+    # # analyze_flow('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server_cWnd')
+    # # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')
+    # plt.subplot(4,1,2)
+    # analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    # plt.subplot(4,1,3)
+    # analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
+    # plt.subplot(4,1,4)
     # analyze_flow('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server_cWnd')
-    # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')
-    plt.subplot(4,1,2)
-    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    plt.subplot(4,1,3)
-    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-    plt.subplot(4,1,4)
-    analyze_flow('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server_cWnd')
-    plt.show()
+    # plt.show()
+    print sys.argv[1] ,sys.argv[2], sys.argv[3], sys.argv[4]
+
+    writeToCsv(12,223)
