@@ -76,8 +76,8 @@ int main(int argc, char* argv[])
   NodeContainer other_clients;
   // CreateExtendedClassicNetwork (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
   // CreateClassicNetworkWithOtherTraffic (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-  // CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-  CreateSimplestNetworkWithOtherTraffic(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  // CreateSimplestNetworkWithOtherTraffic(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
   // CreateClassicNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
   ConfigureTracing(outputDir, server, client, middle, other_servers, other_clients);
 
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     // tmp_clients.Add(client);
     // tmp_clients.Add(other_clients);
     InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
-    InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
+    // InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
     // InstallOnOffApplications(tmp_servers, tmp_clients, segmentSizeWithoutHeaders);
     // InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
     // InstallFileTransferApplications(other_servers, other_clients, segmentSizeWithoutHeaders, queueSize);
@@ -113,16 +113,16 @@ int main(int argc, char* argv[])
   //Create an output directory and configure tracing
   AnimationInterface anim ("mptcp-animation.xml");
 
-  Simulator::Schedule(Seconds(7.9), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(8), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(12), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(16), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(20), &PrintMonitorStates);
-  Simulator::Schedule(Seconds(30), &PrintMonitorStates);
-  // for(int i = 0; i < simulationDuration * 10;i++){
-  //   Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
-  //
-  // }
+  // Simulator::Schedule(Seconds(7.9), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(8), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(12), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(16), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(20), &PrintMonitorStates);
+  // Simulator::Schedule(Seconds(30), &PrintMonitorStates);
+  for(int i = 0; i < simulationDuration * 10;i++){
+    Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
+
+  }
   Simulator::Stop (Seconds(simulationDuration));
 
   for(int i = 0;i < client.GetN();i++){

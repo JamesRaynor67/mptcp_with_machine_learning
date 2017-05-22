@@ -202,7 +202,7 @@ void TraceMonitorStates(const string& outputDir){
   static Ptr<OutputStreamWrapper> logFile;
 
   if(!initialized){
-    logFile = Create<OutputStreamWrapper>(outputDir + "/mptcp_server_cWnd", std::ios::out);
+    logFile = Create<OutputStreamWrapper>(outputDir + "/mptcp_monitor", std::ios::out);
     *(logFile->GetStream()) << "Timestamp,FlowId,From,To,TxPackets,TxBytes,RxPackets,RxBytes,DelaySum,JitterSum,LostPacketSum,TTL_expire,Bad_checksum" << endl;
     initialized = true;
   }

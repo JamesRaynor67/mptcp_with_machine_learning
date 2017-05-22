@@ -311,13 +311,13 @@ void CreateSimplestNetwork (uint32_t packetSize,
     routerInterfaces.Add(interfaces.Get(1));
 
     addressHelper.SetBase("192.168.9.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(C, A, DataRate("300Kbps"), Time("15ms"), packetSize);
+    linkedDevices = PointToPointCreate(C, A, DataRate("100Kbps"), Time("15ms"), packetSize);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
 
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(C, A, DataRate("100Kbps"), Time("50ms"), packetSize);
+    linkedDevices = PointToPointCreate(C, A, DataRate("100Kbps"), Time("15ms"), packetSize);
     addressHelper.Assign(linkedDevices);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
