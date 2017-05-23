@@ -1,11 +1,9 @@
 import numpy as np
 import pandas as pd
 
-def SmoothRate(subflows):
+def SmoothRate(subflows, groupSize = 10, sampleInteval = 1):
 	smoothed_subflows = []
 	for subflow in subflows:
-		groupSize = 60
-		sampleInteval = 10
 		grouped_t = np.convolve(subflow["Timestamp"].values, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]
 		grouped_tx = np.convolve(subflow["TxRate"].values, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]
 		grouped_rx = np.convolve(subflow["RxRate"].values, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]

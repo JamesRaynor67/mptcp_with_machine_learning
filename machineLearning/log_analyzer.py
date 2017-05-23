@@ -8,6 +8,7 @@ import pandas as pd
 from log_helper_mptcp_subflow_id import MpTcpSubflows
 from log_monitor_time_sentBytes import AnalyzeMonitorSentBytes
 from log_monitor_time_sendingRate import AnalyzeMonitorSendingRate
+from log_monitor_time_sendingRate import  AnalyzeMonitorSendingRateUtilization
 
 def preprocess_monitor_data(file_path):
     record = []
@@ -58,11 +59,11 @@ def analyze_application(file_path):
     for pair in record:
         x.append(pair[0])
         y.append(pair[1])
-    sent_packet_size, = plt.plot(x, y, 'go')
-    plt.legend([sent_packet_size], ['sent packet size'], loc='upper left')
-    plt.title('Time-Sent packet size')
-    plt.xlabel('Time / s', fontsize = 14, color = 'black')
-    plt.ylabel('Sent packet size / Byte', fontsize = 14, color = 'black')
+    sent_packet_size, = sns.plt.plot(x, y, 'go')
+    sns.plt.legend([sent_packet_size], ['sent packet size'], loc='upper left')
+    sns.plt.title('Time-Sent packet size')
+    sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
+    sns.plt.ylabel('Sent packet size / Byte', fontsize = 14, color = 'black')
     print 'server send total: ', y[-1], ' Bytes' 
 
 def analyze_client_end_node(file_path):
@@ -88,10 +89,10 @@ def analyze_client_end_node(file_path):
     print len(y),len(y[0]),len(y[1])
     subflow_1, = plt.plot(x[0], y[0], 'ro')
     subflow_2, = plt.plot(x[1], y[1], 'bo')
-    plt.legend([subflow_1, subflow_2], ['client side subflow 1', 'client side subflow 2'], loc='upper left')
-    plt.title('Client Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
-    plt.xlabel('Time / s', fontsize = 14, color = 'black')
-    plt.ylabel('Seqence number', fontsize = 14, color = 'black')
+    sns.plt.legend([subflow_1, subflow_2], ['client side subflow 1', 'client side subflow 2'], loc='upper left')
+    sns.plt.title('Client Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
+    sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
+    sns.plt.ylabel('Seqence number', fontsize = 14, color = 'black')
     writeToCsv(sentBytes = sum([row[-1] for row in y]))
 
 def analyze_server_end_point(file_path):
@@ -116,10 +117,10 @@ def analyze_server_end_point(file_path):
         y[row[1]].append(row[2])
     subflow_1, = plt.plot(x[0], y[0], 'ro')
     subflow_2, = plt.plot(x[1], y[1], 'bo')
-    plt.legend([subflow_1, subflow_2], ['server side subflow 1', 'server side subflow 2'], loc='upper left')
-    plt.title('Server Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
-    plt.xlabel('Time / s', fontsize = 14, color = 'black')
-    plt.ylabel('Seqence number', fontsize = 14, color = 'black')
+    sns.plt.legend([subflow_1, subflow_2], ['server side subflow 1', 'server side subflow 2'], loc='upper left')
+    sns.plt.title('Server Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
+    sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
+    sns.plt.ylabel('Seqence number', fontsize = 14, color = 'black')
     writeToCsv(receivedBytes = sum([row[-1] for row in y]))
 
 def analyze_reward(file_path):
@@ -139,10 +140,10 @@ def analyze_reward(file_path):
         x.append(pair[0])
         y.append(pair[1])
     reward_plt, = plt.plot(x, y, 'k-')
-    plt.legend([reward_plt], ['reward'], loc='best')
-    plt.title('Time-Reward')
-    plt.xlabel('Time / s', fontsize = 14, color = 'black')
-    plt.ylabel('Reward', fontsize = 14, color = 'black')
+    sns.plt.legend([reward_plt], ['reward'], loc='best')
+    sns.plt.title('Time-Reward')
+    sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
+    sns.plt.ylabel('Reward', fontsize = 14, color = 'black')
 
 def writeToCsv(sentBytes = None, receivedBytes = None):
     if(len(sys.argv) >= 4 and sys.argv[2] == 'true'):
@@ -181,28 +182,25 @@ def writeToCsv(sentBytes = None, receivedBytes = None):
 if __name__ == '__main__':
 
     batch_num = int(sys.argv[1])
-    # plt.figure(figsize=(16*2, 9*2))
-    # plt.subplot(3,1,1)
-    # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    # # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data_wrong/' + str(batch_num) + '_mptcp_server')
-    # # analyze_flow('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server_cWnd')
-    # # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')
-    # plt.subplot(3,1,2)
-    # analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    # plt.subplot(3,1,3)
-    # analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-    # plt.show()
+    sns.plt.figure(figsize=(16*2, 9*2))
+    sns.plt.subplot(3,1,1)
+    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    sns.plt.subplot(3,1,2)
+    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    sns.plt.subplot(3,1,3)
+    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
+    sns.plt.savefig("/home/hong/result_figure/tmp.png", dpi = 150, pad_inches=0)
+    sns.plt.close()
 
     monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
-    # print monitor_records
-    # AnalyzeMonitorSentBytes(monitor_records)
-    # plt.savefig("/home/hong/result_figure/tmp.png", dpi = 150, pad_inches=0)
-    # plt.close()
-
-    # plt.figure()
-    sns.plt.subplot(2,1,1)
+    sns.plt.figure()
+    sns.plt.subplot(3,1,1)
     AnalyzeMonitorSentBytes(monitor_records)
-    sns.plt.subplot(2,1,2)
-    AnalyzeMonitorSendingRate(monitor_records)
+    sns.plt.subplot(3,1,2)
+    subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
+    sns.plt.subplot(3,1,3)
+    AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [100,100])
     sns.plt.show()
     # # print sys.argv[1] ,sys.argv[2], sys.argv[3], sys.argv[4]
+
+    # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')

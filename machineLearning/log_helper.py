@@ -8,7 +8,7 @@ def ConvertByteToBit(l):
 def GetRate(subflows):
 	subflow_rates = []
 	for subflow in subflows:
-		# Rate is in unit of bps
+		# Rate is in unit of bps. And in fact means how much bits are transmitted during the next time interval
 		tRate = ConvertByteToBit(np.diff(subflow["TxBytes"].values)/np.diff(subflow["Timestamp"].values))
 		rRate = ConvertByteToBit(np.diff(subflow["RxBytes"].values)/np.diff(subflow["Timestamp"].values))
 		timestamp = subflow["Timestamp"].values[:-1]

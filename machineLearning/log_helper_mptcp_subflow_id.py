@@ -2,6 +2,9 @@ class MpTcpSubflows(object):
 	
 	subflowIds = [-1] * 4 # subflowLen == 4
 
+	# global variables
+	simulationTime = 120 
+
 	@staticmethod
 	def updateSubflowId(From, To, flowId):
 		if flowId not in MpTcpSubflows.subflowIds:
