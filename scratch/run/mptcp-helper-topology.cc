@@ -61,7 +61,7 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
                            "LinkDelay", TimeValue(delay));
 
   pointToPoint.SetQueue("ns3::DropTailQueue",
-                        "MaxPackets", UintegerValue(10));
+                        "MaxPackets", UintegerValue(1));
   pointToPoint.EnablePcapAll ("mptcp");
   NetDeviceContainer linkedDevices;
   linkedDevices = pointToPoint.Install (linkedNodes);

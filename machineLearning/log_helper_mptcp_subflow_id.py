@@ -16,7 +16,10 @@ class MpTcpSubflows(object):
 
 	@staticmethod
 	def getSubflowId(flowId):
-		return MpTcpSubflows.subflowIds.index(flowId)
+		try:
+			return MpTcpSubflows.subflowIds.index(flowId)
+		except ValueError:
+			return -1
 
 	@staticmethod
 	def getSubflowList():

@@ -1,7 +1,9 @@
 import csv
 import matplotlib.pyplot as plt
+import seaborn as sns
 import sys
 import os
+import pandas as pd
 
 from log_helper_mptcp_subflow_id import MpTcpSubflows
 from log_monitor_time_sentBytes import AnalyzeMonitorSentBytes
@@ -22,14 +24,22 @@ def preprocess_monitor_data(file_path):
             RxPacket = int(row[6])
             RxBytes = int(row[7]) # - int(row[6]) * 52 # minus the size of header (most header is of size 20 (tcp header) + 32 (22 for mptcp DSS and 10 for TS) Bytes)
             delaySum = float(row[8][1:-2])/1e9
+            jitterSum = float(row[9][1:-2])/1e9
             lostPackets = int(row[10])
 
-            record.append([timestamp, flowId, TxPacket, TxBytes, RxPacket, RxBytes, delaySum, lostPackets])
+            record.append([timestamp, flowId, From, To, TxPacket, TxBytes, RxPacket, RxBytes, delaySum, jitterSum, lostPackets])
             MpTcpSubflows.updateSubflowId(From, To, flowId)
 
-    print 'mptcp subflow ids: ', 
     record.sort(key=lambda ele:ele[0])
-    return record
+
+    print 'mptcp subflow ids: ', MpTcpSubflows.getSubflowList()
+    for row in record:
+        row.append(MpTcpSubflows.getSubflowId(row[1])) # append -1 if not a flowId of subflow
+
+    columns = ['Timestamp','FlowId','From','To','TxPackets','TxBytes','RxPackets','RxBytes','DelaySum','JitterSum','LostPacketSum','SubflowId']
+    monitor_records = pd.DataFrame(record, columns=columns)
+
+    return monitor_records
 
 def analyze_application(file_path):
     record = []
@@ -171,25 +181,28 @@ def writeToCsv(sentBytes = None, receivedBytes = None):
 if __name__ == '__main__':
 
     batch_num = int(sys.argv[1])
-    plt.figure(figsize=(16*2, 9*2))
-    plt.subplot(4,1,1)
-    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data_wrong/' + str(batch_num) + '_mptcp_server')
-    # analyze_flow('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server_cWnd')
-    # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')
-    plt.subplot(4,1,2)
-    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    plt.subplot(4,1,3)
-    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-    plt.subplot(4,1,4)
+    # plt.figure(figsize=(16*2, 9*2))
+    # plt.subplot(3,1,1)
+    # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    # # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data_wrong/' + str(batch_num) + '_mptcp_server')
+    # # analyze_flow('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server_cWnd')
+    # # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')
+    # plt.subplot(3,1,2)
+    # analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    # plt.subplot(3,1,3)
+    # analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
+    # plt.show()
 
     monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
-    AnalyzeMonitorSentBytes(monitor_records)
-    # plt.show()
-    plt.savefig("/home/hong/result_figure/tmp.png", dpi = 150, pad_inches=0)
-    plt.close()
+    # print monitor_records
+    # AnalyzeMonitorSentBytes(monitor_records)
+    # plt.savefig("/home/hong/result_figure/tmp.png", dpi = 150, pad_inches=0)
+    # plt.close()
 
-    plt.figure()
+    # plt.figure()
+    sns.plt.subplot(2,1,1)
+    AnalyzeMonitorSentBytes(monitor_records)
+    sns.plt.subplot(2,1,2)
     AnalyzeMonitorSendingRate(monitor_records)
-    plt.show()
-    # print sys.argv[1] ,sys.argv[2], sys.argv[3], sys.argv[4]
+    sns.plt.show()
+    # # print sys.argv[1] ,sys.argv[2], sys.argv[3], sys.argv[4]

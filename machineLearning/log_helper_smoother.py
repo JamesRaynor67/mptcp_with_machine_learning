@@ -1,12 +1,18 @@
 import numpy as np
+import pandas as pd
 
-def Smooth(t, x, y):
-	assert len(t)-1 == len(x) and len(x) == len(y) and (t[0] is not list) \
-			and (x[0] is not list) and (y[0] is not list)
+def SmoothRate(subflows):
+	smoothed_subflows = []
+	for subflow in subflows:
+		groupSize = 60
+		sampleInteval = 10
+		grouped_t = np.convolve(subflow["Timestamp"].values, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]
+		grouped_tx = np.convolve(subflow["TxRate"].values, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]
+		grouped_rx = np.convolve(subflow["RxRate"].values, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]
+		subflowId = np.convolve(subflow["SubflowId"].values, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval] # Easy way to copy subflowId with right length
 
-	groupSize = 60
-	sampleInteval = 10
-	grouped_x = np.convolve(x, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]
-	grouped_y = np.convolve(y, [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]
-	grouped_t = np.convolve(t[0:-1], [1.0/groupSize]*groupSize, 'valid')[::sampleInteval]
-	return grouped_t, grouped_x, grouped_y
+		print grouped_t.shape, grouped_tx.shape, grouped_rx.shape, subflowId.shape
+		columns = ['Timestamp', 'TxRate', 'RxRate','SubflowId']
+		smoothed_subflows.append(pd.DataFrame(np.transpose(np.vstack((grouped_t, grouped_tx, grouped_rx, subflowId))), columns=columns))
+
+	return smoothed_subflows
