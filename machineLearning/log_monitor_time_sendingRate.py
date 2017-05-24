@@ -35,10 +35,10 @@ def AnalyzeMonitorSendingRate(monitor_records):
 
 def AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, linkBWList):
     smoothed_subflow_rates = SmoothRate(subflow_rates, groupSize = 30, sampleInteval = 3)
-    c_s_subflow_1 = sns.plt.plot(smoothed_subflow_rates[0]["Timestamp"].values, smoothed_subflow_rates[0]["TxRate"].values/1000.0/linkBWList[0], 'r-', linewidth=2.0) # s->c 1
-    c_s_subflow_2 = sns.plt.plot(smoothed_subflow_rates[2]["Timestamp"].values, smoothed_subflow_rates[2]["TxRate"].values/1000.0/linkBWList[1], 'b-', linewidth=2.0) # s->c 2
+    c_s_subflow_1, = sns.plt.plot(smoothed_subflow_rates[0]["Timestamp"].values, smoothed_subflow_rates[0]["TxRate"].values/1000.0/linkBWList[0], 'r-', linewidth=2.0) # s->c 1
+    c_s_subflow_2, = sns.plt.plot(smoothed_subflow_rates[2]["Timestamp"].values, smoothed_subflow_rates[2]["TxRate"].values/1000.0/linkBWList[1], 'b-', linewidth=2.0) # s->c 2
 
-    sns.plt.legend([c_s_subflow_1, c_s_subflow_2], ['subflow 1 send rate/link a bandwidth', 'subflow 2 send rate/link a bandwidth'], loc='best')
+    sns.plt.legend([c_s_subflow_1, c_s_subflow_2], ['subflow 1 sending rate/link a bandwidth', 'subflow 2 sending rate/link a bandwidth'], loc='best')
     sns.plt.title('Time-Utilization')
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Percentage', fontsize = 14, color = 'black')

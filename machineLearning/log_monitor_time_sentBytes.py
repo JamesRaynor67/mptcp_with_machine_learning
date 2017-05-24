@@ -3,7 +3,6 @@ import seaborn as sns
 from log_helper_mptcp_subflow_id import MpTcpSubflows
 
 def AnalyzeMonitorSentBytes(monitor_records):
-    print 1
     # ax = sns.tsplot(time="Timestamp", value="TxBytes", condition="SubflowId", data=monitor_records[monitor_records["SubflowId"] >= 0])
     # sns.factorplot(x="Timestamp", y="TxBytes", hue="SubflowId", data=monitor_records[monitor_records["SubflowId"] >= 0])
     # print monitor_records.loc[monitor_records["SubflowId"] == 0, ["Timestamp", "TxBytes"]].values[:,0], monitor_records.loc[monitor_records["SubflowId"] == 0, ["Timestamp", "TxBytes"]].values[:,]
@@ -12,11 +11,14 @@ def AnalyzeMonitorSentBytes(monitor_records):
     subflow2_sent = monitor_records.loc[monitor_records["SubflowId"] == 2, ["Timestamp", "TxBytes"]].values
     # subflow3 = monitor_records.loc[monitor_records["SubflowId"] == 3, ["Timestamp", "TxBytes"]].values
 
-    sns.plt.plot(subflow0_sent[:,0], subflow0_sent[:,1])
+    c_s_subflow_1, = sns.plt.plot(subflow0_sent[:,0], subflow0_sent[:,1])
     # sns.plt.plot(subflow1[:,0], subflow1[:,1])
-    sns.plt.plot(subflow2_sent[:,0], subflow2_sent[:,1])
+    c_s_subflow_2, = sns.plt.plot(subflow2_sent[:,0], subflow2_sent[:,1])
     # sns.plt.plot(subflow3[:,0], subflow3[:,1])
-
+    sns.plt.legend([c_s_subflow_1, c_s_subflow_2], ['subflow 1 sent bytes', 'subflow 2 sent bytes'], loc='best')
+    sns.plt.title('Time-Sent Data Size')
+    sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
+    sns.plt.ylabel('Sent Data Size / Bytes', fontsize = 14, color = 'black')
     # x = [[],[],[],[]]
     # y = [[],[],[],[]]
     # for row in record:

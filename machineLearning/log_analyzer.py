@@ -4,11 +4,15 @@ import seaborn as sns
 import sys
 import os
 import pandas as pd
+import warnings
 
 from log_helper_mptcp_subflow_id import MpTcpSubflows
 from log_monitor_time_sentBytes import AnalyzeMonitorSentBytes
 from log_monitor_time_sendingRate import AnalyzeMonitorSendingRate
 from log_monitor_time_sendingRate import  AnalyzeMonitorSendingRateUtilization
+from log_time_rtt import AnalyzeClientRtt
+
+warnings.filterwarnings("error")
 
 def preprocess_monitor_data(file_path):
     record = []
@@ -34,13 +38,38 @@ def preprocess_monitor_data(file_path):
     record.sort(key=lambda ele:ele[0])
 
     print 'mptcp subflow ids: ', MpTcpSubflows.getSubflowList()
+    assert -1 not in MpTcpSubflows.getSubflowList()
     for row in record:
-        row.append(MpTcpSubflows.getSubflowId(row[1])) # append -1 if not a flowId of subflow
+        row.append(MpTcpSubflows.getSubflowId(row[1])) # append -1 if it is not a flowId of subflow
 
     columns = ['Timestamp','FlowId','From','To','TxPackets','TxBytes','RxPackets','RxBytes','DelaySum','JitterSum','LostPacketSum','SubflowId']
     monitor_records = pd.DataFrame(record, columns=columns)
 
     return monitor_records
+
+def proprocess_rtt_data(file_path):
+    record = []
+    valid = [False, False]
+    with open(file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            timestamp = (int(row[0])*1.0)/1e6
+
+            if valid[0] is False:
+                valid[0] = True if (int(row[1]) != -1 and int(row[1]) != 1000000) else False
+            if valid[1] is False:
+                valid[1] = True if (int(row[2]) != -1 and int(row[2]) != 1000000) else False
+
+            rtt0 = int(row[1]) if valid[0] is True else 0
+            rtt1 = int(row[2]) if valid[1] is True else 0
+
+            record.append([timestamp, rtt0, rtt1])
+
+    columns = ['Timestamp','Rtt0','Rtt1']
+    rtt_records = pd.DataFrame(record, columns=columns)
+
+    return rtt_records
 
 def analyze_application(file_path):
     record = []
@@ -182,25 +211,32 @@ def writeToCsv(sentBytes = None, receivedBytes = None):
 if __name__ == '__main__':
 
     batch_num = int(sys.argv[1])
-    sns.plt.figure(figsize=(16*2, 9*2))
-    sns.plt.subplot(3,1,1)
-    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    sns.plt.subplot(3,1,2)
-    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    sns.plt.subplot(3,1,3)
-    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-    sns.plt.savefig("/home/hong/result_figure/tmp.png", dpi = 150, pad_inches=0)
-    sns.plt.close()
+    # sns.plt.figure(figsize=(16*2, 9*2))
+    # sns.plt.subplot(3,1,1)
+    # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    # sns.plt.subplot(3,1,2)
+    # analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    # sns.plt.subplot(3,1,3)
+    # analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
+    # sns.plt.savefig("/home/hong/result_figure/tmp.png", dpi = 150, pad_inches=0)
+    # sns.plt.close()
 
-    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
+    # monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
+    # sns.plt.figure()
+    # sns.plt.subplot(3,1,1)
+    # AnalyzeMonitorSentBytes(monitor_records)
+    # sns.plt.subplot(3,1,2)
+    # subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
+    # sns.plt.subplot(3,1,3)
+    # AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [100,100])
+    # sns.plt.show()
+
     sns.plt.figure()
-    sns.plt.subplot(3,1,1)
-    AnalyzeMonitorSentBytes(monitor_records)
-    sns.plt.subplot(3,1,2)
-    subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
-    sns.plt.subplot(3,1,3)
-    AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [100,100])
+    rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_client_rtt')
+    AnalyzeClientRtt(rtt_records)
+
     sns.plt.show()
+
     # # print sys.argv[1] ,sys.argv[2], sys.argv[3], sys.argv[4]
 
     # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')

@@ -9,6 +9,26 @@ from RL_core import calculate_reward
 from RL_core import apply_action
 from shutil import copyfile
 
+class RecordRTT():
+    def __init__(self, path):
+        self.f = open(path, 'w')
+        self.f.write("timestamp,rtt0,rtt1\n")
+
+    def addRTTRecord(self, one_row):
+        rtt0 = -1;
+        rtt1 = -1;
+        if('rtt0' in one_row):
+            rtt0 = int(one_row['rtt0'])
+        if('rtt1' in one_row):
+            rtt1 = int(one_row['rtt1'])
+        self.f.write(str(one_row['time']) + ',' + str(rtt0) + ',' + str(rtt1) + '\n')
+        assert ('rtt2' not in one_row)
+
+    def __del__(self):
+        if not self.f.closed:
+            self.f.close()
+
+
 def IsInt(s):
     # A naive method, but enough here
     if "." in s:
@@ -18,10 +38,11 @@ def IsInt(s):
 
 class DataRecorder():
 
-    def __init__(self):
+    def __init__(self, rttRecord):
         self.next_seq_num = 0
         self.data = {}
         self.action = []
+        self.rttRecord = rttRecord
 
     def add_one_record(self, str_data):
         # name#value$name$value...
@@ -40,6 +61,7 @@ class DataRecorder():
         # neighbour TCP segments must not combined into one
         assert one_row["size"] == len(one_row)
         assert one_row["ssn"] == self.next_seq_num
+        self.rttRecord.addRTTRecord(one_row)
         self.data[self.next_seq_num] = one_row
         self.next_seq_num += 1
 
@@ -69,7 +91,8 @@ if __name__ == "__main__":
                       e_greedy=0.9, replace_target_iter=200, memory_size=2000, output_graph=True)
     reward_record = []
     while episode_count < 1:
-        dataRecorder = DataRecorder()
+        rttRecorder = RecordRTT('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rtt')
+        dataRecorder = DataRecorder(rttRecorder)
 
         socket = Interacter_socket(host = '', port = 12345)
         socket.listen()
