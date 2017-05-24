@@ -29,9 +29,7 @@ TcpSocketImpl::TcpSocketImpl () : TcpSocket ()
                                   , m_rtt (0)
                                   , m_congestionControl (0)
 {
-  //std::cout << "Hong Jiaming 14.3" << std::endl;
   m_tcpParams = Create<TcpParameters>();
-  //std::cout << "Hong Jiaming 14.6" << std::endl;
 }
 
 TcpSocketImpl::TcpSocketImpl(const TcpSocketImpl& sock) : TcpSocket (sock)
@@ -321,14 +319,7 @@ bool TcpSocketImpl::GetWindowScalingEnabled () const
 
 void TcpSocketImpl::SetTimestampEnabled (bool flag)
 {
-  // Hong Jiaming 11:
-  // By log, I found that in case that MPTCP over wired network, m_timestampEnabled is set to be false and Adv window size is 65535
-  // But in case that MPTCP over wireless network, it's set to be true and 32678.
-  // This is not a good idea to set m_timestampEnabled to be false not matter what flag is
-  // But I don't know how this function is called by NS3 with flag == true (I suspect it should be related to Callback initialization)
-  // So, as a temporal solution, I set it to be false all the time
   m_tcpParams->m_timestampEnabled = flag;
-  // m_tcpParams->m_timestampEnabled = flag;   // original line
 }
 
 bool TcpSocketImpl::GetTimestampEnabled () const

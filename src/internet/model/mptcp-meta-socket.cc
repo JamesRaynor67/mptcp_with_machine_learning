@@ -1050,17 +1050,18 @@ MpTcpMetaSocket::SendPendingData()
   NS_LOG_FUNCTION(this << "Sending data");
   // Hong Jiaming 22
   // The logic to make sure that every 100ms, sechduler is choosed one is done in RL python module
-  SendStates(this->m_rlSocket);
-  std::string rcv_str = RcvActions(this->m_rlSocket);
-  rcv_str = "0";
-  ApplyActions(rcv_str);
-  // ApplyActions("0");
+  if(this->GetNode()->GetId() == 0){
+    SendStates(this->m_rlSocket);
+    std::string rcv_str = RcvActions(this->m_rlSocket);
+    rcv_str = "0";
+    ApplyActions(rcv_str);
+    // ApplyActions("0");
+  }
 
-  if (m_txBuffer->Size () == 0)
-    {
-      NS_LOG_DEBUG("Nothing to send");
-      return false;                           // Nothing to send
-    }
+  if (m_txBuffer->Size () == 0){
+    NS_LOG_DEBUG("Nothing to send");
+    return false;                           // Nothing to send
+  }
 
   // Hong Jiaming: This may means how many packets are sent in this "one time"
   int nbMappingsDispatched = 0; // mimic nbPackets in TcpSocketBase::SendPendingData
@@ -2307,6 +2308,8 @@ void MpTcpMetaSocket::SetMptcpEnabled (bool flag)
 /************ The following is about RL, added by Hong Jiaming *************/
 void
 MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
+  // Assert that 1. client node must has node id 0 2. only client node call this function
+  NS_ASSERT(this->GetNode()->GetId() == 0);
   static uint32_t seq_num = 0;
 
   uint32_t nbOfSubflows = this->GetNSubflows();
@@ -2328,6 +2331,7 @@ MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
     socket.add("cWnd"+std::to_string(index), tcb->m_cWnd);
     socket.add("lastAckedSeq"+std::to_string(index), tcb->m_lastAckedSeq.GetValue());
     socket.add("highTxMark"+std::to_string(index), tcb->m_highTxMark.Get().GetValue());
+    socket.add("rtt"+std::to_string(index), subflow->GetRttEstimator()->GetEstimate().GetMicroSeconds());
   }
   socket.send();
 }
