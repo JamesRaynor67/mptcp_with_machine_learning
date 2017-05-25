@@ -280,13 +280,13 @@ void CreateSimplestNetwork (uint32_t packetSize,
     // addressHelper.SetBase("192.168.0.0", "255.255.255.0");
 
     addressHelper.SetBase("192.168.0.0", "255.255.255.0");
-    addressHelper.Assign(PointToPointCreate(B, C, DataRate("3000Mbps"), Time("6ms"), packetSize));
+    addressHelper.Assign(PointToPointCreate(B, C, DataRate("300Kbps"), Time("6ms"), packetSize));
 
     addressHelper.SetBase("192.168.9.0", "255.255.255.0");
-    addressHelper.Assign(PointToPointCreate(C, A, DataRate("1000Mbps"), Time("500ms"), packetSize));
+    addressHelper.Assign(PointToPointCreate(C, A, DataRate("100Kbps"), Time("500ms"), packetSize));
 
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
-    addressHelper.Assign(PointToPointCreate(C, A, DataRate("1000Mbps"), Time("15ms"), packetSize));
+    addressHelper.Assign(PointToPointCreate(C, A, DataRate("100Kbps"), Time("15ms"), packetSize));
   }
   else{
     InternetStackHelper stackHelper = GetInternetStackHelper(useStaticRouting);

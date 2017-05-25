@@ -78,7 +78,7 @@ def analyze_application(file_path):
         next(spamreader)
         total_psize = 0
         for row in spamreader:
-            if int(row[1]) == 0: # not send record
+            if int(row[1]) == 1: # not receive record
                 timestamp = int(row[0])/1e9
                 total_psize += int(row[7])
                 record.append([timestamp, total_psize])
@@ -210,7 +210,7 @@ def writeToCsv(sentBytes = None, receivedBytes = None):
                 
 if __name__ == '__main__':
 
-    batch_num = int(sys.argv[1])
+    # batch_num = int(sys.argv[1])
     # sns.plt.figure(figsize=(16*2, 9*2))
     # sns.plt.subplot(3,1,1)
     # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
@@ -218,24 +218,57 @@ if __name__ == '__main__':
     # analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
     # sns.plt.subplot(3,1,3)
     # analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-    # sns.plt.savefig("/home/hong/result_figure/tmp.png", dpi = 150, pad_inches=0)
+    # sns.plt.savefig("/home/hong/result_figure/tmp0.png", dpi = 150, bbox_inches='tight')
     # sns.plt.close()
 
     # monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
-    # sns.plt.figure()
+    # sns.plt.figure(figsize=(16*2, 9*2))
     # sns.plt.subplot(3,1,1)
     # AnalyzeMonitorSentBytes(monitor_records)
     # sns.plt.subplot(3,1,2)
     # subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
     # sns.plt.subplot(3,1,3)
     # AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [100,100])
-    # sns.plt.show()
+    # sns.plt.savefig("/home/hong/result_figure/tmp1.png", dpi = 150, bbox_inches='tight')
+    # sns.plt.close()
 
-    sns.plt.figure()
+    # sns.plt.figure(figsize=(16*2, 9*2))
+    # rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_client_rtt')
+    # AnalyzeClientRtt(rtt_records)
+    # sns.plt.savefig("/home/hong/result_figure/tmp2.png", dpi = 150, bbox_inches='tight')
+    # sns.plt.close()
+
+
+    batch_num = int(sys.argv[1])
+    sns.plt.figure(figsize=(16*2, 9*2))
+    sns.plt.subplot(3,2,1)
+    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    sns.plt.subplot(3,2,2)
+    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    sns.plt.subplot(3,2,3)
+    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
+
+    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
+    sns.plt.subplot(3,2,4)
+    AnalyzeMonitorSentBytes(monitor_records)
+    sns.plt.subplot(3,2,5)
+    subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
+    sns.plt.subplot(3,2,6)
+    AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [100,100])
+    sns.plt.savefig("/home/hong/result_figure/tmp3.png", dpi = 150, bbox_inches='tight')
+    sns.plt.close()
+
+    sns.plt.figure(figsize=(16*2, 9*2))
     rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_client_rtt')
     AnalyzeClientRtt(rtt_records)
+    sns.plt.savefig("/home/hong/result_figure/tmp4.png", dpi = 150, bbox_inches='tight')
+    sns.plt.close()
 
-    sns.plt.show()
+
+
+
+
+
 
     # # print sys.argv[1] ,sys.argv[2], sys.argv[3], sys.argv[4]
 
