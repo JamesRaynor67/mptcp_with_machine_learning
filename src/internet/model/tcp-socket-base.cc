@@ -2159,7 +2159,7 @@ TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
   //           << ", (header.GetFlags() & TcpHeader::ACK) == " << (header.GetFlags() & TcpHeader::ACK)
   //           << ", !m_delAckEvent.IsExpired() == " << !m_delAckEvent.IsExpired() << std::endl;
   if ((header.GetFlags() & TcpHeader::ACK) != 0 && m_delAckEvent.IsExpired()) // Hong Jiaming: modified by Hong Jiaming
-  // if ((header.GetFlags() & TcpHeader::ACK) && !m_delAckEvent.IsExpired())// Hong Jimaing: This is original code
+  // if ((header.GetFlags() & TcpHeader::ACK) && !m_delAckEvent.IsExpired())// Hong Jiaming: This is original code
     { // If sending an ACK, cancel the delayed ACK as well
       m_delAckEvent.Cancel ();
       m_delAckCount = 0;
@@ -2786,40 +2786,36 @@ TcpSocketBase::EstimateRtt (const TcpHeader& tcpHeader)
   SequenceNumber32 ackSeq = tcpHeader.GetAckNumber ();
   Time m = Time (0.0);
 
+  // m_history is the record of sent packet which are not acked yet
   // An ack has been received, calculate rtt and log this measurement
   // Note we use a linear search (O(n)) for this since for the common
   // case the ack'ed packet will be at the head of the list
-  if (!m_history.empty ())
-    {
-      RttHistory& h = m_history.front ();
-      if (!h.retx && ackSeq >= (h.seq + SequenceNumber32 (h.count)))
-        { // Ok to use this sample
-          if (m_tcpParams->m_timestampEnabled && tcpHeader.HasOption (TcpOption::TS))
-            {
-              Ptr<TcpOptionTS> ts;
-              ts = DynamicCast<TcpOptionTS> (tcpHeader.GetOption (TcpOption::TS));
-              m = TcpOptionTS::ElapsedTimeFromTsValue (ts->GetEcho ());
-            }
-          else
-            {
-              m = Simulator::Now () - h.time; // Elapsed time
-            }
-        }
+  if (!m_history.empty ()){
+    RttHistory& h = m_history.front ();
+    if (!h.retx && ackSeq >= (h.seq + SequenceNumber32 (h.count))){ // Ok to use this sample
+      if (m_tcpParams->m_timestampEnabled && tcpHeader.HasOption (TcpOption::TS)){
+        Ptr<TcpOptionTS> ts;
+        ts = DynamicCast<TcpOptionTS> (tcpHeader.GetOption (TcpOption::TS));
+        // Kind of strange. RTT
+        m = TcpOptionTS::ElapsedTimeFromTsValue (ts->GetEcho ());
+        std::cout << "Hong Jiaming 70 timeStamp = " << ts->GetTimestamp () << " echo = " << ts->GetEcho() << " rtt = " << 2*(ts->GetTimestamp() - ts->GetEcho()) << std::endl;
+        std::cout << "Hong Jiaming 71: m == " << m << std::endl;
+      }
+      else{
+        m = Simulator::Now () - h.time; // Elapsed time
+        std::cout << "Hong Jiaming 72: m == " << m << std::endl;
+      }
     }
+  }
 
   // Now delete all ack history with seq <= ack
-  while (!m_history.empty ())
-    {
-      RttHistory& h = m_history.front ();
-      if ((h.seq + SequenceNumber32 (h.count)) > ackSeq)
-        {
-
-          break;
-        // Done removing
-        }
-
-      m_history.pop_front (); // Remove
+  while (!m_history.empty ()){
+    RttHistory& h = m_history.front ();
+    if ((h.seq + SequenceNumber32 (h.count)) > ackSeq){
+      break; // Done removing
     }
+    m_history.pop_front (); // Remove
+  }
 
   if (!m.IsZero ())
     {
@@ -3326,8 +3322,8 @@ TcpSocketBase::AddOptionTimestamp (TcpHeader& header)
 
   bool tsAdded = header.AppendOption (option);
   // std::cout << "Hong Jiaming 15 TS added: " << tsAdded << std::endl;
-  NS_LOG_INFO (m_node->GetId () << " Add option TS, ts=" <<
-               option->GetTimestamp () << " echo=" << m_timestampToEcho);
+  NS_LOG_INFO (m_node->GetId () << "Hong Jiaming 15: Add option TS, ts=" <<
+               option->GetTimestamp () << " echo=" << m_timestampToEcho << " rtt=" << 2*(option->GetTimestamp () - m_timestampToEcho));
 }
 
 bool

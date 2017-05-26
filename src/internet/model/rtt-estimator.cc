@@ -241,29 +241,25 @@ void
 RttMeanDeviation::Measurement (Time m)
 {
   NS_LOG_FUNCTION (this << m);
-  if (m_nSamples)
-    {
-      // If both alpha and beta are reciprocal powers of two, updating can
-      // be done with integer arithmetic according to Jacobson/Karels paper.
-      // If not, since class Time only supports integer multiplication,
-      // must convert Time to floating point and back again
-      uint32_t rttShift = CheckForReciprocalPowerOfTwo (m_alpha);
-      uint32_t variationShift = CheckForReciprocalPowerOfTwo (m_beta);
-      if (rttShift && variationShift)
-        {
-          IntegerUpdate (m, rttShift, variationShift);
-        }
-      else
-        {
-          FloatingPointUpdate (m);
-        }
+  if (m_nSamples){
+    // If both alpha and beta are reciprocal powers of two, updating can
+    // be done with integer arithmetic according to Jacobson/Karels paper.
+    // If not, since class Time only supports integer multiplication,
+    // must convert Time to floating point and back again
+    uint32_t rttShift = CheckForReciprocalPowerOfTwo (m_alpha);
+    uint32_t variationShift = CheckForReciprocalPowerOfTwo (m_beta);
+    if (rttShift && variationShift){
+      IntegerUpdate (m, rttShift, variationShift);
     }
-  else
-    { // First sample
-      m_estimatedRtt = m;               // Set estimate to current
-      m_estimatedVariation = m / 2;  // And variation to current / 2
-      NS_LOG_DEBUG ("(first sample) m_estimatedVariation += " << m);
+    else{
+      FloatingPointUpdate (m);
     }
+  }
+  else{ // First sample
+    m_estimatedRtt = m;               // Set estimate to current
+    m_estimatedVariation = m / 2;  // And variation to current / 2
+    NS_LOG_DEBUG ("(first sample) m_estimatedVariation += " << m);
+  }
   m_nSamples++;
 }
 

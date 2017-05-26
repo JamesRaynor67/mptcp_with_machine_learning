@@ -7,7 +7,9 @@ import pandas as pd
 import warnings
 
 from log_helper_mptcp_subflow_id import MpTcpSubflows
-from log_monitor_time_sentBytes import AnalyzeMonitorSentBytes
+from log_monitor_time_bytes import AnalyzeSentBytes
+from log_monitor_time_bytes import AnalyzeReceivedBytes
+from log_monitor_time_bytes import AnalyzeBytes
 from log_monitor_time_sendingRate import AnalyzeMonitorSendingRate
 from log_monitor_time_sendingRate import  AnalyzeMonitorSendingRateUtilization
 from log_time_rtt import AnalyzeClientRtt
@@ -70,30 +72,6 @@ def proprocess_rtt_data(file_path):
     rtt_records = pd.DataFrame(record, columns=columns)
 
     return rtt_records
-
-def analyze_application(file_path):
-    record = []
-    with open(file_path, 'rb') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',')
-        next(spamreader)
-        total_psize = 0
-        for row in spamreader:
-            if int(row[1]) == 1: # not receive record
-                timestamp = int(row[0])/1e9
-                total_psize += int(row[7])
-                record.append([timestamp, total_psize])
-
-    record.sort(key=lambda ele:ele[0])
-    x, y = [], []
-    for pair in record:
-        x.append(pair[0])
-        y.append(pair[1])
-    sent_packet_size, = sns.plt.plot(x, y, 'go')
-    sns.plt.legend([sent_packet_size], ['sent packet size'], loc='upper left')
-    sns.plt.title('Time-Sent packet size')
-    sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
-    sns.plt.ylabel('Sent packet size / Byte', fontsize = 14, color = 'black')
-    print 'server send total: ', y[-1], ' Bytes' 
 
 def analyze_client_end_node(file_path):
     record = []
@@ -242,26 +220,23 @@ if __name__ == '__main__':
     batch_num = int(sys.argv[1])
     sns.plt.figure(figsize=(16*2, 9*2))
     sns.plt.subplot(3,2,1)
-    analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    sns.plt.subplot(3,2,2)
     analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    sns.plt.subplot(3,2,3)
+    sns.plt.subplot(3,2,2)
     analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-
     monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
+    sns.plt.subplot(3,2,3)
+    AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
+    # AnalyzeSentBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    # AnalyzeReceivedBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
     sns.plt.subplot(3,2,4)
-    AnalyzeMonitorSentBytes(monitor_records)
-    sns.plt.subplot(3,2,5)
     subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
+    sns.plt.subplot(3,2,5)
+    AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [300,50])
     sns.plt.subplot(3,2,6)
-    AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [100,100])
-    sns.plt.savefig("/home/hong/result_figure/tmp3.png", dpi = 150, bbox_inches='tight')
-    sns.plt.close()
-
-    sns.plt.figure(figsize=(16*2, 9*2))
     rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_client_rtt')
     AnalyzeClientRtt(rtt_records)
-    sns.plt.savefig("/home/hong/result_figure/tmp4.png", dpi = 150, bbox_inches='tight')
+    sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rr.png", dpi = 150, bbox_inches='tight')
+    # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rtt.png", dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
 
