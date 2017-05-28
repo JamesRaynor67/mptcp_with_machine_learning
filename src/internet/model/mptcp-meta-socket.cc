@@ -1053,7 +1053,7 @@ MpTcpMetaSocket::SendPendingData()
   if(this->GetNode()->GetId() == 0){
     SendStates(this->m_rlSocket);
     std::string rcv_str = RcvActions(this->m_rlSocket);
-    rcv_str = "0";
+    rcv_str = "1";
     ApplyActions(rcv_str);
     // ApplyActions("0");
   }
@@ -2332,6 +2332,7 @@ MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
     socket.add("lastAckedSeq"+std::to_string(index), tcb->m_lastAckedSeq.GetValue());
     socket.add("highTxMark"+std::to_string(index), tcb->m_highTxMark.Get().GetValue());
     socket.add("rtt"+std::to_string(index), subflow->GetRttEstimator()->GetEstimate().GetMicroSeconds());
+    // std::cout << "Hong Jiaming 15: send rtt=" << subflow->GetRttEstimator()->GetEstimate().GetMicroSeconds() << std::endl;
   }
   socket.send();
 }

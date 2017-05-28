@@ -91,10 +91,10 @@ int main(int argc, char* argv[])
     // tmp_servers.Add(other_servers);
     // tmp_clients.Add(client);
     // tmp_clients.Add(other_clients);
-    InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
+    // InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
     // InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
     // InstallOnOffApplications(tmp_servers, tmp_clients, segmentSizeWithoutHeaders);
-    // InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
+    InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
     // InstallFileTransferApplications(other_servers, other_clients, segmentSizeWithoutHeaders, queueSize);
   }
   else if (appType == filetransfer)

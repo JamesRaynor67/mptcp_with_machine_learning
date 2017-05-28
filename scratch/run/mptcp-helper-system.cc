@@ -74,7 +74,7 @@ void EnableLogging ()
   // LogComponentEnable("Ipv4StaticRouting", LOG_LEVEL_ALL);
   // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_ALL);
   // LogComponentEnable("TcpL4Protocol", LOG_LEVEL_ALL);
-  LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
+  // LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
   // LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
   // LogComponentEnable("MpTcpSubflow", LOG_LEVEL_ALL);
   // LogComponentEnable("MpOnOffApplication", LOG_LEVEL_ALL);

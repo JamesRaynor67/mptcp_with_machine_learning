@@ -311,7 +311,7 @@ void CreateSimplestNetwork (uint32_t packetSize,
     routerInterfaces.Add(interfaces.Get(1));
 
     addressHelper.SetBase("192.168.9.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(C, A, DataRate("300Kbps"), Time("15ms"), packetSize);
+    linkedDevices = PointToPointCreate(C, A, DataRate("400Kbps"), Time("250ms"), packetSize);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
@@ -323,14 +323,14 @@ void CreateSimplestNetwork (uint32_t packetSize,
     // linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
 
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(C, A, DataRate("50Kbps"), Time("150ms"), packetSize);
+    linkedDevices = PointToPointCreate(C, A, DataRate("100Kbps"), Time("15ms"), packetSize);
     addressHelper.Assign(linkedDevices);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
 
     Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
-    ptr_em->SetRate(4*1e-4);
+    ptr_em->SetRate(1*1e-4);
     // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
     linkedDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
     linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));

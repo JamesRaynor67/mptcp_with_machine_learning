@@ -105,22 +105,22 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
     // Create application
     // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
     std::cout << "InstallFileTransferApplications 1" << endl;
-    Ptr<Ipv4> ipv4 = clients.Get(i)->GetObject<Ipv4>(); // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
+    Ptr<Ipv4> ipv4 = servers.Get(i)->GetObject<Ipv4>(); // Interface number of Ipv4 interface = 1 (0 is 0.0.0.0?); addressIndex = 0
     Ipv4InterfaceAddress iaddr = ipv4->GetAddress(1,0);
     Ipv4Address addr = iaddr.GetLocal();
     Address remoteAddress(InetSocketAddress(addr, portNum));
     FileTransferHelper fileHelper(remoteAddress);
-    fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
-    // fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
+    // fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
+    fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
     fileHelper.SetAttribute("FileSize", UintegerValue(5*10e7)); // The setting of FileSize should be careful, flowmonitor may fail to trace if too small
 
     // Install on server
-    ApplicationContainer apps = fileHelper.Install(servers.Get(i));
+    ApplicationContainer apps = fileHelper.Install(clients.Get(i));
 
     // Install on client
-    PacketSinkHelper packetSink("ns3::TcpSocketFactory", remoteAddress);
-    // PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
-    packetSink.Install(clients.Get(i));
+    // PacketSinkHelper packetSink("ns3::TcpSocketFactory", remoteAddress);
+    PacketSinkHelper packetSink("ns3::MpTcpSocketFactory", remoteAddress);
+    packetSink.Install(servers.Get(i));
 
     portNum++;
   }

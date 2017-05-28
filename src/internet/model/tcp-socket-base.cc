@@ -2539,7 +2539,8 @@ bool TcpSocketBase::CanSendPendingData (uint32_t dataToSend)
   if (!m_tcpParams->m_noDelay && UnAckDataCount () > 0
       && dataToSend < m_tcb->m_segmentSize)
   {
-    NS_LOG_LOGIC ("Invoking Nagle's algorithm. Wait to send.");
+     std::cout << "Hong Jiaming 74" << std::endl;
+     NS_LOG_LOGIC ("Invoking Nagle's algorithm. Wait to send.");
     return false;
   }
   return w > 0;
@@ -2798,12 +2799,12 @@ TcpSocketBase::EstimateRtt (const TcpHeader& tcpHeader)
         ts = DynamicCast<TcpOptionTS> (tcpHeader.GetOption (TcpOption::TS));
         // Kind of strange. RTT
         m = TcpOptionTS::ElapsedTimeFromTsValue (ts->GetEcho ());
-        std::cout << "Hong Jiaming 70 timeStamp = " << ts->GetTimestamp () << " echo = " << ts->GetEcho() << " rtt = " << 2*(ts->GetTimestamp() - ts->GetEcho()) << std::endl;
-        std::cout << "Hong Jiaming 71: m == " << m << std::endl;
+        // std::cout << "Hong Jiaming 70 timeStamp = " << ts->GetTimestamp () << " echo = " << ts->GetEcho() << " rtt = " << 2*(ts->GetTimestamp() - ts->GetEcho()) << std::endl;
+        // std::cout << "Hong Jiaming 71: m == " << m << std::endl;
       }
       else{
         m = Simulator::Now () - h.time; // Elapsed time
-        std::cout << "Hong Jiaming 72: m == " << m << std::endl;
+        // std::cout << "Hong Jiaming 72: m == " << m << std::endl;
       }
     }
   }
@@ -3323,7 +3324,7 @@ TcpSocketBase::AddOptionTimestamp (TcpHeader& header)
   bool tsAdded = header.AppendOption (option);
   // std::cout << "Hong Jiaming 15 TS added: " << tsAdded << std::endl;
   NS_LOG_INFO (m_node->GetId () << "Hong Jiaming 15: Add option TS, ts=" <<
-               option->GetTimestamp () << " echo=" << m_timestampToEcho << " rtt=" << 2*(option->GetTimestamp () - m_timestampToEcho));
+               option->GetTimestamp () << " echo=" << m_timestampToEcho << " rtt=" << 2*(option->GetTimestamp () - m_timestampToEcho) << " rttEstimator.rtt=" << this->GetRttEstimator()->GetEstimate().GetMicroSeconds());
 }
 
 bool

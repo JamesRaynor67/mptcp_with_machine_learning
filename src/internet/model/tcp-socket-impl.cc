@@ -204,6 +204,7 @@ TcpSocketImpl::SetTcpNoDelay (bool noDelay)
 {
   NS_LOG_FUNCTION (this << noDelay);
   m_tcpParams->m_noDelay = noDelay;
+  // m_tcpParams->m_noDelay = false; // Hong Jiaming 73: debug RTT
 }
 
 bool

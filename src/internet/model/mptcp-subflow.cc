@@ -1359,6 +1359,10 @@ MpTcpSubflow::ReceivedData(Ptr<Packet> p, const TcpHeader& tcpHeader)
       }
     }
 
+  // ************ IMPORTANT ************
+  sendAck = true; // Hong Jimaing 75: added for degug
+  // ************ IMPORTANT ************
+  
   //Remove in order packets from the subflow receive buffer and remove mappings
   UpdateRxBuffer();
 
