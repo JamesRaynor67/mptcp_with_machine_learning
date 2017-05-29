@@ -104,7 +104,7 @@ TcpSocket::GetTypeId (void)
                    MakeTimeChecker ())
     .AddAttribute ("DelAckCount",
                    "Number of packets to wait before sending a TCP ack",
-                   UintegerValue (2),
+                   UintegerValue (0), // Hong Jiaming: Set to 0 to disable delayed Ack. Original default value is 2
                    MakeUintegerAccessor (&TcpSocket::GetDelAckMaxCount,
                                          &TcpSocket::SetDelAckMaxCount),
                    MakeUintegerChecker<uint32_t> ())

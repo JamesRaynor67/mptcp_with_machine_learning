@@ -1344,6 +1344,8 @@ MpTcpSubflow::ReceivedData(Ptr<Packet> p, const TcpHeader& tcpHeader)
   else
     {
       // In-sequence packet: ACK if delayed ack count allows
+      // Hong Jiaming: m_delAckMaxCount is set to be 0 in file tcp-socket.cc to disable delayed Ack
+      NS_ASSERT(m_tcpParams->m_delAckMaxCount == 0);
       if (++m_delAckCount >= m_tcpParams->m_delAckMaxCount)
       {
         m_delAckEvent.Cancel ();
@@ -1352,6 +1354,7 @@ MpTcpSubflow::ReceivedData(Ptr<Packet> p, const TcpHeader& tcpHeader)
       }
       else if (m_delAckEvent.IsExpired ())
       {
+        NS_ASSERT(false); // Hong Jiaming: delayed Ack should be disabled
         m_delAckEvent = Simulator::Schedule (m_tcpParams->m_delAckTimeout,
                                              &MpTcpSubflow::DelAckTimeout, this);
         NS_LOG_LOGIC (this << " scheduled delayed ACK at "
@@ -1359,10 +1362,6 @@ MpTcpSubflow::ReceivedData(Ptr<Packet> p, const TcpHeader& tcpHeader)
       }
     }
 
-  // ************ IMPORTANT ************
-  sendAck = true; // Hong Jimaing 75: added for degug
-  // ************ IMPORTANT ************
-  
   //Remove in order packets from the subflow receive buffer and remove mappings
   UpdateRxBuffer();
 

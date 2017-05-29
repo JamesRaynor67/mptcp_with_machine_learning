@@ -20,6 +20,16 @@
 
 using namespace ns3;
 
+namespace ns3{
+  std::string g_link_a_BW;
+  std::string g_link_b_BW;
+  std::string g_link_c_BW;
+  std::string g_link_a_delay;
+  std::string g_link_b_delay;
+  std::string g_link_c_delay;
+  double g_link_b_BER;
+};
+
 int main(int argc, char* argv[])
 {
   enum AppType
@@ -30,13 +40,23 @@ int main(int argc, char* argv[])
 
   uint32_t type = 0;
   uint32_t appType = 0;
-  string outputDir = "mptcp_output";
-  uint32_t simulationDuration = 120;
+  std::string outputDir = "mptcp_output";
+  uint32_t simulationDuration = 40;
 
   CommandLine cmd;
-  cmd.AddValue("outputDir", "The output directory to write the logs to.", outputDir);
+  std::string link_b_BER;
   cmd.AddValue("appType", "The type of application to run", appType);
+  cmd.AddValue("outputDir", "The output directory to write the logs to.", outputDir);
+  cmd.AddValue("link_a_BW", "Bandwidth of link A.", g_link_a_BW);
+  cmd.AddValue("link_b_BW", "Bandwidth of link B.", g_link_b_BW);
+  cmd.AddValue("link_c_BW", "Bandwidth of link C.", g_link_c_BW);
+  cmd.AddValue("link_a_delay", "Bandwidth of link A.", g_link_a_delay);
+  cmd.AddValue("link_b_delay", "Bandwidth of link B.", g_link_b_delay);
+  cmd.AddValue("link_c_delay", "Bandwidth of link C.", g_link_c_delay);
+  cmd.AddValue("link_b_BER", "The bit error rate of link B.", link_b_BER);
   cmd.Parse(argc, argv);
+  g_link_b_BER = std::stod(link_b_BER);
+  std::cout << g_link_a_BW << " " << g_link_b_BW << " " << g_link_c_BW << " WTF " << link_b_BER << std::endl;
 
   string linkRate = "10Mbps";
   string linkDelay = "10ms";
@@ -91,10 +111,10 @@ int main(int argc, char* argv[])
     // tmp_servers.Add(other_servers);
     // tmp_clients.Add(client);
     // tmp_clients.Add(other_clients);
-    // InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
+    InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
     // InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
     // InstallOnOffApplications(tmp_servers, tmp_clients, segmentSizeWithoutHeaders);
-    InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
+    // InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
     // InstallFileTransferApplications(other_servers, other_clients, segmentSizeWithoutHeaders, queueSize);
   }
   else if (appType == filetransfer)
@@ -121,7 +141,6 @@ int main(int argc, char* argv[])
   // Simulator::Schedule(Seconds(30), &PrintMonitorStates);
   for(int i = 0; i < simulationDuration * 10;i++){
     Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
-
   }
   Simulator::Stop (Seconds(simulationDuration));
 

@@ -2,6 +2,8 @@ import socket
 import pandas
 import matplotlib.pyplot as plt
 from time import sleep
+from optparse import OptionParser
+
 from rl_socket import Interacter_socket
 from RL_core import DeepQNetwork
 from RL_core import extract_observation
@@ -86,11 +88,17 @@ class DataRecorder():
             print "key: ", k, "value: ", v
 
 if __name__ == "__main__":
+
+    parser = OptionParser()
+    parser.add_option("-f", "--forceReply", dest="ForceReply", default=None, help="Force RL module reply a scheduler")
+    parser.add_option("-m", "--maxEpisode", dest="MaxEpisode", default=1, help="The number of times to train (launch NS3)")
+    (options, args) = parser.parse_args()
+
     episode_count = 0
     RL = DeepQNetwork(n_actions=4, n_features=4, learning_rate=0.01, reward_decay=0.9,
                       e_greedy=0.9, replace_target_iter=200, memory_size=2000, output_graph=True)
     reward_record = []
-    while episode_count < 1:
+    while episode_count < int(options.MaxEpisode):
         rttRecorder = RecordRTT('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rtt')
         dataRecorder = DataRecorder(rttRecorder)
 
@@ -114,6 +122,9 @@ if __name__ == "__main__":
             # print 'recv_str: ', recv_str
             # print 'observation: ', observation_before_action
             action = RL.choose_action(observation_before_action)
+
+            if options.ForceReply is not None:
+                action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
 
             # Apply action to environment
             apply_action(socket, dataRecorder, action)

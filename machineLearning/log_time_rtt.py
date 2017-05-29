@@ -8,8 +8,8 @@ def AnalyzeClientRtt(rtt_records):
     client_rtt0 = rtt_records[["Timestamp", "Rtt0"]].values
     client_rtt1 = rtt_records[["Timestamp", "Rtt1"]].values
 
-    c_s_subflow_1_rtt, = sns.plt.plot(client_rtt0[:,0], client_rtt0[:,1]/1000) # convert rtt time unit to millisecond
-    c_s_subflow_2_rtt, = sns.plt.plot(client_rtt1[:,0], client_rtt1[:,1]/1000)
+    c_s_subflow_1_rtt, = sns.plt.plot(list(client_rtt0[:,0]), list(client_rtt0[:,1]/1000)) # convert rtt time unit to millisecond
+    c_s_subflow_2_rtt, = sns.plt.plot(list(client_rtt1[:,0]), list(client_rtt1[:,1]/1000))
 
     sns.plt.legend([c_s_subflow_1_rtt, c_s_subflow_2_rtt], ['subflow 1 RTT', 'subflow 2 RTT'], loc='best')
     sns.plt.title('Time-RTT')

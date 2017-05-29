@@ -4,7 +4,9 @@ import seaborn as sns
 import sys
 import os
 import pandas as pd
+import numpy as np
 import warnings
+from optparse import OptionParser
 
 from log_helper_mptcp_subflow_id import MpTcpSubflows
 from log_monitor_time_bytes import AnalyzeSentBytes
@@ -15,6 +17,7 @@ from log_monitor_time_sendingRate import  AnalyzeMonitorSendingRateUtilization
 from log_time_rtt import AnalyzeClientRtt
 
 warnings.filterwarnings("error")
+g_resultRecord = {}
 
 def preprocess_monitor_data(file_path):
     record = []
@@ -75,32 +78,40 @@ def proprocess_rtt_data(file_path):
 
 def analyze_client_end_node(file_path):
     record = []
+    tmp_client_sent_count, tmp_client_rcv_count = 0, 0
     # '/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client'
     with open(file_path, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
             if int(row[1]) == 1: # not receive record
+                tmp_client_sent_count += 1
                 timestamp = int(row[0])/1e9
                 subflowId = int(row[3])
                 seqnum = int(row[4])
                 if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
                     record.append([timestamp, subflowId, seqnum])
+            else:
+                tmp_client_rcv_count += 1
 
+    print 'client sent count: ', tmp_client_sent_count, 'client receive count: ', tmp_client_rcv_count
     record.sort(key=lambda ele:ele[0])
     x, y = [[],[]], [[],[]]
     for row in record:
         # subflow id is from 0 to n-1
         x[row[1]].append(row[0])
         y[row[1]].append(row[2])
-    print len(y),len(y[0]),len(y[1])
-    subflow_1, = plt.plot(x[0], y[0], 'ro')
-    subflow_2, = plt.plot(x[1], y[1], 'bo')
+
+    global g_resultRecord
+    g_resultRecord["Subflow0_Client_Sent"] = y[0][-1]
+    g_resultRecord["Subflow1_Client_Sent"] = y[1][-1]
+
+    subflow_1, = sns.plt.plot(x[0], y[0], 'b-')
+    subflow_2, = sns.plt.plot(x[1], y[1], 'r-')
     sns.plt.legend([subflow_1, subflow_2], ['client side subflow 1', 'client side subflow 2'], loc='upper left')
     sns.plt.title('Client Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Seqence number', fontsize = 14, color = 'black')
-    writeToCsv(sentBytes = sum([row[-1] for row in y]))
 
 def analyze_server_end_point(file_path):
     record = []
@@ -122,13 +133,17 @@ def analyze_server_end_point(file_path):
         # subflow id is from 0 to n-1
         x[row[1]].append(row[0])
         y[row[1]].append(row[2])
-    subflow_1, = plt.plot(x[0], y[0], 'ro')
-    subflow_2, = plt.plot(x[1], y[1], 'bo')
+    subflow_1, = plt.plot(x[0], y[0], 'b-')
+    subflow_2, = plt.plot(x[1], y[1], 'r-')
+    
+    global g_resultRecord
+    g_resultRecord["Subflow0_Server_Rcv"] = y[0][-1]
+    g_resultRecord["Subflow1_Server_Rcv"] = y[1][-1]
+    
     sns.plt.legend([subflow_1, subflow_2], ['server side subflow 1', 'server side subflow 2'], loc='upper left')
     sns.plt.title('Server Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Seqence number', fontsize = 14, color = 'black')
-    writeToCsv(receivedBytes = sum([row[-1] for row in y]))
 
 def analyze_reward(file_path):
     record = []
@@ -152,99 +167,61 @@ def analyze_reward(file_path):
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Reward', fontsize = 14, color = 'black')
 
-def writeToCsv(sentBytes = None, receivedBytes = None):
-    if(len(sys.argv) >= 4 and sys.argv[2] == 'true'):
-        path = sys.argv[3]
-        scheduler = sys.argv[4]
+def recordResultToCsv():
+    global g_resultRecord
+    if g_resultRecord['Experiment'] != None and g_resultRecord['Scheduler'] != None:
+        print 'Recording to csv: ' + g_resultRecord['Filename']
+        record = []
+        record.append(g_resultRecord['Experiment'])
+        record.append(g_resultRecord['Scheduler'])
+        record.append(g_resultRecord['Subflow0_Client_Sent'])
+        record.append(g_resultRecord['Subflow1_Client_Sent'])
+        record.append(g_resultRecord['Subflow0_Server_Rcv'])
+        record.append(g_resultRecord['Subflow1_Server_Rcv'])
+        with open(g_resultRecord['Filename'],'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(record)
+    else:
+        print "Not recording result: ", g_resultRecord
+    g_resultRecord = {}
 
-        assert os.path.isfile(path) 
-        new_rows = []
-        with open(path, 'rb') as csv_file:
-            r = csv.reader(csv_file)
-            row_num = 0
-            for row in r:
-                if row_num == 0 and scheduler == 'rr' and sentBytes is not None:
-                    row.append(sentBytes)
-                elif row_num == 1 and scheduler == 'rtt' and sentBytes is not None:
-                    row.append(sentBytes)
-                elif row_num == 2 and scheduler == 'rf' and sentBytes is not None:
-                    row.append(sentBytes)
-                elif row_num == 3 and scheduler == 'ldbp' and sentBytes is not None:
-                    row.append(sentBytes)
-                elif row_num == 4 and scheduler == 'rr' and receivedBytes is not None:
-                    row.append(receivedBytes)
-                elif row_num == 5 and scheduler == 'rtt' and receivedBytes is not None:
-                    row.append(receivedBytes)
-                elif row_num == 6 and scheduler == 'rf' and receivedBytes is not None:
-                    row.append(receivedBytes)
-                elif row_num == 7 and scheduler == 'ldbp' and receivedBytes is not None:
-                    row.append(receivedBytes)
-                row_num += 1
-                new_rows.append(row)
-
-        with open(path, 'wb') as csv_file:
-            w = csv.writer(csv_file)
-            w.writerows(new_rows)
-                
 if __name__ == '__main__':
 
-    # batch_num = int(sys.argv[1])
-    # sns.plt.figure(figsize=(16*2, 9*2))
-    # sns.plt.subplot(3,1,1)
-    # analyze_application('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    # sns.plt.subplot(3,1,2)
-    # analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    # sns.plt.subplot(3,1,3)
-    # analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-    # sns.plt.savefig("/home/hong/result_figure/tmp0.png", dpi = 150, bbox_inches='tight')
-    # sns.plt.close()
+    parser = OptionParser()
+    parser.add_option("-f", "--filename", dest="Filename", default="/home/hong/result_figure/statistic.csv", help="write report to FILE", metavar="FILE")
+    parser.add_option("-e", "--experiment", dest="Experiment", default=None, help="The name(index) of experiment. E.g. \"Exp_1\"")
+    parser.add_option("-s", "--scheduler", dest="Scheduler", default=None, help="The name of sechduler. E.g. \"RR\"")
+    parser.add_option("-n", "--episodeNum", dest="EpisodeNum", default=None, help="The number of episode to analyze")
+    parser.add_option("-b", "--linkBBandwidth", dest="LinkBBW", default=None, help="The bandwidth of link B")
+    parser.add_option("-c", "--linkCBandwidth", dest="LinkCBW", default=None, help="The bandwidth of link C")
+    (options, args) = parser.parse_args()
+    g_resultRecord['Filename'] = options.Filename
+    g_resultRecord['Experiment'] = options.Experiment
+    g_resultRecord['Scheduler'] = options.Scheduler
 
-    # monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
-    # sns.plt.figure(figsize=(16*2, 9*2))
-    # sns.plt.subplot(3,1,1)
-    # AnalyzeMonitorSentBytes(monitor_records)
-    # sns.plt.subplot(3,1,2)
-    # subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
-    # sns.plt.subplot(3,1,3)
-    # AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [100,100])
-    # sns.plt.savefig("/home/hong/result_figure/tmp1.png", dpi = 150, bbox_inches='tight')
-    # sns.plt.close()
-
-    # sns.plt.figure(figsize=(16*2, 9*2))
-    # rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_client_rtt')
-    # AnalyzeClientRtt(rtt_records)
-    # sns.plt.savefig("/home/hong/result_figure/tmp2.png", dpi = 150, bbox_inches='tight')
-    # sns.plt.close()
-
-
-    batch_num = int(sys.argv[1])
+    episode_num = int(options.EpisodeNum)
     sns.plt.figure(figsize=(16*2, 9*2))
     sns.plt.subplot(3,2,1)
-    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
+    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client')
     sns.plt.subplot(3,2,2)
-    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_monitor')
+    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
+    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_monitor')
     sns.plt.subplot(3,2,3)
-    AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
-    # AnalyzeSentBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_client')
-    # AnalyzeReceivedBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_mptcp_server')
+    AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
+    # AnalyzeSentBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client')
+    # AnalyzeReceivedBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
     sns.plt.subplot(3,2,4)
     subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
     sns.plt.subplot(3,2,5)
-    AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [300,50])
+    AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [int(options.LinkBBW[:-4]), int(options.LinkCBW[:-4])])
     sns.plt.subplot(3,2,6)
-    rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_client_rtt')
+    rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_rtt')
     AnalyzeClientRtt(rtt_records)
-    sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rr.png", dpi = 150, bbox_inches='tight')
-    # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rtt.png", dpi = 150, bbox_inches='tight')
+    # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rr.png", dpi = 150, bbox_inches='tight')
+    sns.plt.savefig("/home/hong/result_figure/0_static_20170529/" + options.Experiment + "_" + options.Scheduler + ".png", dpi = 150, bbox_inches='tight')
+    # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/Z1_rr.png", dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
+    recordResultToCsv()
 
-
-
-
-
-
-    # # print sys.argv[1] ,sys.argv[2], sys.argv[3], sys.argv[4]
-
-    # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(batch_num) + '_calculate_reward')
+    # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_calculate_reward')

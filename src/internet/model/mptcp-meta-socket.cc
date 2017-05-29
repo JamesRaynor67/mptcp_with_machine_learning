@@ -63,6 +63,7 @@ using namespace std;
 
 namespace ns3
 {
+
 NS_LOG_COMPONENT_DEFINE("MpTcpMetaSocket");
 
 NS_OBJECT_ENSURE_REGISTERED(MpTcpMetaSocket);
@@ -1053,7 +1054,6 @@ MpTcpMetaSocket::SendPendingData()
   if(this->GetNode()->GetId() == 0){
     SendStates(this->m_rlSocket);
     std::string rcv_str = RcvActions(this->m_rlSocket);
-    rcv_str = "1";
     ApplyActions(rcv_str);
     // ApplyActions("0");
   }

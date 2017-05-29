@@ -14,6 +14,13 @@
 // #include "ns3/olsr-module.h"
 
 namespace ns3{
+extern std::string g_link_a_BW;
+extern std::string g_link_b_BW;
+extern std::string g_link_c_BW;
+extern std::string g_link_a_delay;
+extern std::string g_link_b_delay;
+extern std::string g_link_c_delay;
+extern double g_link_b_BER;
 
 InternetStackHelper GetInternetStackHelper (bool useStaticRouting = false)
 {
@@ -305,39 +312,35 @@ void CreateSimplestNetwork (uint32_t packetSize,
     Ipv4InterfaceContainer serverInterfaces;
 
     addressHelper.SetBase("192.168.0.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(B, C, DataRate("400Kbps"), Time("6ms"), packetSize);
+    linkedDevices = PointToPointCreate(B, C, DataRate(g_link_a_BW), Time(g_link_a_delay), packetSize);
     interfaces = addressHelper.Assign(linkedDevices);
     serverInterfaces.Add(interfaces.Get(0));
     routerInterfaces.Add(interfaces.Get(1));
 
     addressHelper.SetBase("192.168.9.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(C, A, DataRate("400Kbps"), Time("250ms"), packetSize);
+    linkedDevices = PointToPointCreate(C, A, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
 
-    // Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
-    // ptr_em->SetRate(4*1e-4);
-    // // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-    // linkedDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-    // linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+    if(g_link_b_BER != 0){
+      std::cout << "Error model installed in link B" << std::endl;
+      Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
+      ptr_em->SetRate(g_link_b_BER);
+      linkedDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+      linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
+    }
 
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(C, A, DataRate("100Kbps"), Time("15ms"), packetSize);
+    linkedDevices = PointToPointCreate(C, A, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize);
     addressHelper.Assign(linkedDevices);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
 
-    Ptr<RateErrorModel> ptr_em = CreateObjectWithAttributes<RateErrorModel> ();
-    ptr_em->SetRate(1*1e-4);
-    // d0_client0_Japan.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-    linkedDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-    linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
-
     //void ns3::Ipv4StaticRouting::AddHostRouteTo	(Ipv4Address dest, Ipv4Address nextHop, uint32_t interface, uint32_t metric = 0)
     // Notice that the 0th interface is bound to 127.0.0.0, and interface outgoing is from 1st.
-    std::cout << "Hong jiaming 58: clientInterfaces == " << clientInterfaces.GetN() << std::endl;
+    std::cout << "Hong jiaming 58: clientInterfaces number == " << clientInterfaces.GetN() << std::endl;
     Ptr<Ipv4StaticRouting> routing;
     routing = GetNodeStaticRoutingProtocol(A); // client
     routing->AddHostRouteTo(serverInterfaces.GetAddress(0), routerInterfaces.GetAddress(0), 1);

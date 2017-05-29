@@ -43,11 +43,14 @@ import numpy as np
 
 # My design is to put received data into a csv file. Then read dataFrame from csv file.
 # By this, record and modification is much easier.
-def plotFinalBytes(df)
+def plotFinalBytes(path):
+	df = pd.read_csv(path)
+	print df
 	df['Total_Client_Sent'] = pd.Series((df['Subflow0_Client_Sent'] + df['Subflow1_Client_Sent']).values, index=df.index)
 	df['Total_Server_Rcv'] = pd.Series((df['Subflow0_Server_Rcv'] + df['Subflow1_Server_Rcv']).values, index=df.index)
 
 	# df['Subflow1'] += df['Subflow0']
+	sns.plt.figure(figsize=(16*1.5, 9*1.5))
 	sent_df = pd.melt(df, id_vars=['Scheduler', 'Experiment'], value_vars=['Subflow0_Client_Sent', 'Total_Client_Sent'], var_name='SubflowId', value_name='ReceivedBytes')
 	# df = pd.melt(df, id_vars=['Scheduler', 'Experiment'], value_vars=['Subflow0', 'SubflowTotal'], var_name='SubflowId', value_name='ReceivedBytes')
 
@@ -56,10 +59,14 @@ def plotFinalBytes(df)
 		# zorder=-i, so first come plot stay on top
 		ax = sns.barplot(data=g[1], x="Experiment", y="ReceivedBytes", hue="Scheduler", color=c[i], zorder=-i, edgecolor="k")
 
-	ax.legend_.remove() # remove the redundant legends 
+	# ax.legend_.remove() # remove the redundant legends 
 
-	sns.plt.savefig("/home/hong/result_figure/sent.png", dpi = 150, bbox_inches='tight')
+	# sns.plt.savefig("/home/hong/result_figure/sent.png", dpi = 150, bbox_inches='tight')
+	plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+	sns.plt.savefig("/home/hong/result_figure/sent.png", dpi = 150)
+	sns.plt.close()
 
+	sns.plt.figure(figsize=(16*1.5, 9*1.5))
 	# df['Subflow1'] += df['Subflow0']
 	rcv_df = pd.melt(df, id_vars=['Scheduler', 'Experiment'], value_vars=['Subflow0_Server_Rcv', 'Total_Server_Rcv'], var_name='SubflowId', value_name='ReceivedBytes')
 	# df = pd.melt(df, id_vars=['Scheduler', 'Experiment'], value_vars=['Subflow0', 'SubflowTotal'], var_name='SubflowId', value_name='ReceivedBytes')
@@ -69,5 +76,10 @@ def plotFinalBytes(df)
 		# zorder=-i, so first come plot stay on top
 		ax = sns.barplot(data=g[1], x="Experiment", y="ReceivedBytes", hue="Scheduler", color=c[i], zorder=-i, edgecolor="k")
 
-	ax.legend_.remove() # remove the redundant legends 
-	sns.plt.savefig("/home/hong/result_figure/rcv.png", dpi = 150, bbox_inches='tight')
+	# ax.legend_.remove() # remove the redundant legends 
+	# sns.plt.savefig("/home/hong/result_figure/rcv.png", dpi = 150, bbox_inches='tight')
+	plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+	sns.plt.savefig("/home/hong/result_figure/rcv.png", dpi = 150)
+
+if __name__ == '__main__':
+	plotFinalBytes('/home/hong/result_figure/statistic.csv')

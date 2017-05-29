@@ -1,8 +1,4 @@
 """
-========
-Barchart
-========
-
 A bar plot with errorbars and height labels on individual bars
 """
 import pandas as pd
@@ -65,6 +61,67 @@ g.fig.text(0.33, 0.16,
 		'4 -- Largest-DBP                            '
 		'5 -- Only subflow 0                       '
 		'6 -- Only subflow 1', fontsize=20)
+
+
+
+df = pd.DataFrame({'Sent Bytes': [274950, 2749504, 2749504, 2749504, 131208, 132552,
+								41560, 4027122, 415896, 4082424, 279698,138114, 
+								36302, 3739268, 366986, 352150, 279698, 114546,
+								28230, 282340, 282320, 282004, 279628, 35452,
+								4171758, 4316394, 4158996, 422388, 428944, 181134,
+								4275272, 4280944, 4275272, 429870, 4280944, 35870],
+				   'Received Bytes': [272144, 221144, 2721144, 2721144, 1358446, 1366954,
+				   					412464, 394508, 412682, 4049810, 278000, 1365536,
+				   					360976, 3712326, 364422, 3503880, 278000, 1140074,
+				   					280806, 2804806, 2804806, 280388, 278000, 34030,
+				   					41218, 426210, 410948, 416922, 4262510, 1366954,
+				   					425688, 425256, 426838, 4259674, 4262510, 35452],
+				   'Scheduler': ['Round-Robin', 'Fastest-RTT', 'Random', 'Largest-DBP', 'Only Subflow 0', 'Only Subflow 1',
+  				   				'Round-Robin', 'Fastest-RTT', 'Random', 'Largest-DBP', 'Only Subflow 0', 'Only Subflow 1',
+  				   				'Round-Robin', 'Fastest-RTT', 'Random', 'Largest-DBP', 'Only Subflow 0', 'Only Subflow 1',
+  				   				'Round-Robin', 'Fastest-RTT', 'Random', 'Largest-DBP', 'Only Subflow 0', 'Only Subflow 1',
+  				   				'Round-Robin', 'Fastest-RTT', 'Random', 'Largest-DBP', 'Only Subflow 0', 'Only Subflow 1',
+				   				'Round-Robin', 'Fastest-RTT', 'Random', 'Largest-DBP', 'Only Subflow 0', 'Only Subflow 1'],
+				   'Experiment': ['Exp 1', 'Exp 1', 'Exp 1', 'Exp 1', 'Exp 1', 'Exp 1',
+				   				'Exp 2', 'Exp 2', 'Exp 2', 'Exp 2', 'Exp 2', 'Exp 2',
+				   				'Exp 3', 'Exp 3', 'Exp 3', 'Exp 3', 'Exp 3', 'Exp 3',
+				   				'Exp 4', 'Exp 4', 'Exp 4', 'Exp 4', 'Exp 4', 'Exp 4',
+				   				'Exp 5', 'Exp 5', 'Exp 5', 'Exp 5', 'Exp 5', 'Exp 5',
+				   				'Exp 6', 'Exp 6', 'Exp 6', 'Exp 6', 'Exp 6', 'Exp 6']})
+
+# sns.set(font_scale=2)
+# g = sns.factorplot(x="Experiment", y="Sent Bytes", col="Scheduler", kind="bar", data=df, palette="Set2")
+# g.set_axis_labels("Experiment Number", "Sent Bytes").set_xticklabels(['1', '2', '3', '4', '5', '6']).set_titles("{col_name}").despine(left=True)
+
+# sns.set(font_scale=2)
+# g = sns.factorplot(x="Scheduler", y="Sent Bytes", col="Experiment", kind="bar", data=df, palette="Set2")
+# g.set_axis_labels("Scheduler", "Sent Bytes").set_xticklabels(['1', '2', '3', '4', '5', '6']).set_titles("{col_name}").despine(left=True)
+# g.fig.text(0.33, 0.16,
+# 		'                                             Mapping from number to scheduler\n'
+# 		'1 -- Round-Robin                           '
+# 		'2 -- Fastest-RTT                           '
+# 		'3 -- Random\n'
+# 		'4 -- Largest-DBP                            '
+# 		'5 -- Only subflow 0                       '
+# 		'6 -- Only subflow 1', fontsize=20)
+
+# sns.set(font_scale=2)
+# g = sns.factorplot(x="Experiment", y="Received Bytes", col="Scheduler", kind="bar", data=df, palette="Set2")
+# g.set_axis_labels("Experiment Number", "Received Bytes").set_xticklabels(['1', '2', '3', '4', '5', '6']).set_titles("{col_name}").despine(left=True)
+
+sns.set(font_scale=2)
+g2 = sns.factorplot(x="Scheduler", y="Received Bytes", col="Experiment", kind="bar", data=df, palette="Paired")
+g2.set_axis_labels("Scheduler", "Received Bytes").set_xticklabels(['1', '2', '3', '4', '5', '6']).set_titles("{col_name}").despine(left=True)
+g2.fig.text(0.33, 0.16,
+		'                                             Mapping from number to scheduler\n'
+		'1 -- Round-Robin                           '
+		'2 -- Fastest-RTT                           '
+		'3 -- Random\n'
+		'4 -- Largest-DBP                            '
+		'5 -- Only subflow 0                       '
+		'6 -- Only subflow 1', fontsize=20)
+
+
 
 sns.plt.show()
 
