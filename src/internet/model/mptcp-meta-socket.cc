@@ -1091,6 +1091,7 @@ MpTcpMetaSocket::SendPendingData()
     uint32_t length = m_scheduler->GetSendSizeForSubflow(subflow, subflow->GetSegSize(), dataToSend);
 
     //Create the DSN->SSN mapping in the subflow
+    // Hong Jiaming: (important) m_nextTxSequence here is the so called DSN, SSN is generated in subflow
     Ptr<MpTcpMapping> mapping = subflow->AddLooseMapping(m_nextTxSequence, length);
     NS_ASSERT(mapping);
 
@@ -1170,6 +1171,22 @@ Retransmit timeout
 This function should be very interesting because one may
 adopt different strategies here, like reinjecting on other subflows etc...
 Maybe allow for a callback to be set here.
+*/
+
+/**
+Hong Jiaming: I think the retansmission on MetaSocket level should not be so complex.
+Because subflows (tcp flow) have their own retransmission mechanism. Only in the case
+that subflow failed 3(?) times for the same packet, subflow should notify metasocket.
+Then metasocket can cancel the previous packet on that subflow, and inject it on other
+subflows.
+
+In the case that the link of a subflow is broken suddenly, what should I need to do?
+1. Cancel all the unsent/unacked packets on that subflow, and pass them back to metasocket
+2. Disable the broken subflow on client side. (What happens on server side?)
+3. (Option?) Set a timer on client side to try to use that subflow after some time.
+(if so, server side should also be careful. I incline to not reuse,
+because the fail of link strongly suggested that link is not reliable)
+4. Resend above packets over other subflows.
 */
 void
 MpTcpMetaSocket::Retransmit()
