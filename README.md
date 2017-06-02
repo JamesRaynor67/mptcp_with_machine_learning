@@ -12,7 +12,7 @@ CXXFLAGS=" -std=c++11" ./waf --enable-examples configure
 ```
 3.run script
 ```
-bash RL-MPTCP_simulation_plot_script.sh
+bash RL-MPTCP_run.sh
 ```
 
 Env:
