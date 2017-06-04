@@ -1,6 +1,8 @@
 import socket
 import pandas
+import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from time import sleep
 from optparse import OptionParser
 
@@ -30,6 +32,62 @@ class RecordRTT():
         if not self.f.closed:
             self.f.close()
 
+class RecordCwnd():
+    def __init__(self, path):
+        self.f = open(path, 'w')
+        self.f.write("timestamp,cWnd0,cWnd1\n")
+
+    def addCwndRecord(self, one_row):
+        cWnd0 = -1;
+        cWnd1 = -1;
+        if('cWnd0' in one_row):
+            cWnd0 = int(one_row['cWnd0'])
+        if('cWnd1' in one_row):
+            cWnd1 = int(one_row['cWnd1'])
+        self.f.write(str(one_row['time']) + ',' + str(cWnd0) + ',' + str(cWnd1) + '\n')
+        assert ('cWnd3' not in one_row)
+
+    def __del__(self):
+        if not self.f.closed:
+            self.f.close()
+
+class RecordRwnd():
+    def __init__(self, path):
+        self.f = open(path, 'w')
+        self.f.write("timestamp,rWnd0,rWnd1\n")
+
+    def addRwndRecord(self, one_row):
+        rWnd0 = -1;
+        rWnd1 = -1;
+        if('rWnd0' in one_row):
+            rWnd0 = int(one_row['rWnd0'])
+        if('rWnd1' in one_row):
+            rWnd1 = int(one_row['rWnd1'])
+        self.f.write(str(one_row['time']) + ',' + str(rWnd0) + ',' + str(rWnd1) + '\n')
+        assert ('rWnd3' not in one_row)
+
+    def __del__(self):
+        if not self.f.closed:
+            self.f.close()
+
+class RecordUnAck():
+    def __init__(self, path):
+        self.f = open(path, 'w')
+        self.f.write("timestamp,unAck0,unAck1\n")
+
+    def addUnAckRecord(self, one_row):
+        unAck0 = -1;
+        unAck1 = -1;
+        if('unAck0' in one_row):
+            unAck0 = int(one_row['unAck0'])
+        if('unAck1' in one_row):
+            unAck1 = int(one_row['unAck1'])
+        self.f.write(str(one_row['time']) + ',' + str(unAck0) + ',' + str(unAck1) + '\n')
+        assert ('unAck3' not in one_row)
+
+    def __del__(self):
+        if not self.f.closed:
+            self.f.close()
 
 def IsInt(s):
     # A naive method, but enough here
@@ -40,13 +98,18 @@ def IsInt(s):
 
 class DataRecorder():
 
-    def __init__(self, rttRecord):
+    def __init__(self, rttRecord, cWndRecord, rWndRecord, unAckRecord):
         self.next_seq_num = 0
         self.data = {}
         self.action = []
         self.rttRecord = rttRecord
+        self.cWndRecord = cWndRecord
+        self.rWndRecord = rWndRecord
+        self.unAckRecord = unAckRecord
 
     def add_one_record(self, str_data):
+        global g_TcWnd0
+        global g_TcWnd1
         # name#value$name$value...
         pair_list = str_data.split("$")
         one_row = {}
@@ -64,8 +127,11 @@ class DataRecorder():
         assert one_row["size"] == len(one_row)
         assert one_row["ssn"] == self.next_seq_num
         self.rttRecord.addRTTRecord(one_row)
+        self.cWndRecord.addCwndRecord(one_row)
+        self.rWndRecord.addRwndRecord(one_row)
+        self.unAckRecord.addUnAckRecord(one_row)
         self.data[self.next_seq_num] = one_row
-        self.next_seq_num += 1
+        self.next_seq_num += 1          
 
     def get_data_dic(self):
         return self.data
@@ -100,7 +166,10 @@ if __name__ == "__main__":
     reward_record = []
     while episode_count < int(options.MaxEpisode):
         rttRecorder = RecordRTT('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rtt')
-        dataRecorder = DataRecorder(rttRecorder)
+        cWndRecorder = RecordCwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_cWnd')
+        rWndRecorder = RecordRwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rWnd')
+        unAckRecorder = RecordUnAck('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_unAck')
+        dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder)
 
         socket = Interacter_socket(host = '', port = 12345)
         socket.listen()
@@ -162,6 +231,7 @@ if __name__ == "__main__":
         # # print "sleep 30 seconds from now"
         # # sleep(30)
         episode_count += 1
+
     # RL.plot_cost()
     # # plt.figure()
     # # plt.plot(dataRecorder.action, 'or')

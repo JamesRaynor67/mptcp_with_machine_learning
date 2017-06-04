@@ -2539,7 +2539,7 @@ bool TcpSocketBase::CanSendPendingData (uint32_t dataToSend)
   if (!m_tcpParams->m_noDelay && UnAckDataCount () > 0
       && dataToSend < m_tcb->m_segmentSize)
   {
-     std::cout << "Hong Jiaming 74" << std::endl;
+     std::cout << "Hong Jiaming 74: It seems that code never goes to here." << std::endl;
      NS_LOG_LOGIC ("Invoking Nagle's algorithm. Wait to send.");
     return false;
   }

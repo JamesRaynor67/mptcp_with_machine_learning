@@ -14,7 +14,10 @@ from log_monitor_time_bytes import AnalyzeReceivedBytes
 from log_monitor_time_bytes import AnalyzeBytes
 from log_monitor_time_sendingRate import AnalyzeMonitorSendingRate
 from log_monitor_time_sendingRate import  AnalyzeMonitorSendingRateUtilization
-from log_time_rtt import AnalyzeClientRtt
+from log_time_tcb import AnalyzeClientRtt
+from log_time_tcb import AnalyzeClientCwnd
+from log_time_tcb import AnalyzeClientRwnd
+from log_time_tcb import AnalyzeClientUnAck
 
 warnings.filterwarnings("error")
 g_resultRecord = {}
@@ -51,6 +54,78 @@ def preprocess_monitor_data(file_path):
     monitor_records = pd.DataFrame(record, columns=columns)
 
     return monitor_records
+
+def proprocess_cWnd_data(file_path):
+    record = []
+    valid = [False, False]
+    with open(file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            timestamp = (int(row[0])*1.0)/1e6
+
+            if valid[0] is False:
+                valid[0] = True if int(row[1]) != -1 else False
+            if valid[1] is False:
+                valid[1] = True if int(row[2]) != -1 else False
+
+            cWnd0 = int(row[1]) if valid[0] is True else 0
+            cWnd1 = int(row[2]) if valid[1] is True else 0
+
+            record.append([timestamp, cWnd0, cWnd1])
+
+    columns = ['Timestamp','cWnd0','cWnd1']
+    cWnd_records = pd.DataFrame(record, columns=columns)
+
+    return cWnd_records
+
+def proprocess_rWnd_data(file_path):
+    record = []
+    valid = [False, False]
+    with open(file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            timestamp = (int(row[0])*1.0)/1e6
+
+            if valid[0] is False:
+                valid[0] = True if int(row[1]) != -1 else False
+            if valid[1] is False:
+                valid[1] = True if int(row[2]) != -1 else False
+
+            rWnd0 = int(row[1]) if valid[0] is True else 0
+            rWnd1 = int(row[2]) if valid[1] is True else 0
+
+            record.append([timestamp, rWnd0, rWnd1])
+
+    columns = ['Timestamp','rWnd0','rWnd1']
+    rWnd_records = pd.DataFrame(record, columns=columns)
+
+    return rWnd_records
+
+def proprocess_unAck_data(file_path):
+    record = []
+    valid = [False, False]
+    with open(file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            timestamp = (int(row[0])*1.0)/1e6
+
+            if valid[0] is False:
+                valid[0] = True if int(row[1]) != -1 else False
+            if valid[1] is False:
+                valid[1] = True if int(row[2]) != -1 else False
+
+            unAck0 = int(row[1]) if valid[0] is True else 0
+            unAck1 = int(row[2]) if valid[1] is True else 0
+
+            record.append([timestamp, unAck0, unAck1])
+
+    columns = ['Timestamp','unAck0','unAck1']
+    unAck_records = pd.DataFrame(record, columns=columns)
+
+    return unAck_records
 
 def proprocess_rtt_data(file_path):
     record = []
@@ -201,24 +276,44 @@ if __name__ == '__main__':
 
     episode_num = int(options.EpisodeNum)
     sns.plt.figure(figsize=(16*2, 9*2))
-    sns.plt.subplot(3,2,1)
+
+    sns.plt.subplot(4,2,1)
     analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client')
-    sns.plt.subplot(3,2,2)
+    
+    sns.plt.subplot(4,2,2)
     analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
-    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_monitor')
-    sns.plt.subplot(3,2,3)
+    
+    sns.plt.subplot(4,2,3)
     AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
+    
     # AnalyzeSentBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client')
     # AnalyzeReceivedBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
-    sns.plt.subplot(3,2,4)
+    
+    sns.plt.subplot(4,2,4)
+    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_monitor')
     subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
-    sns.plt.subplot(3,2,5)
+    
+    sns.plt.subplot(4,2,5)
     AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [int(options.LinkBBW[:-4]), int(options.LinkCBW[:-4])])
-    sns.plt.subplot(3,2,6)
+    
+    sns.plt.subplot(4,2,6)
     rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_rtt')
     AnalyzeClientRtt(rtt_records)
+
+    sns.plt.subplot(4,2,7)
+    cWnd_records = proprocess_cWnd_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_cWnd')
+    AnalyzeClientCwnd(cWnd_records)
+    
+    # sns.plt.subplot(4,2,8)
+    # rWnd_records = proprocess_rWnd_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_rWnd')
+    # AnalyzeClientRwnd(rWnd_records)
+
+    sns.plt.subplot(4,2,8)
+    unAck_records = proprocess_unAck_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_unAck')
+    AnalyzeClientUnAck(unAck_records)
+
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rr.png", dpi = 150, bbox_inches='tight')
-    sns.plt.savefig("/home/hong/result_figure/0_static_20170529/" + options.Experiment + "_" + options.Scheduler + ".png", dpi = 150, bbox_inches='tight')
+    sns.plt.savefig("/home/hong/result_figure/0_static_20170604/" + options.Experiment + "_" + options.Scheduler + ".png", dpi = 150, bbox_inches='tight')
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/Z1_rr.png", dpi = 150, bbox_inches='tight')
     sns.plt.close()
 

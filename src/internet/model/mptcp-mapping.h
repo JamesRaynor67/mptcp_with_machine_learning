@@ -125,6 +125,9 @@ namespace ns3
 
     /**
      * \return MPTCP sequence number for the first mapped byte
+     *               head
+     *   0            |                   12345
+     *  ..............|------|.................
      */
     virtual SequenceNumber64 HeadDSN() const;
 
@@ -175,8 +178,6 @@ namespace ns3
 
    TODO: it might be best to use a
    std::lower_bound on map
-   Could be fun implemented as an interval tree
-   http://www.geeksforgeeks.org/interval-tree/
    */
   class MpTcpMappingContainer
   {
@@ -208,8 +209,8 @@ namespace ns3
     Ptr<MpTcpMapping>
     GetMappingForSSN(const SequenceNumber32& ssn) const;
 
-    Ptr<MpTcpMapping>
-    GetMappingForDSN(const SequenceNumber64& dsn) const;
+    // Ptr<MpTcpMapping>
+    // GetMappingForDSN(const SequenceNumber64& dsn) const;
 
     /**
      * \param dsn
@@ -219,7 +220,7 @@ namespace ns3
   protected:
 
     /**
-     When Buffers work in non renegotiable mode,
+     When Buffers work in non renegotiable mode, (Hong Jiaming: what is renegotiable mode?)
      it should be possible to remove them one by one
      **/
     bool DiscardMapping(Ptr<MpTcpMapping> mapping);

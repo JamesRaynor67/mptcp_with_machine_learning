@@ -978,9 +978,9 @@ MpTcpMetaSocket::NewAck(Ptr<MpTcpSubflow> subflow, const SequenceNumber64& dsn)
    */
   m_txBuffer->DiscardUpTo(dsn);
 
-  if (dsn > m_nextTxSequence)
+  if (dsn > m_nextTxSequence) // If advanced
   {
-    m_nextTxSequence = dsn; // If advanced
+    m_nextTxSequence = dsn; // Hong Jiaming: Does this happens? Previous acks are lost?
   }
 
   if (GetTxAvailable() > 0)
@@ -2346,9 +2346,11 @@ MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
     uint32_t subflowWindow = subflow->AvailableWindow(); // AvailableWindow = cWnd - (SND.NXT - SND.UNA)
     socket.add("window"+std::to_string(index), subflowWindow);
     socket.add("cWnd"+std::to_string(index), tcb->m_cWnd);
+    socket.add("rWnd"+std::to_string(index), m_rWnd.Get());
     socket.add("lastAckedSeq"+std::to_string(index), tcb->m_lastAckedSeq.GetValue());
     socket.add("highTxMark"+std::to_string(index), tcb->m_highTxMark.Get().GetValue());
     socket.add("rtt"+std::to_string(index), subflow->GetRttEstimator()->GetEstimate().GetMicroSeconds());
+    socket.add("unAck"+std::to_string(index), subflow->UnAckDataCount());
     // std::cout << "Hong Jiaming 15: send rtt=" << subflow->GetRttEstimator()->GetEstimate().GetMicroSeconds() << std::endl;
   }
   socket.send();

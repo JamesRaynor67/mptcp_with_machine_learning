@@ -244,7 +244,7 @@ void CreateRealNetwork (uint32_t packetSize,
 }
 
 
-void CreateSimplestNetwork (uint32_t packetSize,
+vector<Ptr<NetDevice>> CreateSimplestNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
                         NodeContainer& middle,
@@ -267,6 +267,7 @@ void CreateSimplestNetwork (uint32_t packetSize,
 
   middle.Create(1);           // C
 
+  vector<Ptr<NetDevice>> unstableDevices;
   Ptr<Node> A = client.Get(0);
   Ptr<Node> B = server.Get(0);
   Ptr<Node> C = middle.Get(0);
@@ -322,6 +323,8 @@ void CreateSimplestNetwork (uint32_t packetSize,
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
+    unstableDevices.push_back(linkedDevices.Get(0));
+    unstableDevices.push_back(linkedDevices.Get(1));
 
     if(g_link_b_BER != 0){
       std::cout << "Error model installed in link B" << std::endl;
@@ -355,6 +358,8 @@ void CreateSimplestNetwork (uint32_t packetSize,
     routing->AddHostRouteTo(clientInterfaces.GetAddress(0), clientInterfaces.GetAddress(0), 2);
     routing->AddHostRouteTo(clientInterfaces.GetAddress(1), clientInterfaces.GetAddress(1), 3);
   }
+
+  return unstableDevices;
 }
 
 void CreateSimplestNetworkWithOtherTraffic (uint32_t packetSize,
@@ -755,6 +760,13 @@ void CreateExtendedClassicNetwork (uint32_t packetSize,
   //                          << ((address >> 0) & 0xff) << endl;
 
 
+}
+
+void FailLink (Ptr<NetDevice> nd){
+    Ptr<RateErrorModel> error = CreateObject<RateErrorModel> ();
+    error->SetAttribute ("ErrorRate", DoubleValue (1.0));
+
+    nd->SetAttribute ("ReceiveErrorModel", PointerValue (error));
 }
 
 };

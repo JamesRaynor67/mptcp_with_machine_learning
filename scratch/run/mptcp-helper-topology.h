@@ -22,7 +22,7 @@ void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& other_servers,
                         NodeContainer& other_clients);
 
-void CreateSimplestNetwork (uint32_t packetSize,
+vector<Ptr<NetDevice>> CreateSimplestNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
                         NodeContainer& middle,
@@ -49,4 +49,7 @@ void CreateExtendedClassicNetwork (uint32_t packetSize,
                         NodeContainer& middle,
                         NodeContainer& other_servers,
                         NodeContainer& other_clients);
-};
+
+void FailLink (Ptr<NetDevice> nd);
+
+}

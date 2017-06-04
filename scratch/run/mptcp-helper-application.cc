@@ -112,7 +112,7 @@ void InstallFileTransferApplications(NodeContainer& servers, NodeContainer& clie
     FileTransferHelper fileHelper(remoteAddress);
     // fileHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
     fileHelper.SetAttribute("Protocol", TypeIdValue(MpTcpSocketFactory::GetTypeId()));
-    fileHelper.SetAttribute("FileSize", UintegerValue(5*10e7)); // The setting of FileSize should be careful, flowmonitor may fail to trace if too small
+    fileHelper.SetAttribute("FileSize", UintegerValue(6.75*1e6)); // The setting of FileSize should be careful, flowmonitor may fail to trace if too small
 
     // Install on server
     ApplicationContainer apps = fileHelper.Install(clients.Get(i));

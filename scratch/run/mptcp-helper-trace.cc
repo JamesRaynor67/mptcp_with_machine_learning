@@ -12,39 +12,6 @@
 
 namespace ns3{
 
-// Hong Jiaming: move rtt recorder to python
-// void TraceRTT(Ptr<OutputStreamWrapper> stream, Ptr<const Node> node)
-// {
-//   // Assumes this function only trace server and client, which only installed one application
-//   NS_ASSERT(node->GetNApplication() == 1);
-//
-//   Ptr<Application> app = node->GetApplication(0);
-//
-//   // Assumes that application must be one of onoff/filetransfer
-//   NS_ASSERT(app->GetInstanceTypeId() == FileTransferApplication::GetTypeId() || app->GetInstanceTypeId() == MpOnOffApplication::GetTypeId())
-//
-//   Ptr<Socket> socket = nullptr;
-//   if (app->GetInstanceTypeId() == MpOnOffApplication::GetTypeId()){
-//     socket = DynamicCast<MpOnOffApplication>(app)->GetSocket();
-//   }
-//   else{
-//     socket = DynamicCast<FileTransferApplication>(app)->GetSocket();
-//   }
-//
-//   // Assumes that socket of application must be MPTCP
-//   NS_ASSERT(socket->GetInstanceTypeId() == MpOnOffApplication::GetTypeId());
-//   Ptr<Socket> mptcp_socket = DynamicCast<MpOnOffApplication>(socket);
-//
-//   for(uint32_t index = 0; index < this->GetNSubflows(); index++){
-//     Ptr<MpTcpSubflow> subflow = this->GetSubflow(index);
-//     uint32_t rtt = subflow->GetRttEstimator()->GetEstimate().GetMicroSeconds();
-//     if(index > 0){
-//       (*stream->GetStream()) << ",";
-//     }
-//     (*stream->GetStream()) << Simulator::Now().GetNanoSeconds() << rtt << endl;
-//   }
-// }
-
 void TraceMacRx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
 {
   PppHeader pppHeader;

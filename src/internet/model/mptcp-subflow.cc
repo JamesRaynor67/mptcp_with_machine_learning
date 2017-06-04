@@ -63,7 +63,6 @@ NS_LOG_COMPONENT_DEFINE("MpTcpSubflow");
 
 NS_OBJECT_ENSURE_REGISTERED(MpTcpSubflow);
 
-
 TypeId
 MpTcpSubflow::GetTypeId(void)
 {
@@ -133,7 +132,7 @@ MpTcpSubflow::CancelAllTimers()
   m_retxEvent.Cancel();
   m_lastAckEvent.Cancel();
   m_timewaitEvent.Cancel();
-  NS_LOG_LOGIC( "CancelAllTimers");
+  NS_LOG_LOGIC("CancelAllTimers");
 }
 
 // TODO remove in favor
@@ -144,16 +143,13 @@ MpTcpSubflow::DoConnect()
   return TcpSocketBase::DoConnect();
 }
 
-
 /** Inherit from Socket class: Kill this socket and signal the peer (if any) */
 int
 MpTcpSubflow::Close(void)
 {
   NS_LOG_FUNCTION (this);
-
   return TcpSocketBase::Close();
 }
-
 
 // Does this constructor even make sense ? no ? to remove ?
 MpTcpSubflow::MpTcpSubflow(const MpTcpSubflow& sock)
@@ -188,7 +184,6 @@ MpTcpSubflow::~MpTcpSubflow()
   NS_LOG_FUNCTION(this);
 }
 
-
 /**
 TODO maybe override that not to have the callbacks
 **/
@@ -198,9 +193,8 @@ MpTcpSubflow::CloseAndNotify(void)
   //TODO
   NS_LOG_FUNCTION_NOARGS();
   TcpSocketBase::CloseAndNotify();
-  GetMeta()->OnSubflowClosed( this, false );
+  GetMeta()->OnSubflowClosed(this, false);
 }
-
 
 /**
 Mapping should already exist when sending the packet
@@ -211,7 +205,7 @@ MpTcpSubflow::Send(Ptr<Packet> p, uint32_t flags)
   NS_LOG_FUNCTION(this);
   NS_ASSERT(m_state == ESTABLISHED || m_state == CLOSE_WAIT);
 
-  // Store the packet into Tx buffer
+  // Store the packet into Tx buffer, m_txBuffer is declared in tcp-socket-base.cc
   if (!m_txBuffer->Add (p))
   { // TxBuffer overflow, send failed
     NS_FATAL_ERROR("There should always be enough space in the subflow tx buffer");
@@ -221,7 +215,6 @@ MpTcpSubflow::Send(Ptr<Packet> p, uint32_t flags)
 
   //Call send pending immediately, we need to keep the nextTxSequence variable in sync with the MetaSocket
   SendPendingData(m_connected);
-
 
 // Check that the packet is covered by mapping (TODO: remove)
 
