@@ -29,7 +29,7 @@ NS_LOG_COMPONENT_DEFINE ("Queue");
 
 NS_OBJECT_ENSURE_REGISTERED (Queue);
 
-TypeId 
+TypeId
 Queue::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::Queue")
@@ -75,7 +75,7 @@ Queue::GetTypeId (void)
   return tid;
 }
 
-Queue::Queue() : 
+Queue::Queue() :
   m_nBytes (0),
   m_nTotalReceivedBytes (0),
   m_nPackets (0),
@@ -93,7 +93,7 @@ Queue::~Queue()
 }
 
 
-bool 
+bool
 Queue::Enqueue (Ptr<QueueItem> item)
 {
   NS_LOG_FUNCTION (this << item);
@@ -209,7 +209,7 @@ Queue::Peek (void) const
 }
 
 
-uint32_t 
+uint32_t
 Queue::GetNPackets (void) const
 {
   NS_LOG_FUNCTION (this);
@@ -265,7 +265,7 @@ Queue::GetTotalDroppedPackets (void) const
   return m_nTotalDroppedPackets;
 }
 
-void 
+void
 Queue::ResetStatistics (void)
 {
   NS_LOG_FUNCTION (this);

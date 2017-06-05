@@ -89,6 +89,25 @@ class RecordUnAck():
         if not self.f.closed:
             self.f.close()
 
+class RecordMeta():
+    def __init__(self, path):
+        self.f = open(path, 'w')
+        self.f.write("timestamp,lastAckedSeq,highTxMark,availableTxBuffer,nextTxSeq,totalCwnd,unAckMeta\n")
+
+    def addMetaRecord(self, one_row):
+        time = str(one_row['time'])
+        lastAckedSeq = str(one_row['lastAckedSeqMeta'])
+        highTxMark = str(one_row['highTxMarkMeta'])
+        availableTxBuffer = str(one_row['availableTxBufferMeta'])
+        nextTxSeq = str(one_row['nextTxSeqMeta'])
+        totalCwnd = str(one_row['totalCwndMeta'])
+        unAck = str(one_row['unAckMeta'])
+        self.f.write(time + ',' + lastAckedSeq + ',' + highTxMark + ',' + availableTxBuffer + ',' + nextTxSeq + ',' + totalCwnd + ',' + unAck + '\n')
+
+    def __del__(self):
+        if not self.f.closed:
+            self.f.close()
+
 def IsInt(s):
     # A naive method, but enough here
     if "." in s:
@@ -98,7 +117,7 @@ def IsInt(s):
 
 class DataRecorder():
 
-    def __init__(self, rttRecord, cWndRecord, rWndRecord, unAckRecord):
+    def __init__(self, rttRecord, cWndRecord, rWndRecord, unAckRecord, metaRecord):
         self.next_seq_num = 0
         self.data = {}
         self.action = []
@@ -106,6 +125,7 @@ class DataRecorder():
         self.cWndRecord = cWndRecord
         self.rWndRecord = rWndRecord
         self.unAckRecord = unAckRecord
+        self.metaRecord = metaRecord
 
     def add_one_record(self, str_data):
         global g_TcWnd0
@@ -130,6 +150,7 @@ class DataRecorder():
         self.cWndRecord.addCwndRecord(one_row)
         self.rWndRecord.addRwndRecord(one_row)
         self.unAckRecord.addUnAckRecord(one_row)
+        self.metaRecord.addMetaRecord(one_row)
         self.data[self.next_seq_num] = one_row
         self.next_seq_num += 1          
 
@@ -169,7 +190,8 @@ if __name__ == "__main__":
         cWndRecorder = RecordCwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_cWnd')
         rWndRecorder = RecordRwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rWnd')
         unAckRecorder = RecordUnAck('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_unAck')
-        dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder)
+        metaRecorder = RecordMeta('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_meta_socket')
+        dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder, metaRecorder)
 
         socket = Interacter_socket(host = '', port = 12345)
         socket.listen()

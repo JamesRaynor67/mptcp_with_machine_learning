@@ -18,6 +18,7 @@ from log_time_tcb import AnalyzeClientRtt
 from log_time_tcb import AnalyzeClientCwnd
 from log_time_tcb import AnalyzeClientRwnd
 from log_time_tcb import AnalyzeClientUnAck
+from log_time_tcb import AnalyzeMetaSocket
 
 warnings.filterwarnings("error")
 g_resultRecord = {}
@@ -54,6 +55,27 @@ def preprocess_monitor_data(file_path):
     monitor_records = pd.DataFrame(record, columns=columns)
 
     return monitor_records
+
+def proprocess_meta_socket_data(file_path):
+    record = []
+    with open(file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            timestamp = (int(row[0])*1.0)/1e6
+            lastAckedSeq = row[1]
+            highTxMark = row[2]
+            availableTxBuffer = row[3]
+            nextTxSeq = row[4]
+            totalCwnd = row[5]
+            unAck = row[6]
+            record.append([timestamp, lastAckedSeq, highTxMark, availableTxBuffer, nextTxSeq, totalCwnd, unAck])
+
+    columns = ['Timestamp', 'LastAckedSeq', 'HighTxMark', 'AvailableTxBuffer', 'NextTxSeq', 'TotalCwnd', 'UnAck']
+    meta_socket_records = pd.DataFrame(record, columns=columns)
+
+    return meta_socket_records
+
 
 def proprocess_cWnd_data(file_path):
     record = []
@@ -315,6 +337,12 @@ if __name__ == '__main__':
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rr.png", dpi = 150, bbox_inches='tight')
     sns.plt.savefig("/home/hong/result_figure/0_static_20170604/" + options.Experiment + "_" + options.Scheduler + ".png", dpi = 150, bbox_inches='tight')
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/Z1_rr.png", dpi = 150, bbox_inches='tight')
+    sns.plt.close()
+
+    sns.plt.figure(figsize=(16*2, 9*2))
+    meta_socket_records = proprocess_meta_socket_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_meta_socket')
+    AnalyzeMetaSocket(meta_socket_records)
+    sns.plt.savefig("/home/hong/result_figure/0_static_20170604/" + options.Experiment + "_" + options.Scheduler + '_meta' + ".png", dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
     recordResultToCsv()

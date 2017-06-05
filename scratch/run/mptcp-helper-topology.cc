@@ -323,8 +323,8 @@ vector<Ptr<NetDevice>> CreateSimplestNetwork (uint32_t packetSize,
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
-    unstableDevices.push_back(linkedDevices.Get(0));
-    unstableDevices.push_back(linkedDevices.Get(1));
+    // unstableDevices.push_back(linkedDevices.Get(0));
+    // unstableDevices.push_back(linkedDevices.Get(1));
 
     if(g_link_b_BER != 0){
       std::cout << "Error model installed in link B" << std::endl;
@@ -340,7 +340,9 @@ vector<Ptr<NetDevice>> CreateSimplestNetwork (uint32_t packetSize,
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
-
+    unstableDevices.push_back(linkedDevices.Get(0));
+    unstableDevices.push_back(linkedDevices.Get(1));
+    
     //void ns3::Ipv4StaticRouting::AddHostRouteTo	(Ipv4Address dest, Ipv4Address nextHop, uint32_t interface, uint32_t metric = 0)
     // Notice that the 0th interface is bound to 127.0.0.0, and interface outgoing is from 1st.
     std::cout << "Hong jiaming 58: clientInterfaces number == " << clientInterfaces.GetN() << std::endl;

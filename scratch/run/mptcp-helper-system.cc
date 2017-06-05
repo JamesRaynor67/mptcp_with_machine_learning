@@ -36,11 +36,9 @@ void SetConfigDefaults (std::string linkRate, std::string linkDelay,
   //I need timestap to be enabled to calculate RTT correctly
   Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(true));
 
-  //Disable the timestamp option
-  // Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(false));
-
   //Set the mptcp option
   Config::SetDefault("ns3::TcpSocketImpl::EnableMpTcp", BooleanValue(true));
+
   // Config::SetDefault ("ns3::Ipv4GlobalRouting::RespondToInterfaceEvents", BooleanValue (true)); // this line added by Hong Jiaming
 
   //Set the initial congestion window to be larger than duplicate ack threshold
@@ -59,7 +57,8 @@ void SetConfigDefaults (std::string linkRate, std::string linkDelay,
 
   //Set the send buffer to be the n * queue size to accomodate n subflows
   //Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (interfaces * queueSize));
-  Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (numeric_limits<uint32_t>::max()));
+  // Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (numeric_limits<uint32_t>::max()));
+  Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (256*1024)); // in linux, default is 256K, max is 8M, recommendation is 2 * delay * bandwidth
 
   Config::SetDefault ("ns3::TcpSocket::ConnTimeout", TimeValue(Seconds(2.0)));
   Config::SetDefault("ns3::ArpCache::AliveTimeout", TimeValue(Seconds(120 + 1)));
@@ -75,7 +74,7 @@ void EnableLogging ()
   // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_ALL);
   // LogComponentEnable("TcpL4Protocol", LOG_LEVEL_ALL);
   // LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
-  // LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
+  LogComponentEnable("MpTcpMetaSocket", LOG_LEVEL_ALL);
   // LogComponentEnable("MpTcpSubflow", LOG_LEVEL_ALL);
   // LogComponentEnable("MpOnOffApplication", LOG_LEVEL_ALL);
   // LogComponentEnable("Ipv4EndPointDemux", LOG_LEVEL_ALL);

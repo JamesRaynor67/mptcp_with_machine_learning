@@ -2338,6 +2338,15 @@ MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
   seq_num++;
   socket.add("nbOfSubflows", nbOfSubflows);
   socket.add("time", Simulator::Now().GetMicroSeconds());
+  socket.add("lastAckedSeqMeta", m_txBuffer->HeadSequence().GetValue());
+  // std::cout << "Hong Jiaming 80.0: " << this->m_lastAckedSeq.GetValue() << std::endl;
+  socket.add("highTxMarkMeta", this->m_highTxMark.Get().GetValue());
+  NS_ASSERT(this->m_highTxMark.Get() - m_txBuffer->HeadSequence() >= 0); // unAcked should be positive or 0
+  socket.add("unAckMeta", uint64_t(this->m_highTxMark.Get() - m_txBuffer->HeadSequence()));
+  socket.add("availableTxBufferMeta", this->m_txBuffer->Available()); // How many bytes usable in txBuffer
+  socket.add("nextTxSeqMeta", this->m_nextTxSequence.Get().GetValue());
+  socket.add("totalCwndMeta", this->GetTotalCwnd());
+  //GetTotalCwnd
 
   for(uint32_t index = 0; index < this->GetNSubflows(); index++){
     Ptr<MpTcpSubflow> subflow = this->GetSubflow(index);

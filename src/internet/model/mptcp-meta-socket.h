@@ -731,6 +731,7 @@ protected: // protected methods
   uint32_t                m_initialCWnd;     //!< Initial cWnd value
   uint32_t                m_initialSsThresh; //!< Initial Slow Start Threshold value
   uint32_t                m_segmentSize;     //!< Segment size
+  // Hong Jiaming: m_lastAckedSeq not used, but refer to m_txBuffer->HeadSequence() all the time
   SequenceNumber32        m_lastAckedSeq;    //!< Last sequence ACKed
   TracedValue<SequenceNumber64> m_highTxMark; //!< Highest seqno ever sent, regardless of ReTx
   TracedValue<SequenceNumber64> m_nextTxSequence; //!< Next seqnum to be sent (SND.NXT), ReTx pushes it back
