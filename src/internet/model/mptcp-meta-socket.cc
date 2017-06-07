@@ -57,6 +57,7 @@
 
 #include <string.h>
 #include <random>
+#include "ns3/mptcp-mapping.h"
 
 using namespace std;
 
@@ -553,8 +554,13 @@ MpTcpMetaSocket::UpdateWindowSize(uint32_t windowSize)
 }
 
 void
-MpTcpMetaSocket::OnSubflowClosed(Ptr<MpTcpSubflow> subflow, bool reset)
+MpTcpMetaSocket::OnSubflowClosed(Ptr<MpTcpSubflow> subflow, bool reset, MpTcpMappingContainer restTxMappingContainer)
 {
+  // Hong Jiaming 83
+  // This function is triggered by a tx_event, which calls MpTcpSubflow::ReTxTimeout, then finally comes to here.
+  // Currently, let's focus on RL and come back to fix if we have time in the future.
+  NS_FATAL_ERROR("Disable until meta-socket retransmission is implemented");
+
   NS_LOG_LOGIC("Subflow " << subflow  << " definitely closed");
   //! TODO it should remove itself from the list of subflows and when 0 are active
   // it should call CloseAndNotify ?
@@ -563,10 +569,17 @@ MpTcpMetaSocket::OnSubflowClosed(Ptr<MpTcpSubflow> subflow, bool reset)
     NS_FATAL_ERROR("Case not handled yet.");
   }
 
-  // SubflowList::iterator it = find(m_subflows[Closing].begin(), m_subflows[Closing].end(), subflow);
-  // m_containers[Closing].erase(it);
-  // NS_ASSERT(it != m_subflows[Closing].end());
-  SubflowList::iterator it = remove(m_subflows.begin(), m_subflows.end(), subflow);
+  // 1. Remove broken subflow
+  subflow->Close();
+  NS_ASSERT(true == RemoveFromActiveSubflowList(subflow));
+  NS_ASSERT(true == RemoveFromSubflowList(subflow));
+    // Now, client side removed subflow, but server side is not removed. I think maybe we can just left them keep open.
+
+  // 2. Re-assign data in restTxMappingContainer (change m_nextTxSequence directly, bad idea, but have a try)
+  SequenceNumber32 firstUnmappedSsn;
+  NS_ASSERT(true == restTxMappingContainer.FirstUnmappedSSN(firstUnmappedSsn)); // assert fail if restTxMappingContainer is empty
+  Ptr<MpTcpMapping> firstMissingMapping = restTxMappingContainer.GetMappingForSSN(firstUnmappedSsn);
+  m_nextTxSequence = firstMissingMapping->GetDSNFromSSN(firstUnmappedSsn);
 }
 
 // Hong Jiaming: Just for Debug
@@ -1044,7 +1057,6 @@ SequenceNumber64 MpTcpMetaSocket::GetNextTxSequence() const
  * Sending data via subflows with available window size.
  * we should not care about IsInfiniteMapping()
  */
- // Hong Jiaming: Important!
 bool
 MpTcpMetaSocket::SendPendingData()
 {
@@ -1517,6 +1529,7 @@ void
 MpTcpMetaSocket::OnSubflowRetransmit(Ptr<MpTcpSubflow> sf)
 {
   NS_LOG_INFO("Subflow retransmit. Nothing done by meta");
+  // Hong Jiaming:
 }
 
 uint32_t MpTcpMetaSocket::UnAckDataCount()
@@ -2322,6 +2335,28 @@ void MpTcpMetaSocket::SetMptcpEnabled (bool flag)
   // Hong Jiaming: From this, we know this is just a code in experimental pharse
 }
 
+/************** The following about Retransmission over other subflow, added by Hong Jiaming **************/
+bool MpTcpMetaSocket::RemoveFromActiveSubflowList(Ptr<MpTcpSubflow> sf){
+  for(uint32_t i = 0;i < m_activeSubflows.size();i++){
+    if(m_activeSubflows[i] == sf){
+      m_activeSubflows.erase(m_activeSubflows.begin() + i);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool MpTcpMetaSocket::RemoveFromSubflowList(Ptr<MpTcpSubflow> sf){
+  for(uint32_t i = 0;i < m_subflows.size();i++){
+    if(m_subflows[i] == sf){
+      m_subflows.erase(m_subflows.begin() + i);
+      return true;
+    }
+  }
+  return false;
+}
+
+
 /************ The following is about RL, added by Hong Jiaming *************/
 void
 MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
@@ -2339,7 +2374,6 @@ MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
   socket.add("nbOfSubflows", nbOfSubflows);
   socket.add("time", Simulator::Now().GetMicroSeconds());
   socket.add("lastAckedSeqMeta", m_txBuffer->HeadSequence().GetValue());
-  // std::cout << "Hong Jiaming 80.0: " << this->m_lastAckedSeq.GetValue() << std::endl;
   socket.add("highTxMarkMeta", this->m_highTxMark.Get().GetValue());
   NS_ASSERT(this->m_highTxMark.Get() - m_txBuffer->HeadSequence() >= 0); // unAcked should be positive or 0
   socket.add("unAckMeta", uint64_t(this->m_highTxMark.Get() - m_txBuffer->HeadSequence()));

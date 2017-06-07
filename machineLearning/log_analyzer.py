@@ -335,14 +335,14 @@ if __name__ == '__main__':
     AnalyzeClientUnAck(unAck_records)
 
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rr.png", dpi = 150, bbox_inches='tight')
-    sns.plt.savefig("/home/hong/result_figure/0_static_20170604/" + options.Experiment + "_" + options.Scheduler + ".png", dpi = 150, bbox_inches='tight')
+    sns.plt.savefig("/home/hong/result_figure/0_static_20170607/" + options.Experiment + "_" + options.Scheduler + ".png", dpi = 150, bbox_inches='tight')
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/Z1_rr.png", dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
     sns.plt.figure(figsize=(16*2, 9*2))
     meta_socket_records = proprocess_meta_socket_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_meta_socket')
     AnalyzeMetaSocket(meta_socket_records)
-    sns.plt.savefig("/home/hong/result_figure/0_static_20170604/" + options.Experiment + "_" + options.Scheduler + '_meta' + ".png", dpi = 150, bbox_inches='tight')
+    sns.plt.savefig("/home/hong/result_figure/0_static_20170607/" + options.Experiment + "_" + options.Scheduler + '_meta' + ".png", dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
     recordResultToCsv()

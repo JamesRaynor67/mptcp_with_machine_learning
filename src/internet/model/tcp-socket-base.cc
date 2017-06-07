@@ -1045,6 +1045,9 @@ TcpSocketBase::ForwardIcmp6 (Ipv6Address icmpSource, uint8_t icmpTtl,
     }
 }
 
+
+// Get a packet from L3. This is the real function to handle the incoming packet from lower layers.
+// This is wrapped by ForwardUp() so that this function can be overloaded by daughter classes.
 void
 TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
                             const Address &toAddress)
@@ -2474,6 +2477,7 @@ TcpSocketBase::SendDataPacket (TcpHeader& header, SequenceNumber32 seq, uint32_t
           // RFC 6298, clause 2.5
           Time doubledRto = m_rto + m_rto;
           m_rto = Min (doubledRto, Time::FromDouble (60,  Time::S));
+          NS_LOG_DEBUG (this << "Hong Jiaming 82: m_rto == " << m_rto << " addr == " << &m_rto);
         }
       // Schedules retransmit
       NS_LOG_LOGIC (this << " SendDataPacket Schedule ReTxTimeout at time " <<

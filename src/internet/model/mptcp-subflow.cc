@@ -184,16 +184,13 @@ MpTcpSubflow::~MpTcpSubflow()
   NS_LOG_FUNCTION(this);
 }
 
-/**
-TODO maybe override that not to have the callbacks
-**/
 void
 MpTcpSubflow::CloseAndNotify(void)
 {
-  //TODO
-  NS_LOG_FUNCTION_NOARGS();
-  TcpSocketBase::CloseAndNotify();
-  GetMeta()->OnSubflowClosed(this, false);
+  NS_LOG_FUNCTION(this << "Closing subflow " << m_id << " ("<< this << ")");
+  m_txBuffer->DiscardUpTo(m_txBuffer->TailSequence()); // Hong Jiaming: Clean txBuffer to avoid crash, not good choice
+  GetMeta()->OnSubflowClosed(this, false, m_TxMappings);
+  //TcpSocketBase::CloseAndNotify();
 }
 
 /**
@@ -213,8 +210,10 @@ MpTcpSubflow::Send(Ptr<Packet> p, uint32_t flags)
     return -1;
   }
 
+  NS_LOG_DEBUG(this << "Hong Jiaming 81: RTO == " << m_rto << " addr == " << &m_rto);
+
   //Call send pending immediately, we need to keep the nextTxSequence variable in sync with the MetaSocket
-  SendPendingData(m_connected);
+  SendPendingData(m_connected); // Hong Jiaming: if m_connect == false, SendPendingData will tigger a fatal error
 
 // Check that the packet is covered by mapping (TODO: remove)
 
@@ -632,10 +631,12 @@ MpTcpSubflow::AddMpTcpOptionDSS(TcpHeader& header)
   Ptr<TcpOptionMpTcpDSS> dss = Create<TcpOptionMpTcpDSS>();
   const bool sendDataFin = m_dssFlags &  TcpOptionMpTcpDSS::DataFin;
   const bool sendDataAck = m_dssFlags & TcpOptionMpTcpDSS::DataAckPresent;
+  // std::cout << "Hong Jiaming 80: active subflow num == " << GetMeta()->GetNActiveSubflows() << std::endl;
 
   if(sendDataAck)
   {
     // TODO replace with member function to keep isolation
+    // Hong Jiaming: (Important) When certain link failed, dack is stuck because data with certain DSS on broken subflow never arrives
     uint64_t dack = GetMeta()->GetRxBuffer()->NextRxSequence().GetValue();
     //Make sure ACK is 64 bits
     dss->SetDataAck (dack, false);
@@ -958,11 +959,30 @@ MpTcpSubflow::StopAdvertisingAddress(Ipv4Address address)
   return true;
 }
 
-
+// Hong Jiaming (RT): To be honest, I'm not able to figure out how is this ReTxTimeout event tiggered.
+// I found that it's indeed triggered when retransmission happens. So I will let it to notify MpTcpMetaSocket
+// to remove this subflow if retransmission of same packet failed over 3 times.
 void
 MpTcpSubflow::ReTxTimeout()
 {
   NS_LOG_LOGIC("MpTcpSubflow ReTxTimeout expired !");
+  static int failureCount = 0;
+  static uint32_t lastRtoTxBufferHead = 0;
+
+  if(m_txBuffer->HeadSequence().GetValue() == lastRtoTxBufferHead){
+    failureCount++;
+  }
+  else{
+    failureCount = 0;
+    lastRtoTxBufferHead = m_txBuffer->HeadSequence().GetValue();
+  }
+
+  if(failureCount > numeric_limits<uint32_t>::max()){ // Hong Jiaming: disable meta-level retransmission temporarily
+    NS_LOG_LOGIC("Fail to send " << m_txBuffer->HeadSequence() << " over 3 times. Going to tear up subflow " << this);
+    CloseAndNotify();
+  }
+  NS_LOG_LOGIC("failureCount == " << failureCount << " lastRtoTxBufferHead == " << lastRtoTxBufferHead);
+
   TcpSocketBase::ReTxTimeout();
 }
 

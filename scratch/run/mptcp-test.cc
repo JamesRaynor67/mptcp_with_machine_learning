@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
   uint32_t type = 0;
   uint32_t appType = 0;
   std::string outputDir = "mptcp_output";
-  uint32_t simulationDuration = 60;
+  uint32_t simulationDuration = 180;
 
   CommandLine cmd;
   std::string link_b_BER;
@@ -95,11 +95,14 @@ int main(int argc, char* argv[])
   NodeContainer other_servers;
   NodeContainer other_clients;
   vector<Ptr<NetDevice>> unstableDevices;
-  // CreateExtendedClassicNetwork (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-  // CreateClassicNetworkWithOtherTraffic (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-  unstableDevices = CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-  // CreateSimplestNetworkWithOtherTraffic(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-  // CreateClassicNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+
+  // unstableDevices = CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  unstableDevices = CreateNetwork5(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+
+//  // CreateSimplestNetworkWithOtherTraffic(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+//  // CreateClassicNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+//  // CreateExtendedClassicNetwork (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+//  // CreateClassicNetworkWithOtherTraffic (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
   ConfigureTracing(outputDir, server, client, middle, other_servers, other_clients);
 
   //Create and install the applications on the server and client
@@ -145,8 +148,13 @@ int main(int argc, char* argv[])
   }
 
   for(auto dev:unstableDevices){
-    Simulator::Schedule(Seconds (30.0), FailLink, dev);
+    Simulator::Schedule(Seconds (30.0), ChangeLinkErrorRate, dev, 1.0);
   }
+
+  for(auto dev:unstableDevices){
+    Simulator::Schedule(Seconds (40.0), ChangeLinkErrorRate, dev, 0);
+  }
+
 
   Simulator::Stop (Seconds(simulationDuration));
 

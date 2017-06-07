@@ -32,13 +32,13 @@
 //#include "ns3/mp-tcp-path-manager.h"
 //#include "ns3/gnuplot.h"
 //#include "mp-tcp-subflow.h"
-
 //#include "ns3/mp-tcp-cc.h"
 #include "ns3/inet-socket-address.h"
 #include "mptcp-scheduler.h"
 #include "tcp-parameters.h"
 
 #include "ns3/rl-data-interface.h"
+#include "ns3/mptcp-mapping.h"
 
 //using namespace std;
 
@@ -524,7 +524,7 @@ protected: // protected methods
    \sf
    \param reset True if closing due to reset
    */
-  void OnSubflowClosed(Ptr<MpTcpSubflow> sf, bool reset);
+  void OnSubflowClosed(Ptr<MpTcpSubflow> sf, bool reset, MpTcpMappingContainer restTxMappingContainer);
 
   void OnSubflowDupAck(Ptr<MpTcpSubflow> sf);
 
@@ -758,6 +758,9 @@ protected: // protected methods
 
   virtual void SetMptcpEnabled (bool flag) override;
 
+  /************** The following about Retransmission over other subflow, added by Hong Jiaming **************/
+  bool RemoveFromSubflowList(Ptr<MpTcpSubflow> sf);
+  bool RemoveFromActiveSubflowList(Ptr<MpTcpSubflow> sf);
   /************** The following about RL, added by Hong Jiaming **************/
   // ip: "127.0.0.1", port: 12345
   static rl::InterfaceToRL m_rlSocket;

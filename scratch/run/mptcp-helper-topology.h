@@ -12,7 +12,8 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
                                       Ptr<Node> endNode,
                                       DataRate linkRate,
                                       Time delay,
-                                      uint32_t packetSize);
+                                      uint32_t packetSize,
+                                      uint32_t queueSize = 1);
 
 void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& server,
@@ -50,6 +51,13 @@ void CreateExtendedClassicNetwork (uint32_t packetSize,
                         NodeContainer& other_servers,
                         NodeContainer& other_clients);
 
-void FailLink (Ptr<NetDevice> nd);
+vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
+                        NodeContainer& server,
+                        NodeContainer& client,
+                        NodeContainer& middle,
+                        NodeContainer& other_servers,
+                        NodeContainer& other_clients);
+
+void ChangeLinkErrorRate (Ptr<NetDevice> nd, double bitErrorRate);
 
 }
