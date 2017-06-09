@@ -1,0 +1,5 @@
+python ./machineLearning/rl_server.py &
+sleep 3
+./waf --run "scratch/run/run"
+
+python ./machineLearning/log_analyzer.py "$@"

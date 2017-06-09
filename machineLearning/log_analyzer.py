@@ -291,10 +291,13 @@ if __name__ == '__main__':
     parser.add_option("-n", "--episodeNum", dest="EpisodeNum", default=None, help="The number of episode to analyze")
     parser.add_option("-b", "--linkBBandwidth", dest="LinkBBW", default=None, help="The bandwidth of link B")
     parser.add_option("-c", "--linkCBandwidth", dest="LinkCBW", default=None, help="The bandwidth of link C")
+    parser.add_option("-d", "--dirPath", dest="DirPath", default=None, help="The dir path to store figures and relative data")
     (options, args) = parser.parse_args()
     g_resultRecord['Filename'] = options.Filename
     g_resultRecord['Experiment'] = options.Experiment
     g_resultRecord['Scheduler'] = options.Scheduler
+    g_resultRecord['DirPath'] = options.DirPath
+    assert os.path.isdir(options.DirPath) is True
 
     episode_num = int(options.EpisodeNum)
     sns.plt.figure(figsize=(16*2, 9*2))
@@ -335,14 +338,14 @@ if __name__ == '__main__':
     AnalyzeClientUnAck(unAck_records)
 
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rr.png", dpi = 150, bbox_inches='tight')
-    sns.plt.savefig("/home/hong/result_figure/0_static_20170607/" + options.Experiment + "_" + options.Scheduler + ".png", dpi = 150, bbox_inches='tight')
+    sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + ".png"), dpi = 150, bbox_inches='tight')
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/Z1_rr.png", dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
     sns.plt.figure(figsize=(16*2, 9*2))
     meta_socket_records = proprocess_meta_socket_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_meta_socket')
     AnalyzeMetaSocket(meta_socket_records)
-    sns.plt.savefig("/home/hong/result_figure/0_static_20170607/" + options.Experiment + "_" + options.Scheduler + '_meta' + ".png", dpi = 150, bbox_inches='tight')
+    sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + '_meta' + ".png"), dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
     recordResultToCsv()
