@@ -52,10 +52,11 @@ def AnalyzeClientUnAck(unAck_records):
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('UnAck / byte', fontsize = 14, color = 'black')
 
-def AnalyzeMetaSocket(meta_socket_records):
+def AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records):
     # columns = ['Timestamp', 'LastAckedSeq', 'HighTxMark', 'AvailableTxBuffer', 'NextTxSeq', 'TotalCwnd']
     data = meta_socket_records.values
-    
+    client_data = clientAvailableTxBuffer_records.values
+
     sns.plt.figure(figsize=(16*2, 9*2))
 
     sns.plt.subplot(3,2,1)
@@ -74,7 +75,10 @@ def AnalyzeMetaSocket(meta_socket_records):
 
     sns.plt.subplot(3,2,3)
     meta_availableTxBuffer, = sns.plt.plot(list(data[:,0]), list(data[:,3]), 'k-')
-    sns.plt.legend([meta_availableTxBuffer], ['Meta-Socket Available TxBuffer Size'], loc='best')
+    subflow0_availableTxBuffer, = sns.plt.plot(list(client_data[:,0]), list(client_data[:,1]), 'b-')
+    subflow1_availableTxBuffer, = sns.plt.plot(list(client_data[:,0]), list(client_data[:,2]), 'r-')
+    sns.plt.legend([meta_availableTxBuffer, subflow0_availableTxBuffer, subflow1_availableTxBuffer], 
+                    ['Meta-Socket Available TxBuffer Size', 'Subflow0 Available TxBuffer Size','Subflow1 Available TxBuffer Size'], loc='best')
     sns.plt.title('Time-availableTxBuffer')
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Available TxBuffer Size / byte', fontsize = 14, color = 'black')

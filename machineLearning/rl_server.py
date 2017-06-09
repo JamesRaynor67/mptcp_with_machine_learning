@@ -45,7 +45,7 @@ class RecordCwnd():
         if('cWnd1' in one_row):
             cWnd1 = int(one_row['cWnd1'])
         self.f.write(str(one_row['time']) + ',' + str(cWnd0) + ',' + str(cWnd1) + '\n')
-        assert ('cWnd3' not in one_row)
+        assert ('cWnd2' not in one_row)
 
     def __del__(self):
         if not self.f.closed:
@@ -64,7 +64,7 @@ class RecordRwnd():
         if('rWnd1' in one_row):
             rWnd1 = int(one_row['rWnd1'])
         self.f.write(str(one_row['time']) + ',' + str(rWnd0) + ',' + str(rWnd1) + '\n')
-        assert ('rWnd3' not in one_row)
+        assert ('rWnd2' not in one_row)
 
     def __del__(self):
         if not self.f.closed:
@@ -83,7 +83,26 @@ class RecordUnAck():
         if('unAck1' in one_row):
             unAck1 = int(one_row['unAck1'])
         self.f.write(str(one_row['time']) + ',' + str(unAck0) + ',' + str(unAck1) + '\n')
-        assert ('unAck3' not in one_row)
+        assert ('unAck2' not in one_row)
+
+    def __del__(self):
+        if not self.f.closed:
+            self.f.close()
+
+class RecordAvailableTxBuffer():
+    def __init__(self, path):
+        self.f = open(path, 'w')
+        self.f.write("timestamp,availableTxBuffer0,availableTxBuffer1\n")
+
+    def addTxBufferRecord(self, one_row):
+        availableTxBuffer0 = -1;
+        availableTxBuffer1 = -1;
+        if('availableTxBuffer0' in one_row):
+            availableTxBuffer0 = int(one_row['availableTxBuffer0'])
+        if('availableTxBuffer1' in one_row):
+            availableTxBuffer1 = int(one_row['availableTxBuffer1'])
+        self.f.write(str(one_row['time']) + ',' + str(availableTxBuffer0) + ',' + str(availableTxBuffer1) + '\n')
+        assert ('availableTxBuffer2' not in one_row)
 
     def __del__(self):
         if not self.f.closed:
@@ -117,7 +136,7 @@ def IsInt(s):
 
 class DataRecorder():
 
-    def __init__(self, rttRecord, cWndRecord, rWndRecord, unAckRecord, metaRecord):
+    def __init__(self, rttRecord, cWndRecord, rWndRecord, unAckRecord, availableTxBufferRecord, metaRecord):
         self.next_seq_num = 0
         self.data = {}
         self.action = []
@@ -125,6 +144,7 @@ class DataRecorder():
         self.cWndRecord = cWndRecord
         self.rWndRecord = rWndRecord
         self.unAckRecord = unAckRecord
+        self.availableTxBufferRecord = availableTxBufferRecord
         self.metaRecord = metaRecord
 
     def add_one_record(self, str_data):
@@ -150,6 +170,7 @@ class DataRecorder():
         self.cWndRecord.addCwndRecord(one_row)
         self.rWndRecord.addRwndRecord(one_row)
         self.unAckRecord.addUnAckRecord(one_row)
+        self.availableTxBufferRecord.addTxBufferRecord(one_row)
         self.metaRecord.addMetaRecord(one_row)
         self.data[self.next_seq_num] = one_row
         self.next_seq_num += 1          
@@ -190,8 +211,9 @@ if __name__ == "__main__":
         cWndRecorder = RecordCwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_cWnd')
         rWndRecorder = RecordRwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rWnd')
         unAckRecorder = RecordUnAck('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_unAck')
+        availableTxBufferRecord = RecordAvailableTxBuffer('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_txBufferSize')
         metaRecorder = RecordMeta('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_meta_socket')
-        dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder, metaRecorder)
+        dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder, availableTxBufferRecord, metaRecorder)
 
         socket = Interacter_socket(host = '', port = 12345)
         socket.listen()

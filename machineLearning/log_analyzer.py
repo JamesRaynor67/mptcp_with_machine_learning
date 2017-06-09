@@ -173,6 +173,30 @@ def proprocess_rtt_data(file_path):
 
     return rtt_records
 
+def proprocess_clientAvailableTxBuffer_data(file_path):
+    record = []
+    valid = [False, False]
+    with open(file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            timestamp = (int(row[0])*1.0)/1e6
+
+            if valid[0] is False:
+                valid[0] = True if int(row[1]) != -1 else False
+            if valid[1] is False:
+                valid[1] = True if int(row[2]) != -1 else False
+
+            availableTxBuffer0 = int(row[1]) if valid[0] is True else 0
+            availableTxBuffer1 = int(row[2]) if valid[1] is True else 0
+
+            record.append([timestamp, availableTxBuffer0, availableTxBuffer1])
+
+    columns = ['Timestamp','availableTxBuffer0','availableTxBuffer1']
+    availableTxBuffer_records = pd.DataFrame(record, columns=columns)
+
+    return availableTxBuffer_records
+
 def analyze_client_end_node(file_path):
     record = []
     tmp_client_sent_count, tmp_client_rcv_count = 0, 0
@@ -344,7 +368,8 @@ if __name__ == '__main__':
 
     sns.plt.figure(figsize=(16*2, 9*2))
     meta_socket_records = proprocess_meta_socket_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_meta_socket')
-    AnalyzeMetaSocket(meta_socket_records)
+    clientAvailableTxBuffer_records = proprocess_clientAvailableTxBuffer_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_txBufferSize')
+    AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records)
     sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + '_meta' + ".png"), dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
