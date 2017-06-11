@@ -42,7 +42,6 @@ class DeepQNetwork:
 
         # initialize zero memory [s, a, r, s_]
         self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
-
         # consist of [target_net, evaluate_net]
         self._build_net()
 
@@ -51,7 +50,9 @@ class DeepQNetwork:
         if output_graph:
             # $ tensorboard --logdir=logs
             # tf.train.SummaryWriter soon be deprecated, use following
-            tf.summary.FileWriter("rl_training_data/logs/", self.sess.graph)
+            tf.summary.scalar("loss", self.loss)
+            self.merged_summary_op = tf.summary.merge_all()
+            self.summaryWriter = tf.summary.FileWriter("rl_training_data/logs/", self.sess.graph)
 
         self.sess.run(tf.global_variables_initializer())
         self.cost_his = []
@@ -186,10 +187,11 @@ class DeepQNetwork:
         """
 
         # train eval network
-        _, self.cost = self.sess.run([self._train_op, self.loss],
+        _, self.cost, summary_str = self.sess.run([self._train_op, self.loss, self.merged_summary_op],
                                      feed_dict={self.s: batch_memory[:, :self.n_features],
                                                 self.q_target: q_target})
         self.cost_his.append(self.cost)
+        self.summaryWriter.add_summary(summary_str, self.learn_step_counter)
 
         # increasing epsilon
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
@@ -205,13 +207,25 @@ class DeepQNetwork:
 
 def extract_observation(dataRecorder):
     # let's set return value "observation" to be a np array with fixed length
+    # value_dic = dataRecorder.get_latest_data()
+    # observation = np.zeros((4))
+    # for i in range(value_dic["nbOfSubflows"]):
+    #     name = "window" + str(i)
+    #     observation[i*2] = value_dic[name]
+    #     name = "cWnd" + str(i)
+    #     observation[i*2+1] = value_dic[name]
+    # return observation
     value_dic = dataRecorder.get_latest_data()
-    observation = np.zeros((4))
+    observation = np.zeros((8))
     for i in range(value_dic["nbOfSubflows"]):
         name = "window" + str(i)
-        observation[i*2] = value_dic[name]
+        observation[i*4] = value_dic[name]
         name = "cWnd" + str(i)
-        observation[i*2+1] = value_dic[name]
+        observation[i*4+1] = value_dic[name]
+        name = "rtt" + str(i)
+        observation[i*4+2] = value_dic[name]
+        name = "availableTxBuffer" + str(i)
+        observation[i*4+3] = value_dic[name]
     return observation
 
 def action_translator(dataRecorder, action):

@@ -219,7 +219,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     episode_count = 0
-    RL = DeepQNetwork(n_actions=4, n_features=4, learning_rate=0.01, reward_decay=0.9,
+    RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.9,
                       e_greedy=0.9, replace_target_iter=200, memory_size=2000, output_graph=True)
 
     while episode_count < int(options.MaxEpisode):
