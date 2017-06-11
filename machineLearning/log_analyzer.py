@@ -197,6 +197,21 @@ def proprocess_clientAvailableTxBuffer_data(file_path):
 
     return availableTxBuffer_records
 
+def proprocess_schedulerId_data(file_path):
+    record = []
+    with open(file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            timestamp = (int(row[0])*1.0)/1e6
+            schedulerId = int(row[1])
+            record.append([timestamp, schedulerId])
+
+    columns = ['Timestamp','schedulerId']
+    scheduler_records = pd.DataFrame(record, columns=columns)
+
+    return scheduler_records
+
 def analyze_client_end_node(file_path):
     record = []
     tmp_client_sent_count, tmp_client_rcv_count = 0, 0
@@ -369,7 +384,8 @@ if __name__ == '__main__':
     sns.plt.figure(figsize=(16*2, 9*2))
     meta_socket_records = proprocess_meta_socket_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_meta_socket')
     clientAvailableTxBuffer_records = proprocess_clientAvailableTxBuffer_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_client_txBufferSize')
-    AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records)
+    schedulerId_records = proprocess_schedulerId_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_schedulerId')
+    AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records, schedulerId_records)
     sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + '_meta_' + options.EpisodeNum + ".png"), dpi = 150, bbox_inches='tight')
     sns.plt.close()
 

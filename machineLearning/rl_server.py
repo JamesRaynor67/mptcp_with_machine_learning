@@ -108,6 +108,18 @@ class RecordAvailableTxBuffer():
         if not self.f.closed:
             self.f.close()
 
+class RecordSchedulerId():
+    def __init__(self, path):
+        self.f = open(path, 'w')
+        self.f.write("timestamp,schedulerId\n")
+
+    def addSchedulerId(self, timeStamp, schedulerId):
+        self.f.write(str(timeStamp) + ',' + str(schedulerId) + '\n')
+
+    def __del__(self):
+        if not self.f.closed:
+            self.f.close()
+
 class RecordMeta():
     def __init__(self, path):
         self.f = open(path, 'w')
@@ -136,7 +148,7 @@ def IsInt(s):
 
 class DataRecorder():
 
-    def __init__(self, rttRecord, cWndRecord, rWndRecord, unAckRecord, availableTxBufferRecord, metaRecord):
+    def __init__(self, rttRecord, cWndRecord, rWndRecord, unAckRecord, availableTxBufferRecord, schedulerIdRecord, metaRecord):
         self.next_seq_num = 0
         self.data = {}
         self.action = []
@@ -146,10 +158,11 @@ class DataRecorder():
         self.unAckRecord = unAckRecord
         self.availableTxBufferRecord = availableTxBufferRecord
         self.metaRecord = metaRecord
+        self.schedulerIdRecord = schedulerIdRecord
 
     def add_one_record(self, str_data):
-        global g_TcWnd0
-        global g_TcWnd1
+        # global g_TcWnd0
+        # global g_TcWnd1
         # name#value$name$value...
         pair_list = str_data.split("$")
         one_row = {}
@@ -183,6 +196,8 @@ class DataRecorder():
 
     def add_pair_to_last_record(self, name, value):
         self.data[self.next_seq_num-1][name] = value
+        if name is "schedulerId":
+            self.schedulerIdRecord.addSchedulerId(timeStamp=self.data[self.next_seq_num-1]["time"], schedulerId=value)
 
     def print_all_data(self):
         print "dic size: ", len(self.data)
@@ -214,7 +229,8 @@ if __name__ == "__main__":
         unAckRecorder = RecordUnAck('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_unAck')
         availableTxBufferRecord = RecordAvailableTxBuffer('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_txBufferSize')
         metaRecorder = RecordMeta('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_meta_socket')
-        dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder, availableTxBufferRecord, metaRecorder)
+        schedulerIdRecord = RecordSchedulerId('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_schedulerId')
+        dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder, availableTxBufferRecord, schedulerIdRecord, metaRecorder)
 
         socket = Interacter_socket(host = '', port = 12345)
         socket.listen()
@@ -229,7 +245,7 @@ if __name__ == "__main__":
 
         print 'episode: ', episode_count
         f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
-        step, lastSchedulerTiming, accumulativeReward = 0, float("-inf"), 0
+        step, lastSchedulerTiming, accumulativeReward = 0, float("-inf"), 0 # float("-inf") ensures that a scheduler is choosen at first time
 
         while True:
             # Choose action
@@ -249,6 +265,7 @@ if __name__ == "__main__":
                 apply_action(socket, dataRecorder, action) # Apply action to environment
             else:
                 apply_action(socket, dataRecorder, 999)
+            dataRecorder.add_pair_to_last_record(name="schedulerId", value=action)
 
             recv_str, this_episode_done = socket.recv() # get new observation and reward
             if this_episode_done is True:

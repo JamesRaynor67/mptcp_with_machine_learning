@@ -52,26 +52,28 @@ def AnalyzeClientUnAck(unAck_records):
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('UnAck / byte', fontsize = 14, color = 'black')
 
-def AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records):
+def AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records, schedulerId_records):
     # columns = ['Timestamp', 'LastAckedSeq', 'HighTxMark', 'AvailableTxBuffer', 'NextTxSeq', 'TotalCwnd']
     data = meta_socket_records.values
     client_data = clientAvailableTxBuffer_records.values
+    schedulerId_data = schedulerId_records.values
 
     sns.plt.figure(figsize=(16*2, 9*2))
 
     sns.plt.subplot(3,2,1)
-    meta_lastAck, = sns.plt.plot(list(data[:,0]), list(data[:,1]), 'k-')
-    sns.plt.legend([meta_lastAck], ['Meta-Socket Last Acked Sequence'], loc='best')
-    sns.plt.title('Time-lastAck')
+    meta_schedulerId, = sns.plt.plot(list(schedulerId_data[:,0]), list(schedulerId_data[:,1]), 'ko')
+    sns.plt.legend([meta_schedulerId], [''], loc='best')
+    sns.plt.title('Time-SchedulerId')
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
-    sns.plt.ylabel('Last Ack Sequence Number / byte', fontsize = 14, color = 'black')
+    sns.plt.ylabel('SchedulerId', fontsize = 14, color = 'black')
 
     sns.plt.subplot(3,2,2)
-    meta_highTxMark, = sns.plt.plot(list(data[:,0]), list(data[:,2]), 'k-')
-    sns.plt.legend([meta_highTxMark], ['Meta-Socket Highest Tx Sequence Number'], loc='best')
-    sns.plt.title('Time-highTxMark')
+    meta_lastAck, = sns.plt.plot(list(data[:,0]), list(data[:,1]), 'k-')
+    meta_highTxMark, = sns.plt.plot(list(data[:,0]), list(data[:,2]), 'k-.')
+    sns.plt.legend([meta_lastAck, meta_highTxMark], ['Meta-Socket Last Acked Sequence Number', 'Meta-Socket Highest Tx Sequence Number'], loc='best')
+    sns.plt.title('Time-lastAck / Time-highTxMark')
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
-    sns.plt.ylabel('Highest Tx Sequence Number / byte', fontsize = 14, color = 'black')
+    sns.plt.ylabel('Sequence Number / byte', fontsize = 14, color = 'black')
 
     sns.plt.subplot(3,2,3)
     meta_availableTxBuffer, = sns.plt.plot(list(data[:,0]), list(data[:,3]), 'k-')
