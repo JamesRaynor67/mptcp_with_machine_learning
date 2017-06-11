@@ -26,7 +26,9 @@ function runSet() {
                                 --link_b_BER="${Ns3Config["link_b_BER"]}" --tcp_buffer_size="$tcpBuffer" --router_b_buffer_size="$routerBBuffer"\
                                 --router_c_buffer_size="$routerCBuffer" --topology_id="$topology_id""
                               # --link_b_BER="${Ns3Config["link_b_BER"]}""  > ~/result_figure/0_static_20170604/log_debug_mptcp.txt 2>&1
-  python ./machineLearning/log_analyzer.py -e "${PyConfig["experiment"]}" -s "${PyConfig["scheduler"]}" -n "$episodeNum" -b "${Ns3Config["link_b_BW"]}" -c "${Ns3Config["link_c_BW"]}" -d "$dirPath"
+    if !(($episodeNum % 1)); then
+      python ./machineLearning/log_analyzer.py -e "${PyConfig["experiment"]}" -s "${PyConfig["scheduler"]}" -n "$episodeNum" -b "${Ns3Config["link_b_BW"]}" -c "${Ns3Config["link_c_BW"]}" -d "$dirPath"
+    fi
   done
   mv "/home/hong/result_figure/statistic.csv" "${dirPath}/statistic.csv"
 }
