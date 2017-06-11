@@ -1341,6 +1341,7 @@ MpTcpSubflow::ReceivedData(Ptr<Packet> p, const TcpHeader& tcpHeader)
   //Always notify the meta socket to attempt to add packet to the buffer
   //Send ACK immediately if we cannot add to the receive buffer
   SequenceNumber64 expectedDSN = GetMeta()->GetRxBuffer()->NextRxSequence();
+  // Hong Jiaming: Note that packet is already added to RxBuffer of MetaSock (if not failed)!!
   if (!GetMeta()->AddToReceiveBuffer(this, p, tcpHeader, mapping))
   {
     AppendDSSAck();

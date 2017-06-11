@@ -630,6 +630,8 @@ void MpTcpMetaSocket::OnSubflowRecv(Ptr<MpTcpSubflow> sf,
   DumpRxBuffers(sf);
 
   // Remove mappings for contiguous sequence numbers, and notify the application
+  // Hong Jiaming: Note that packet is already added in meta-socket's rxBuffer in MpTcpSubflow::ReceivedData
+  //               And expectedDSN == m_rxBuffer->NextRxSequence() BEFORE this packet is added
   if (expectedDSN < m_rxBuffer->NextRxSequence())
   {
     NS_LOG_LOGIC("The Rxbuffer advanced");
@@ -638,7 +640,7 @@ void MpTcpMetaSocket::OnSubflowRecv(Ptr<MpTcpSubflow> sf,
     if (!m_tcpParams->m_shutdownRecv)
     {
       NS_LOG_LOGIC("Notify data Rcvd" );
-      NotifyDataRecv();
+      NotifyDataRecv(); // Hong Jiaming: Just call Socket::m_receivedData, this callback should be set by application
 
       // Handle exceptions
       if (m_tcpParams->m_closeNotified)
@@ -762,6 +764,8 @@ MpTcpMetaSocket::OnSubflowNewState(Ptr<MpTcpSubflow> sf,
       // subflow did SYN_SENT -> ESTABLISHED
       else if(oldState == SYN_SENT)
       {
+        // Hong Jiaming: Right now, I don't understand why client side doesn't call OnSubflowEstablishment
+        //               Just left it like this.
         //OnSubflowEstablishment(sf);
       }
       else
@@ -2394,6 +2398,7 @@ MpTcpMetaSocket::SendStates(rl::InterfaceToRL& socket){
     socket.add("highTxMark"+std::to_string(index), tcb->m_highTxMark.Get().GetValue());
     socket.add("rtt"+std::to_string(index), subflow->GetRttEstimator()->GetEstimate().GetMicroSeconds());
     socket.add("unAck"+std::to_string(index), subflow->UnAckDataCount());
+    socket.add("availableTxBuffer"+std::to_string(index), subflow->GetTxBuffer()->Available()); // How many bytes usable in txBuffer
     // std::cout << "Hong Jiaming 15: send rtt=" << subflow->GetRttEstimator()->GetEstimate().GetMicroSeconds() << std::endl;
   }
   socket.send();
@@ -2409,8 +2414,9 @@ void
   MpTcpMetaSocket::ApplyActions(string recv_str){
   // do applyActions
   uint32_t index = uint32_t(std::stoi(recv_str));
-  ChooseOneScheduler(index);
-  // std::cout << "Sechduler changed to: " << index << std::endl;
+  if(index != 999){
+    ChooseOneScheduler(index);
+  }
   return;
 }
 

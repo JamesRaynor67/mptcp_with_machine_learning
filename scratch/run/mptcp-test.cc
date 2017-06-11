@@ -28,6 +28,10 @@ namespace ns3{
   std::string g_link_b_delay;
   std::string g_link_c_delay;
   double g_link_b_BER;
+  uint32_t g_tcp_buffer_size;
+  uint32_t g_router_b_buffer_size;
+  uint32_t g_router_c_buffer_size;
+  uint32_t g_topology_id;
 };
 
 int main(int argc, char* argv[])
@@ -45,6 +49,10 @@ int main(int argc, char* argv[])
 
   CommandLine cmd;
   std::string link_b_BER;
+  std::string tcp_buffer_size;
+  std::string router_b_buffer_size;
+  std::string router_c_buffer_size;
+  std::string topology_id;
   cmd.AddValue("appType", "The type of application to run", appType);
   cmd.AddValue("outputDir", "The output directory to write the logs to.", outputDir);
   cmd.AddValue("link_a_BW", "Bandwidth of link A.", g_link_a_BW);
@@ -54,12 +62,21 @@ int main(int argc, char* argv[])
   cmd.AddValue("link_b_delay", "Bandwidth of link B.", g_link_b_delay);
   cmd.AddValue("link_c_delay", "Bandwidth of link C.", g_link_c_delay);
   cmd.AddValue("link_b_BER", "The bit error rate of link B.", link_b_BER);
+  cmd.AddValue("tcp_buffer_size", "The buffer size of tcp and meta-socket", tcp_buffer_size); // settings in SetConfigDefaults, unit is byte
+  cmd.AddValue("router_b_buffer_size", "The buffer size of router queue", router_b_buffer_size); // settings in mptcp-helper-topology.cc, unit is packet count
+  cmd.AddValue("router_c_buffer_size", "The buffer size of router queue", router_c_buffer_size); // settings in mptcp-helper-topology.cc, unit is packet count
+  cmd.AddValue("topology_id", "The id of topology to use", topology_id);
   cmd.Parse(argc, argv);
   g_link_b_BER = std::stod(link_b_BER);
-  std::cout << g_link_a_BW << " " << g_link_b_BW << " " << g_link_c_BW << " WTF " << link_b_BER << std::endl;
+  g_tcp_buffer_size = uint32_t(std::stoi(tcp_buffer_size));
+  g_router_b_buffer_size = uint32_t(std::stoi(router_b_buffer_size));
+  g_router_c_buffer_size = uint32_t(std::stoi(router_c_buffer_size));
+  g_topology_id = uint32_t(std::stoi(topology_id));
+  std::cout << "Hong Jiaming: confirm argv: " << g_link_a_BW << " " << g_link_b_BW << " " << g_link_c_BW << " " << link_b_BER << " "
+            << g_tcp_buffer_size << " " << g_router_b_buffer_size << " " << g_router_c_buffer_size << std::endl;
 
-  string linkRate = "10Mbps";
-  string linkDelay = "10ms";
+  string linkRate = "10Mbps"; // not used
+  string linkDelay = "10ms"; // not used
 
   // Assume the maximum size of mptcp option is 40 bytes
   uint32_t tcpOptionSize = 40;
@@ -97,7 +114,17 @@ int main(int argc, char* argv[])
   vector<Ptr<NetDevice>> unstableDevices;
 
   // unstableDevices = CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-  unstableDevices = CreateNetwork5(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+  switch(g_topology_id){
+    case 0:{
+        unstableDevices = CreateNetwork5(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+        break;
+      }
+
+    default:{
+      NS_FATAL_ERROR("Unknown topology!");
+      break;
+      }
+  }
 
 //  // CreateSimplestNetworkWithOtherTraffic(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
 //  // CreateClassicNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);

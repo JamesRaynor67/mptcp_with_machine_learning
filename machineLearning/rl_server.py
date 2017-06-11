@@ -200,12 +200,13 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-f", "--forceReply", dest="ForceReply", default=None, help="Force RL module reply a scheduler")
     parser.add_option("-m", "--maxEpisode", dest="MaxEpisode", default=1, help="The number of times to train (launch NS3)")
+    parser.add_option("-i", "--switchInterval", dest="SwitchInterval", default=-1, help="The interval of switching scheduler")
     (options, args) = parser.parse_args()
 
     episode_count = 0
     RL = DeepQNetwork(n_actions=4, n_features=4, learning_rate=0.01, reward_decay=0.9,
                       e_greedy=0.9, replace_target_iter=200, memory_size=2000, output_graph=True)
-    reward_record = []
+
     while episode_count < int(options.MaxEpisode):
         rttRecorder = RecordRTT('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rtt')
         cWndRecorder = RecordCwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_cWnd')
@@ -228,32 +229,37 @@ if __name__ == "__main__":
 
         print 'episode: ', episode_count
         f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
-        step = 0
+        step, lastSchedulerTiming, accumulativeReward = 0, float("-inf"), 0
 
         while True:
             # Choose action
             # print 'recv_str: ', recv_str
             # print 'observation: ', observation_before_action
-            action = RL.choose_action(observation_before_action)
+            shouldUpdata = False
+            if dataRecorder.get_latest_data()["time"] - lastSchedulerTiming > int(options.SwitchInterval): # in microsecond
+                lastSchedulerTiming = dataRecorder.get_latest_data()["time"]
+                shouldUpdata = True
+                accumulativeReward = 0
 
-            if options.ForceReply is not None:
-                action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
+            if shouldUpdata:
+                action = RL.choose_action(observation_before_action)
+                if options.ForceReply is not None:
+                    action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
+                # print "Hong Jiaming RL: " + str(dataRecorder.get_latest_data()["time"]) + ": is going to use scheduler with id: " + str(action)
+                apply_action(socket, dataRecorder, action) # Apply action to environment
+            else:
+                apply_action(socket, dataRecorder, 999)
 
-            # Apply action to environment
-            apply_action(socket, dataRecorder, action)
-
-            # Get feedback (observation, reward)
             recv_str, this_episode_done = socket.recv() # get new observation and reward
-
             if this_episode_done is True:
                 break
 
             dataRecorder.add_one_record(recv_str)
             observation_after_action = extract_observation(dataRecorder)
             reward = calculate_reward(dataRecorder)
-            reward_record.append(reward)
+            accumulativeReward += reward
             # # Update memory
-            RL.store_transition(observation_before_action, action, reward, observation_after_action)
+            RL.store_transition(observation_before_action, action, accumulativeReward, observation_after_action)
 
             if (step > 200) and (step % 5 == 0):
                 RL.learn()
@@ -272,14 +278,4 @@ if __name__ == "__main__":
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_drops')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_server')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_monitor", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_monitor')
-        # # print "sleep 30 seconds from now"
-        # # sleep(30)
         episode_count += 1
-
-    # RL.plot_cost()
-    # # plt.figure()
-    # # plt.plot(dataRecorder.action, 'or')
-    # # plt.show()
-    # plt.figure()
-    # plt.plot(reward_record, 'ro')
-    # plt.show()

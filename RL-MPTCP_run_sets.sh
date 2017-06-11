@@ -1,38 +1,192 @@
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 1 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 1 200
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 1 300
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 1 400
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 1 500
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 100 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 200 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 300 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 400 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 500 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 100 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 100 200
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 100 300
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 100 400
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 100 500
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 200 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 300 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 400 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 131072 500 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 1 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 1 200
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 1 300
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 1 400
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 1 500
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 100 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 200 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 300 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 400 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 500 1
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 100 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 100 200
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 100 300
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 100 400
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 100 500
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 200 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 300 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 400 100
-bash ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 2097152 500 100
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 100 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 200 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 500 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 100 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 200 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 500 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 100 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 200 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 500 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 100 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 200 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 500 50 0.000002
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 100 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 200 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 500 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 100 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 200 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 500 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 100 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 200 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 500 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 100 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 200 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 500 50 0.000001
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 100 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 200 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 500 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 100 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 200 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 500 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 100 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 200 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 500 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 100 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 200 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 500 50 0.000007
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 100 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 200 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 1 500 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 100 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 200 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 500 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 100 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 200 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 50 500 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 100 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 200 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 16384 500 50 0.00002
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 100 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 200 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 500 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 100 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 200 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 500 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 100 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 200 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 500 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 100 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 200 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 500 50 0.000002
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 100 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 200 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 500 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 100 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 200 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 500 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 100 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 200 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 500 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 100 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 200 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 500 50 0.000001
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 100 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 200 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 500 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 100 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 200 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 500 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 100 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 200 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 500 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 100 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 200 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 500 50 0.000007
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 100 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 200 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 1 500 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 100 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 200 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 500 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 100 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 200 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 50 500 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 100 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 200 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 262144 500 50 0.00002
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 100 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 200 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 500 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 100 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 200 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 500 1 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 100 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 200 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 500 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 100 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 200 50 0.000002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 500 50 0.000002
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 100 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 200 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 500 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 100 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 200 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 500 1 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 100 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 200 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 500 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 100 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 200 50 0.000001
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 500 50 0.000001
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 100 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 200 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 500 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 100 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 200 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 500 1 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 100 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 200 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 500 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 100 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 200 50 0.000007
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 500 50 0.000007
+
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 100 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 200 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 1 500 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 100 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 200 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 500 1 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 100 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 200 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 50 500 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 100 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 200 50 0.00002
+bash -x ~/workspace/mptcp/ns3/RL-MPTCP_run.sh 4194304 500 50 0.00002
+

@@ -21,6 +21,8 @@ extern std::string g_link_a_delay;
 extern std::string g_link_b_delay;
 extern std::string g_link_c_delay;
 extern double g_link_b_BER;
+extern uint32_t g_router_b_buffer_size;
+extern uint32_t g_router_c_buffer_size;
 
 InternetStackHelper GetInternetStackHelper (bool useStaticRouting = false)
 {
@@ -449,15 +451,14 @@ vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
     serverInterfaces.Add(interfaces.Get(0));
     routerInterfaces.Add(interfaces.Get(1));
 
-    const uint32_t queueSize = 500;
     addressHelper.SetBase("192.168.1.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(C, D, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize, queueSize);
+    linkedDevices = PointToPointCreate(C, D, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize, g_router_b_buffer_size);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     routerInterfaces.Add(interfaces.Get(1));
 
     addressHelper.SetBase("192.168.9.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(D, A, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize, queueSize);
+    linkedDevices = PointToPointCreate(D, A, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize, g_router_b_buffer_size);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
@@ -473,14 +474,14 @@ vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
     }
 
     addressHelper.SetBase("192.168.2.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(C, E, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize);
+    linkedDevices = PointToPointCreate(C, E, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size);
     addressHelper.Assign(linkedDevices);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     routerInterfaces.Add(interfaces.Get(1));
 
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(E, A, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize);
+    linkedDevices = PointToPointCreate(E, A, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));

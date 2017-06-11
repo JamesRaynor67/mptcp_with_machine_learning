@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 namespace ns3{
+extern uint32_t g_tcp_buffer_size;
 
 void CheckAndCreateDirectory(std::string path)
 {
@@ -59,7 +60,8 @@ void SetConfigDefaults (std::string linkRate, std::string linkDelay,
   //Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (interfaces * queueSize));
   // Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (numeric_limits<uint32_t>::max()));
   // Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (256*1024)); // in linux, default is 256K, max is 8M, recommendation is 2 * delay * bandwidth
-  Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (8*1024*1024)); // in linux, default is 256K, max is 8M, recommendation is 2 * delay * bandwidth
+  // Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (8*1024*1024)); // in linux, default is 256K, max is 8M, recommendation is 2 * delay * bandwidth
+  Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (g_tcp_buffer_size)); // in linux, default is 256K, max is 8M, recommendation is 2 * delay * bandwidth
 
   Config::SetDefault ("ns3::TcpSocket::ConnTimeout", TimeValue(Seconds(2.0)));
   Config::SetDefault("ns3::ArpCache::AliveTimeout", TimeValue(Seconds(120 + 1)));

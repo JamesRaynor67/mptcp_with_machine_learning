@@ -266,18 +266,18 @@ def calculate_reward(dataRecorder, reset = False):
         # print 'old lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
         reward = 0
         for i in range(last_record['nbOfSubflows']):
-            reward += last_record["highTxMark" + str(i)]
+            reward += last_record["lastAckedSeq" + str(i)]
         reward -= calculate_reward.lastAckedSeqSum
 
         calculate_reward.lastAckedSeqSum = 0
         for i in range(last_record['nbOfSubflows']):
-            calculate_reward.lastAckedSeqSum += last_record["highTxMark" + str(i)]
+            calculate_reward.lastAckedSeqSum += last_record["lastAckedSeq" + str(i)]
 
         # if dataRecorder.action or dataRecorder.action[-1] != 'not send':
         #     reward -= 10
         # print 'new lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
         # print 'reward == ' + str(reward)
-        return reward
+        return reward / 1418.0
         # don't condiser seq_num wrap
     else:
         # print 'In last episode, calculate_reward.lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum

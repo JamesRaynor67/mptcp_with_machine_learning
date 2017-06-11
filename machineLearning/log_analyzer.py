@@ -327,52 +327,52 @@ if __name__ == '__main__':
     sns.plt.figure(figsize=(16*2, 9*2))
 
     sns.plt.subplot(4,2,1)
-    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client')
+    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client')
     
     sns.plt.subplot(4,2,2)
-    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
+    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
     
     sns.plt.subplot(4,2,3)
-    AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
+    AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
     
-    # AnalyzeSentBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_client')
-    # AnalyzeReceivedBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_server')
+    # AnalyzeSentBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client')
+    # AnalyzeReceivedBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
     
     sns.plt.subplot(4,2,4)
-    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_mptcp_monitor')
+    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_monitor')
     subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
     
     sns.plt.subplot(4,2,5)
     AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [int(options.LinkBBW[:-4]), int(options.LinkCBW[:-4])])
     
     sns.plt.subplot(4,2,6)
-    rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_rtt')
+    rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_client_rtt')
     AnalyzeClientRtt(rtt_records)
 
     sns.plt.subplot(4,2,7)
-    cWnd_records = proprocess_cWnd_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_cWnd')
+    cWnd_records = proprocess_cWnd_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_client_cWnd')
     AnalyzeClientCwnd(cWnd_records)
     
     # sns.plt.subplot(4,2,8)
-    # rWnd_records = proprocess_rWnd_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_rWnd')
+    # rWnd_records = proprocess_rWnd_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_client_rWnd')
     # AnalyzeClientRwnd(rWnd_records)
 
     sns.plt.subplot(4,2,8)
-    unAck_records = proprocess_unAck_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_unAck')
+    unAck_records = proprocess_unAck_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_client_unAck')
     AnalyzeClientUnAck(unAck_records)
 
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/I_rr.png", dpi = 150, bbox_inches='tight')
-    sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + ".png"), dpi = 150, bbox_inches='tight')
+    sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + "_" + options.EpisodeNum + ".png"), dpi = 150, bbox_inches='tight')
     # sns.plt.savefig("/home/hong/result_figure/0_static_well_designed/Z1_rr.png", dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
     sns.plt.figure(figsize=(16*2, 9*2))
-    meta_socket_records = proprocess_meta_socket_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_meta_socket')
-    clientAvailableTxBuffer_records = proprocess_clientAvailableTxBuffer_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_client_txBufferSize')
+    meta_socket_records = proprocess_meta_socket_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_meta_socket')
+    clientAvailableTxBuffer_records = proprocess_clientAvailableTxBuffer_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_client_txBufferSize')
     AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records)
-    sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + '_meta' + ".png"), dpi = 150, bbox_inches='tight')
+    sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + '_meta_' + options.EpisodeNum + ".png"), dpi = 150, bbox_inches='tight')
     sns.plt.close()
 
     recordResultToCsv()
 
-    # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_num) + '_calculate_reward')
+    # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_calculate_reward')
