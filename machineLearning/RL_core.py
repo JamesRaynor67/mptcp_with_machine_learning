@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import random
+import os
 from rl_socket import Interacter_socket
+
 # from rl_server import DataRecorder
 
 def clip(x, low, high):
@@ -25,6 +27,8 @@ class DeepQNetwork:
             batch_size=32,
             e_greedy_increment=None,
             output_graph=False,
+            save_path=None,
+            restore_from_file=None
     ):
         self.n_actions = n_actions
         self.n_features = n_features
@@ -43,19 +47,36 @@ class DeepQNetwork:
         # initialize zero memory [s, a, r, s_]
         self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
         # consist of [target_net, evaluate_net]
-        self._build_net()
+
+        self.restore_from_file = restore_from_file
+        if self.restore_from_file is None:
+            self._build_net()
+        else:
+            self._restore()
 
         self.sess = tf.Session()
 
         if output_graph:
             # $ tensorboard --logdir=logs
-            # tf.train.SummaryWriter soon be deprecated, use following
+            self.save_path = save_path
             tf.summary.scalar("loss", self.loss)
             self.merged_summary_op = tf.summary.merge_all()
-            self.summaryWriter = tf.summary.FileWriter("rl_training_data/logs/", self.sess.graph)
+            self.summaryWriter = tf.summary.FileWriter(self.save_path, self.sess.graph)
 
         self.sess.run(tf.global_variables_initializer())
         self.cost_his = []
+
+    def _restore():
+        saver = tf.train.Saver()
+        print "Restore net from file: " + self.restore_from_file
+        saver = tf.train.import_meta_graph(self.restore_from_file)
+        dirname = os.path.dirname(os.path.abspath(restore_from_file))
+        saver.restore(sess,tf.train.latest_checkpoint(dirname))
+
+        graph = tf.get_default_graph()
+        self.s = graph.get_tensor_by_name("s:0")
+        self.q_target = graph.get_tensor_by_name("Q_target:0")
+        self.q_eval = graph.get_tensor_by_name("l2/q_eval")
 
     def _build_net(self):
         # ------------------ build evaluate_net ------------------
@@ -77,7 +98,7 @@ class DeepQNetwork:
             with tf.variable_scope('l2'):
                 w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
                 b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
-                self.q_eval = tf.matmul(l1, w2) + b2
+                self.q_eval = tf.add(tf.matmul(l1, w2), b2, name="q_eval")
 
         with tf.variable_scope('loss'):
             self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
@@ -118,7 +139,7 @@ class DeepQNetwork:
         # to have batch dimension when feed into tf placeholder
         observation = observation[np.newaxis, :]
 
-        if np.random.uniform() < self.epsilon:
+        if np.random.uniform() < self.epsilon or self.restore_from_file is not None:
             # forward feed the observation and get q value for every actions
             actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
             action = np.argmax(actions_value)
@@ -196,6 +217,10 @@ class DeepQNetwork:
         # increasing epsilon
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
         self.learn_step_counter += 1
+
+    def save_model(self):
+        saver = tf.train.Saver()
+        saver.save(self.sess, os.path.join(self.save_path, 'my_model'), global_step=self.learn_step_counter)
 
     def plot_cost(self):
         import matplotlib.pyplot as plt

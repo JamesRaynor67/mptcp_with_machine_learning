@@ -7,10 +7,11 @@ declare -A RLConfig; declare -A Ns3Config
 # 256KB = 262144
 scheduler="RL-Choose"
 dirPath=""
+restoreFromFile="/home/hong/result_figure/0_static_20170612_2017-06-12_17-21-18/my_model-169977.meta"
 
 function preProcess(){
   timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
-  dirPath="/home/hong/result_figure/0_static_20170612_${timestamp}"
+  dirPath="/home/hong/result_figure/0_static_20170612_test_${timestamp}"
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir $dirPath
   cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script.sh" 
@@ -22,7 +23,7 @@ function postProcess(){
 }
 
 function runRL(){
-  python ./machineLearning/rl_server.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" &
+  python ./machineLearning/rl_test.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" -r "${restoreFromFile}"&
 }
 
 function runNS3(){
@@ -61,21 +62,15 @@ for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
-  # case "$(( ( RANDOM % 2 ) ))" in
-  # 1) loadParamExp15
-  #   ;;
-  # *) loadParamExp17
-  #   ;;
-  # esac
-
-  loadParamExp15
+  case "$(( ( $episodeNum % 2 ) ))" in
+  1) loadParamExp15
+    ;;
+  *) loadParamExp17
+    ;;
+  esac
   
   runNS3 "$episodeNum"
-  if !(($episodeNum % 10))
-  then
-    record "$episodeNum"
-  else
-    sleep 1
-  fi
+  record "$episodeNum"
+
 done
 postProcess

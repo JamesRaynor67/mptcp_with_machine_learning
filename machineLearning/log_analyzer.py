@@ -338,7 +338,6 @@ if __name__ == '__main__':
     g_resultRecord['DirPath'] = options.DirPath
     assert os.path.isdir(options.DirPath) is True
 
-    episode_num = int(options.EpisodeNum)
     sns.plt.figure(figsize=(16*2, 9*2))
 
     sns.plt.subplot(4,2,1)

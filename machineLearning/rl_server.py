@@ -216,11 +216,12 @@ if __name__ == "__main__":
     parser.add_option("-f", "--forceReply", dest="ForceReply", default=None, help="Force RL module reply a scheduler")
     parser.add_option("-m", "--maxEpisode", dest="MaxEpisode", default=1, help="The number of times to train (launch NS3)")
     parser.add_option("-i", "--switchInterval", dest="SwitchInterval", default=-1, help="The interval of switching scheduler")
+    parser.add_option("-p", "--savePath", dest="SavePath", default="./rl_training_data/logs/", help="The path to save model and log files")
     (options, args) = parser.parse_args()
 
     episode_count = 0
-    RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.9,
-                      e_greedy=0.9, replace_target_iter=200, memory_size=2000, output_graph=True)
+    RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.99, e_greedy=0.9, 
+                    replace_target_iter=200, memory_size=2000, output_graph=True, save_path=options.SavePath, restore_from_file=None)
 
     while episode_count < int(options.MaxEpisode):
         rttRecorder = RecordRTT('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rtt')
@@ -285,6 +286,9 @@ if __name__ == "__main__":
 
             f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(reward) + '\n')
             step += 1
+
+        if episode_count % 50 == 0:
+            RL.save_model()
 
         socket.close()
         socket = None
