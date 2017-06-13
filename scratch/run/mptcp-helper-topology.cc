@@ -381,7 +381,8 @@ vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
                         NodeContainer& client,
                         NodeContainer& middle,
                         NodeContainer& other_servers,
-                        NodeContainer& other_clients)
+                        NodeContainer& other_clients,
+                        NetDeviceContainer& traceQueueDevices)
 {
   //                        --D--
   //                      /       \
@@ -452,10 +453,12 @@ vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
     routerInterfaces.Add(interfaces.Get(1));
 
     addressHelper.SetBase("192.168.1.0", "255.255.255.0");
+    // linkedDevices = PointToPointCreate(C, D, DataRate(g_link_c_BW), Time(g_link_b_delay), packetSize, g_router_b_buffer_size);
     linkedDevices = PointToPointCreate(C, D, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize, g_router_b_buffer_size);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     routerInterfaces.Add(interfaces.Get(1));
+    traceQueueDevices.Add(linkedDevices.Get(1));
 
     addressHelper.SetBase("192.168.9.0", "255.255.255.0");
     linkedDevices = PointToPointCreate(D, A, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize, g_router_b_buffer_size);
@@ -479,8 +482,10 @@ vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     routerInterfaces.Add(interfaces.Get(1));
+    traceQueueDevices.Add(linkedDevices.Get(1));
 
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
+    // linkedDevices = PointToPointCreate(E, A, DataRate(g_link_b_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size);
     linkedDevices = PointToPointCreate(E, A, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size);
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));

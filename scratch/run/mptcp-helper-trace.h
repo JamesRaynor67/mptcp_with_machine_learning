@@ -18,4 +18,6 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
 void TraceMonitorStates(const std::string& outputDir);
 
 void PrintMonitorStates(void);
+
+void TraceQueueLength(const string& outputDir, const NetDeviceContainer devs);
 }

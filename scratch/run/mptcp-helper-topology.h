@@ -56,7 +56,8 @@ vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
                         NodeContainer& client,
                         NodeContainer& middle,
                         NodeContainer& other_servers,
-                        NodeContainer& other_clients);
+                        NodeContainer& other_clients,
+                        NetDeviceContainer& traceQueueDevices);
 
 void ChangeLinkErrorRate (Ptr<NetDevice> nd, double bitErrorRate);
 

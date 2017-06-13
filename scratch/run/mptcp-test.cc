@@ -75,8 +75,8 @@ int main(int argc, char* argv[])
   std::cout << "Hong Jiaming: confirm argv: " << g_link_a_BW << " " << g_link_b_BW << " " << g_link_c_BW << " " << link_b_BER << " "
             << g_tcp_buffer_size << " " << g_router_b_buffer_size << " " << g_router_c_buffer_size << std::endl;
 
-  string linkRate = "10Mbps"; // not used
-  string linkDelay = "10ms"; // not used
+  string linkRate = "100Kbps";
+  string linkDelay = "15ms";
 
   // Assume the maximum size of mptcp option is 40 bytes
   uint32_t tcpOptionSize = 40;
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
   uint32_t segmentSize = 1500;
   uint32_t segmentSizeWithoutHeaders = segmentSize - headersSize;
 
-  DataRate rate(linkRate);
+  DataRate rate(linkRate); // IMPORTANT FOR QUEUE DISC SETTING!
   Time delay(linkDelay);
 
   uint32_t bdp = rate.GetBitRate() * delay.GetSeconds() * 8; // bandwidth-delay product (Long Fat Network if bdp is significantly larger than 10^5 bits)
@@ -112,11 +112,12 @@ int main(int argc, char* argv[])
   NodeContainer other_servers;
   NodeContainer other_clients;
   vector<Ptr<NetDevice>> unstableDevices;
+  NetDeviceContainer traceQueueDevices;
 
   // unstableDevices = CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
   switch(g_topology_id){
     case 0:{
-        unstableDevices = CreateNetwork5(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
+        unstableDevices = CreateNetwork5(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients, traceQueueDevices);
         break;
       }
 
@@ -172,6 +173,7 @@ int main(int argc, char* argv[])
   // Simulator::Schedule(Seconds(30), &PrintMonitorStates);
   for(int i = 0; i < simulationDuration * 10;i++){
     Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
+    Simulator::Schedule(Seconds(i/10.0), &TraceQueueLength, outputDir, traceQueueDevices);
   }
 
   for(auto dev:unstableDevices){

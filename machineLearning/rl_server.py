@@ -299,4 +299,5 @@ if __name__ == "__main__":
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_drops')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_server')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_monitor", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_monitor')
+        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/routers_queue_len", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_routers_queue_len')
         episode_count += 1

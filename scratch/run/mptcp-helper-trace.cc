@@ -10,6 +10,18 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/core-module.h"
 
+
+#include "mptcp-helper-router.h"
+
+#include "ns3/core-module.h"
+#include "ns3/netanim-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/network-module.h"
+#include "ns3/point-to-point-module.h"
+#include "ns3/traffic-control-module.h"
+
+
+
 namespace ns3{
 
 void TraceMacRx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
@@ -279,6 +291,31 @@ void PrintMonitorStates(void){
     //std::cout << "Hong Jiaming: 3 " << i->first << endl;
   }
   std::cout << endl;
+}
+
+void TraceQueueLength(const string& outputDir, const NetDeviceContainer devs){
+  static bool initialized = false;
+  static Ptr<OutputStreamWrapper> logFile;
+
+  if(!initialized){
+    logFile = Create<OutputStreamWrapper>(outputDir + "/routers_queue_len", std::ios::out);
+    *(logFile->GetStream()) << "Timestamp,Queue0,Queue1" << endl;
+    initialized = true;
+  }
+
+  *(logFile->GetStream()) << Simulator::Now().GetNanoSeconds() << ": ";
+  PointerValue txQueue0;
+  devs.Get(0)->GetAttribute ("TxQueue", txQueue0);
+  *(logFile->GetStream()) << txQueue0.Get<DropTailQueue> ()->GetNPackets() << ", ";
+  PointerValue txQueue1;
+  devs.Get(1)->GetAttribute ("TxQueue", txQueue1);
+  *(logFile->GetStream()) << txQueue1.Get<DropTailQueue> ()->GetNPackets() << std::endl;
+
+  // for(uint32_t index = 0; index < devs.GetN(); index++){
+  //   PointerValue txQueue;
+  //   devs.Get(index)->GetAttribute ("TxQueue", txQueue);
+  //   *(logFile->GetStream()) << txQueue.Get<DropTailQueue> ()->GetNPackets() << ", ";
+  // }
 }
 
 };
