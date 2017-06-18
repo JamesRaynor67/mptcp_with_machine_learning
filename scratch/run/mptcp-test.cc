@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
   std::cout << "Hong Jiaming: confirm argv: " << g_link_a_BW << " " << g_link_b_BW << " " << g_link_c_BW << " " << link_b_BER << " "
             << g_tcp_buffer_size << " " << g_router_b_buffer_size << " " << g_router_c_buffer_size << std::endl;
 
-  string linkRate = "100Kbps";
+  string linkRate = "100Mbps";
   string linkDelay = "15ms";
 
   // Assume the maximum size of mptcp option is 40 bytes
@@ -94,17 +94,7 @@ int main(int argc, char* argv[])
   //Enable logging
   EnableLogging ();
 
-  SetConfigDefaults(linkRate, linkDelay, segmentSize, segmentSizeWithoutHeaders, queueSize);
-
-  // //Create the nodes in the topology, and install the internet stack on them
-  // NodeContainer server;
-  // NodeContainer client;
-  // NodeContainer isps;
-  // NodeContainer ixs;    // Internet exchange points
-  // NodeContainer other_servers;
-  // NodeContainer other_clients;
-  // CreateRealNetwork (segmentSizeWithoutHeaders, server, client, isps, ixs, other_servers, other_clients);
-
+  SetConfigDefaults(segmentSize, segmentSizeWithoutHeaders, queueSize);
 
   NodeContainer server;
   NodeContainer client;
@@ -173,7 +163,9 @@ int main(int argc, char* argv[])
   // Simulator::Schedule(Seconds(30), &PrintMonitorStates);
   for(int i = 0; i < simulationDuration * 10;i++){
     Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
-    Simulator::Schedule(Seconds(i/10.0), &TraceQueueLength, outputDir, traceQueueDevices);
+  }
+  for(int i = 0; i < simulationDuration * 50;i++){
+    Simulator::Schedule(Seconds(i/50.0), &TraceQueueLength, outputDir, traceQueueDevices);
   }
 
   for(auto dev:unstableDevices){
@@ -187,55 +179,55 @@ int main(int argc, char* argv[])
 
   Simulator::Stop (Seconds(simulationDuration));
 
-  for(int i = 0;i < client.GetN();i++){
-    std::cout << "\nclient: " << "node " << client.Get(i)->GetId() << "\n";
-    Ptr<Node> node = client.Get (i); // Get pointer to ith node in container
-    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
-    for(int j = 0;j < ipv4->GetNInterfaces();j++){
-      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
-      std::cout  << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
-    }
-  }
+  // for(int i = 0;i < client.GetN();i++){
+  //   std::cout << "\nclient: " << "node " << client.Get(i)->GetId() << "\n";
+  //   Ptr<Node> node = client.Get (i); // Get pointer to ith node in container
+  //   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+  //   for(int j = 0;j < ipv4->GetNInterfaces();j++){
+  //     Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+  //     std::cout  << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
+  //   }
+  // }
 
-  for(int i = 0;i < server.GetN();i++){
-    std::cout << "\nserver: " << "node " << server.Get(i)->GetId() << "\n";
-    Ptr<Node> node = server.Get (i); // Get pointer to ith node in container
-    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
-    for(int j = 0;j < ipv4->GetNInterfaces();j++){
-      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
-      std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
-    }
-  }
+  // for(int i = 0;i < server.GetN();i++){
+  //   std::cout << "\nserver: " << "node " << server.Get(i)->GetId() << "\n";
+  //   Ptr<Node> node = server.Get (i); // Get pointer to ith node in container
+  //   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+  //   for(int j = 0;j < ipv4->GetNInterfaces();j++){
+  //     Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+  //     std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
+  //   }
+  // }
 
-  for(int i = 0;i < middle.GetN();i++){
-    std::cout << "\nmiddle: " << "node " << middle.Get(i)->GetId() << "\n";
-    Ptr<Node> node = middle.Get (i); // Get pointer to ith node in container
-    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
-    for(int j = 0;j < ipv4->GetNInterfaces();j++){
-      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
-      std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
-    }
-  }
+  // for(int i = 0;i < middle.GetN();i++){
+  //   std::cout << "\nmiddle: " << "node " << middle.Get(i)->GetId() << "\n";
+  //   Ptr<Node> node = middle.Get (i); // Get pointer to ith node in container
+  //   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+  //   for(int j = 0;j < ipv4->GetNInterfaces();j++){
+  //     Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+  //     std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
+  //   }
+  // }
 
-  for(int i = 0;i < other_clients.GetN();i++){
-    std::cout << "\nother_clients: " << "node " << other_clients.Get(i)->GetId() << "\n";
-    Ptr<Node> node = other_clients.Get (i); // Get pointer to ith node in container
-    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
-    for(int j = 0;j < ipv4->GetNInterfaces();j++){
-      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
-      std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
-    }
-  }
+  // for(int i = 0;i < other_clients.GetN();i++){
+  //   std::cout << "\nother_clients: " << "node " << other_clients.Get(i)->GetId() << "\n";
+  //   Ptr<Node> node = other_clients.Get (i); // Get pointer to ith node in container
+  //   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+  //   for(int j = 0;j < ipv4->GetNInterfaces();j++){
+  //     Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+  //     std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
+  //   }
+  // }
 
-  for(int i = 0;i < other_servers.GetN();i++){
-    std::cout << "\nother_servers: " << "node " << other_servers.Get(i)->GetId() << "\n";
-    Ptr<Node> node = other_servers.Get (i); // Get pointer to ith node in container
-    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
-    for(int j = 0;j < ipv4->GetNInterfaces();j++){
-      Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
-      std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
-    }
-  }
+  // for(int i = 0;i < other_servers.GetN();i++){
+  //   std::cout << "\nother_servers: " << "node " << other_servers.Get(i)->GetId() << "\n";
+  //   Ptr<Node> node = other_servers.Get (i); // Get pointer to ith node in container
+  //   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> (); // Get Ipv4 instance of the node
+  //   for(int j = 0;j < ipv4->GetNInterfaces();j++){
+  //     Ipv4Address addr = ipv4->GetAddress (j, 0).GetLocal (); // Get Ipv4InterfaceAddress of xth interface.
+  //     std::cout << "interface " << j << " " << ipv4->GetNetDevice(j) << " : " << addr << '\t';
+  //   }
+  // }
   std::cout << "\n\n";
   //Begin the simulation
   Simulator::Run ();

@@ -303,10 +303,10 @@ void TraceQueueLength(const string& outputDir, const NetDeviceContainer devs){
     initialized = true;
   }
 
-  *(logFile->GetStream()) << Simulator::Now().GetNanoSeconds() << ": ";
+  *(logFile->GetStream()) << Simulator::Now().GetNanoSeconds() << ",";
   PointerValue txQueue0;
   devs.Get(0)->GetAttribute ("TxQueue", txQueue0);
-  *(logFile->GetStream()) << txQueue0.Get<DropTailQueue> ()->GetNPackets() << ", ";
+  *(logFile->GetStream()) << txQueue0.Get<DropTailQueue> ()->GetNPackets() << ",";
   PointerValue txQueue1;
   devs.Get(1)->GetAttribute ("TxQueue", txQueue1);
   *(logFile->GetStream()) << txQueue1.Get<DropTailQueue> ()->GetNPackets() << std::endl;

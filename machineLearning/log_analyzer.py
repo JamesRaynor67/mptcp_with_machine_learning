@@ -19,6 +19,7 @@ from log_time_tcb import AnalyzeClientCwnd
 from log_time_tcb import AnalyzeClientRwnd
 from log_time_tcb import AnalyzeClientUnAck
 from log_time_tcb import AnalyzeMetaSocket
+from log_time_queue import AnalyzeQueueLength
 
 warnings.filterwarnings("error")
 g_resultRecord = {}
@@ -212,25 +213,19 @@ def proprocess_schedulerId_data(file_path):
 
     return scheduler_records
 
-def analyze_client_end_node(file_path):
+def analyze_server_client_seq_num(server_file_path, client_file_path):
     record = []
-    tmp_client_sent_count, tmp_client_rcv_count = 0, 0
-    # '/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client'
-    with open(file_path, 'rb') as csvfile:
+    with open(client_file_path, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
             if int(row[1]) == 1: # not receive record
-                tmp_client_sent_count += 1
                 timestamp = int(row[0])/1e9
                 subflowId = int(row[3])
                 seqnum = int(row[4])
                 if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
                     record.append([timestamp, subflowId, seqnum])
-            else:
-                tmp_client_rcv_count += 1
 
-    print 'client sent count: ', tmp_client_sent_count, 'client receive count: ', tmp_client_rcv_count
     record.sort(key=lambda ele:ele[0])
     x, y = [[],[]], [[],[]]
     for row in record:
@@ -242,17 +237,13 @@ def analyze_client_end_node(file_path):
     g_resultRecord["Subflow0_Client_Sent"] = y[0][-1]
     g_resultRecord["Subflow1_Client_Sent"] = y[1][-1]
 
-    subflow_1, = sns.plt.plot(x[0], y[0], 'b-')
-    subflow_2, = sns.plt.plot(x[1], y[1], 'r-')
-    sns.plt.legend([subflow_1, subflow_2], ['client side subflow 1', 'client side subflow 2'], loc='upper left')
-    sns.plt.title('Client Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
-    sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
-    sns.plt.ylabel('Seqence number', fontsize = 14, color = 'black')
+    subflow_1_client, = sns.plt.plot(x[0], y[0], 'b-.')
+    subflow_2_client, = sns.plt.plot(x[1], y[1], 'r-.')
+    client_max_seqSum = sum([row[-1] for row in y])
 
-def analyze_server_end_point(file_path):
+    ### Above is about client
     record = []
-    # '/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client'
-    with open(file_path, 'rb') as csvfile:
+    with open(server_file_path, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
         for row in spamreader:
@@ -269,15 +260,16 @@ def analyze_server_end_point(file_path):
         # subflow id is from 0 to n-1
         x[row[1]].append(row[0])
         y[row[1]].append(row[2])
-    subflow_1, = plt.plot(x[0], y[0], 'b-')
-    subflow_2, = plt.plot(x[1], y[1], 'r-')
+    subflow_1_server, = plt.plot(x[0], y[0], 'b-')
+    subflow_2_server, = plt.plot(x[1], y[1], 'r-')
+    server_max_seqSum = sum([row[-1] for row in y])
     
-    global g_resultRecord
     g_resultRecord["Subflow0_Server_Rcv"] = y[0][-1]
     g_resultRecord["Subflow1_Server_Rcv"] = y[1][-1]
     
-    sns.plt.legend([subflow_1, subflow_2], ['server side subflow 1', 'server side subflow 2'], loc='upper left')
-    sns.plt.title('Server Side Time-Seqence number, Max SeqSum == ' + str(sum([row[-1] for row in y])))
+    sns.plt.legend([subflow_1_server, subflow_2_server, subflow_1_client, subflow_2_client], 
+                    ['server side subflow 1', 'server side subflow 2', 'client side subflow 1', 'client side subflow 2'], loc='best')
+    sns.plt.title('Server & Client Time-Seqence number, Max Server/Client SeqSum == ' + str(server_max_seqSum) + '/' + str(client_max_seqSum))
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Seqence number', fontsize = 14, color = 'black')
 
@@ -341,11 +333,13 @@ if __name__ == '__main__':
     sns.plt.figure(figsize=(16*2, 9*2))
 
     sns.plt.subplot(4,2,1)
-    analyze_client_end_node('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client')
+    server_file_path = '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server'
+    client_file_path = '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client'
+    analyze_server_client_seq_num(server_file_path, client_file_path)
     
     sns.plt.subplot(4,2,2)
-    analyze_server_end_point('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
-    
+    AnalyzeQueueLength('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_routers_queue_len')
+
     sns.plt.subplot(4,2,3)
     AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
     

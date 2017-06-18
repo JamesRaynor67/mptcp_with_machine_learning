@@ -73,6 +73,7 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
   // on it, the traffic control layer sends the packets directly to the netdevice.
 
   TrafficControlHelper tchRed;
+  std::cout << "Queue size == " << queueSize << ", MeanPktSize size == " << packetSize << "\n";
   tchRed.SetRootQueueDisc ("ns3::RedQueueDisc",
                            "MeanPktSize", UintegerValue(packetSize),
                            "LinkBandwidth", DataRateValue(linkRate),
@@ -81,7 +82,7 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
   NS_ASSERT(queueSize > 0);
   pointToPoint.SetQueue("ns3::DropTailQueue",
                         "MaxPackets", UintegerValue(queueSize));
-  pointToPoint.EnablePcapAll ("mptcp");
+  // pointToPoint.EnablePcapAll ("mptcp"); // This is only for debug use
   NetDeviceContainer linkedDevices;
   linkedDevices = pointToPoint.Install (linkedNodes);
 
