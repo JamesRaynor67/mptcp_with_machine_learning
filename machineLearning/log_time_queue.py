@@ -22,8 +22,8 @@ def AnalyzeQueueLength(file_path):
     queueLenB = queueLen_records[["Timestamp", "QueueLenB"]].values
     queueLenC = queueLen_records[["Timestamp", "QueueLenC"]].values
 
-    queueLenB_handle, = sns.plt.plot(list(queueLenB[:,0]), list(queueLenB[:,1]/1000), 'b-') # convert rtt time unit to millisecond
-    queueLenC_handle, = sns.plt.plot(list(queueLenC[:,0]), list(queueLenC[:,1]/1000), 'r-')
+    queueLenB_handle, = sns.plt.plot(list(queueLenB[:,0]), list(queueLenB[:,1]), 'b-')
+    queueLenC_handle, = sns.plt.plot(list(queueLenC[:,0]), list(queueLenC[:,1]), 'r-')
 
     sns.plt.legend([queueLenB_handle, queueLenC_handle], ['Queue length of router D on subflow 0', 'Queue length of router E on subflow 1'], loc='best')
     sns.plt.title('Time-Queue length')
