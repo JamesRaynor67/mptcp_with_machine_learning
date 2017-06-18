@@ -386,6 +386,7 @@ QueueDisc::Classify (Ptr<QueueDiscItem> item)
 {
   NS_LOG_FUNCTION (this << item);
 
+  // PF here means Packet Filter
   int32_t ret = PacketFilter::PF_NO_MATCH;
   for (std::vector<Ptr<PacketFilter> >::iterator f = m_filters.begin ();
        f != m_filters.end () && ret == PacketFilter::PF_NO_MATCH; f++)

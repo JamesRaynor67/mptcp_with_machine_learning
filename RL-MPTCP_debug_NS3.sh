@@ -7,15 +7,17 @@ declare -A PyConfig; declare -A Ns3Config
 # 256KB = 252144
 
 tcpBuffer="252144"    
-routerBBuffer="1"
-routerCBuffer="500"
+routerBBuffer="100"
+routerCBuffer="100"
 link_b_BER="0.000002"
 topology_id="0"
 
 function runSet() {
-  dirPath="/home/hong/result_figure/0_static_20170607_${tcpBuffer}_${routerBBuffer}_${routerCBuffer}_${link_b_BER}"
+  timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+  dirPath="/home/hong/result_figure/0_static_${timestamp}"
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir $dirPath
+  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script.sh"
   python ./machineLearning/rl_server.py -f "${PyConfig["forceReply"]}" -m "${PyConfig["maxEpisode"]}" &
   sleep 3
   ./waf --run scratch/run/run --command="%s --link_a_BW="${Ns3Config["link_a_BW"]}" --link_b_BW="${Ns3Config["link_b_BW"]}" --link_c_BW="${Ns3Config["link_c_BW"]}"\
@@ -29,7 +31,7 @@ function runSet() {
 
 #####################
 unset PyConfig; unset Ns3Config; declare -A PyConfig; declare -A Ns3Config
-scheduler="RTT"; experiment="Exp11"
+scheduler="RTT"; experiment="ExpXX"
 PyConfig+=(["experiment"]=$experiment ["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
-Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" ["link_b_BER"]="$link_b_BER")
+Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="50Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" ["link_b_BER"]="$link_b_BER")
 runSet

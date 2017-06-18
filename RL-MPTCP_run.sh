@@ -24,7 +24,8 @@ function runSet() {
 }
 
 #####################
-dirPath="/home/hong/result_figure/0_static_20170609_${tcpBuffer}_${routerBBuffer}_${routerCBuffer}_${link_b_BER}"
+timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+dirPath="/home/hong/result_figure/0_static_${timestamp}_${tcpBuffer}_${routerBBuffer}_${routerCBuffer}_${link_b_BER}"
 cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
 mkdir $dirPath
 

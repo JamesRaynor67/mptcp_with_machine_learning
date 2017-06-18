@@ -126,7 +126,7 @@ PfifoFastQueueDisc::DoPeek (void) const
       return item;
     }
   }
-
+  
   NS_LOG_LOGIC ("Queue empty");
   return item;
 }

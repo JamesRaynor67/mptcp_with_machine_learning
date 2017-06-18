@@ -7,11 +7,12 @@ declare -A RLConfig; declare -A Ns3Config
 # 256KB = 262144
 scheduler="RL-Choose"
 dirPath=""
-restoreFromFile="/home/hong/result_figure/0_static_20170612_2017-06-12_17-21-18/my_model-169977.meta"
+# restoreFromFile="/home/hong/result_figure/0_static_20170612_2017-06-12_17-21-18/my_model-169977.meta"
+restoreFromFile="${1}" # This is the input of this script
 
 function preProcess(){
   timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
-  dirPath="/home/hong/result_figure/0_static_20170612_test_${timestamp}"
+  dirPath="/home/hong/result_figure/0_static_${timestamp}_test"
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir $dirPath
   cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script.sh" 
@@ -40,7 +41,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=4 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=10 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
 }
 
 function loadParamExp15() {
