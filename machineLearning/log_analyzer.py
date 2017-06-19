@@ -213,7 +213,7 @@ def proprocess_schedulerId_data(file_path):
 
     return scheduler_records
 
-def analyze_server_client_seq_num(server_file_path, client_file_path):
+def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_path):
     record = []
     with open(client_file_path, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
@@ -266,10 +266,24 @@ def analyze_server_client_seq_num(server_file_path, client_file_path):
     
     g_resultRecord["Subflow0_Server_Rcv"] = y[0][-1]
     g_resultRecord["Subflow1_Server_Rcv"] = y[1][-1]
+    ### Above is about server
+
+    x, y = [], []
+    with open(drop_file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            timestamp = int(row[0])/1e9
+            seqnum = int(row[1])
+            x.append(timestamp)
+            y.append(seqnum)
+
+    drop_mark, = plt.plot(x, y, 'kx')
+    drop_count = len(x)
     
-    sns.plt.legend([subflow_1_server, subflow_2_server, subflow_1_client, subflow_2_client], 
-                    ['server side subflow 1', 'server side subflow 2', 'client side subflow 1', 'client side subflow 2'], loc='best')
-    sns.plt.title('Server & Client Time-Seqence number, Max Server/Client SeqSum == ' + str(server_max_seqSum) + '/' + str(client_max_seqSum))
+    sns.plt.legend([subflow_1_server, subflow_2_server, subflow_1_client, subflow_2_client, drop_mark], 
+                    ['server side subflow 1', 'server side subflow 2', 'client side subflow 1', 'client side subflow 2', 'dropped packets'], loc='best')
+    sns.plt.title('Server & Client Time-Seqence number, Max Server/Client SeqSum == ' + str(server_max_seqSum) + '/' + str(client_max_seqSum) + ', Dropped ' + str(drop_count) + ' packets')
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Seqence number', fontsize = 14, color = 'black')
 
@@ -335,7 +349,8 @@ if __name__ == '__main__':
     sns.plt.subplot(4,2,1)
     server_file_path = '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server'
     client_file_path = '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client'
-    analyze_server_client_seq_num(server_file_path, client_file_path)
+    drop_file_path = '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_drops'
+    analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_path)
     
     sns.plt.subplot(4,2,2)
     AnalyzeQueueLength('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_routers_queue_len')
