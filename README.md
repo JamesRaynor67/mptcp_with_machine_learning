@@ -10,10 +10,20 @@ CXXFLAGS=" -std=c++11" ./waf --enable-examples configure
 ```
 ./waf
 ```
-3.run script
+3.1. To research into NS3 and force using one specific scheduler, run script 
 ```
-bash RL-MPTCP_run.sh
+bash RL-MPTCP_run_sets.sh
 ```
+or
+```
+bash RL-MPTCP_run_Expxx-xx.sh
+```
+3.2. To train RL model and test on trainned model, run script
+```
+bash RL-MPTCP_training.sh
+```
+
+(Some paths is hard coded, generally, you can do grep -rn "/home/hong" to find them out and replace them)
 
 Env:
 gcc version 4.8.4 (Ubuntu 4.8.4-2ubuntu1~14.04.3)

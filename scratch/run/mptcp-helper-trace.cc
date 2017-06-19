@@ -252,8 +252,14 @@ void TraceMonitorStates(const string& outputDir){
     if(i->second.packetsDropped.size() > Ipv4L3Protocol::DropReason::DROP_TTL_EXPIRED){
       *(logFile->GetStream()) << "," <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_TTL_EXPIRED];
     }
+    else{
+      *(logFile->GetStream()) << ",0";
+    }
     if(i->second.packetsDropped.size() > Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM){
       *(logFile->GetStream()) << "," <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM];
+    }
+    else{
+      *(logFile->GetStream()) << ",0";
     }
     *(logFile->GetStream()) << "\n";
     //std::cout << "Hong Jiaming: 3 " << i->first << endl;
