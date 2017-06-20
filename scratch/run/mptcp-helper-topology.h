@@ -15,49 +15,33 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
                                       uint32_t packetSize,
                                       uint32_t queueSize = 1);
 
-void CreateRealNetwork (uint32_t packetSize,
-                        NodeContainer& server,
-                        NodeContainer& client,
-                        NodeContainer& isps,
-                        NodeContainer& ixs,
-                        NodeContainer& other_servers,
-                        NodeContainer& other_clients);
-
-vector<Ptr<NetDevice>> CreateSimplestNetwork (uint32_t packetSize,
-                        NodeContainer& server,
-                        NodeContainer& client,
-                        NodeContainer& middle,
-                        NodeContainer& other_servers,
-                        NodeContainer& other_clients);
-
-void CreateSimplestNetworkWithOtherTraffic (uint32_t packetSize,
-                        NodeContainer& server,
-                        NodeContainer& client,
-                        NodeContainer& middle,
-                        NodeContainer& other_servers,
-                        NodeContainer& other_clients);
-
-void CreateClassicNetwork (uint32_t packetSize,
-                        NodeContainer& server,
-                        NodeContainer& client,
-                        NodeContainer& middle,
-                        NodeContainer& other_servers,
-                        NodeContainer& other_clients);
-
-void CreateExtendedClassicNetwork (uint32_t packetSize,
-                        NodeContainer& server,
-                        NodeContainer& client,
-                        NodeContainer& middle,
-                        NodeContainer& other_servers,
-                        NodeContainer& other_clients);
-
-vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
+void CreateSimplestNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
                         NodeContainer& middle,
                         NodeContainer& other_servers,
                         NodeContainer& other_clients,
-                        NetDeviceContainer& traceQueueDevices);
+                        NetDeviceContainer& traceQueueDevices,
+                        NetDeviceContainer& unstableDevices);
+
+
+void CreateNetwork5 (uint32_t packetSize,
+                        NodeContainer& server,
+                        NodeContainer& client,
+                        NodeContainer& middle,
+                        NodeContainer& other_servers,
+                        NodeContainer& other_clients,
+                        NetDeviceContainer& traceQueueDevices,
+                        NetDeviceContainer& unstableDevices);
+
+void CreateNetwork11 (uint32_t packetSize,
+                        NodeContainer& server,
+                        NodeContainer& client,
+                        NodeContainer& middle,
+                        NodeContainer& other_servers,
+                        NodeContainer& other_clients,
+                        NetDeviceContainer& traceQueueDevices,
+                        NetDeviceContainer& unstableDevices);
 
 void ChangeLinkErrorRate (Ptr<NetDevice> nd, double bitErrorRate);
 
