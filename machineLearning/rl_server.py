@@ -279,7 +279,7 @@ if __name__ == "__main__":
             # # Update memory
             RL.store_transition(observation_before_action, action, accumulativeReward, observation_after_action)
 
-            if (step > 200) and (step % 5 == 0):
+            if (step > 200) and (step % 5 == 0):   # may need other parameters?
                 RL.learn()
 
             observation_before_action = observation_after_action
@@ -288,7 +288,7 @@ if __name__ == "__main__":
             step += 1
 
         if episode_count % 50 == 0:
-            RL.save_model()
+            RL.save_model(isFianl=False)
 
         socket.close()
         socket = None
@@ -301,3 +301,4 @@ if __name__ == "__main__":
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_monitor", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_monitor')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/routers_queue_len", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_routers_queue_len')
         episode_count += 1
+    RL.save_model(isFianl=True)

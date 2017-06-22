@@ -48,13 +48,13 @@ class DeepQNetwork:
         self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
         # consist of [target_net, evaluate_net]
 
+        self.sess = tf.Session()
+
         self.restore_from_file = restore_from_file
         if self.restore_from_file is None:
             self._build_net()
         else:
             self._restore()
-
-        self.sess = tf.Session()
 
         if output_graph:
             # $ tensorboard --logdir=logs
@@ -66,17 +66,20 @@ class DeepQNetwork:
         self.sess.run(tf.global_variables_initializer())
         self.cost_his = []
 
-    def _restore():
-        saver = tf.train.Saver()
+    def _restore(self):
         print "Restore net from file: " + self.restore_from_file
         saver = tf.train.import_meta_graph(self.restore_from_file)
-        dirname = os.path.dirname(os.path.abspath(restore_from_file))
-        saver.restore(sess,tf.train.latest_checkpoint(dirname))
+        dirname = os.path.dirname(os.path.abspath(self.restore_from_file))
+        saver.restore(self.sess, tf.train.latest_checkpoint(dirname))
 
         graph = tf.get_default_graph()
+        # for op in tf.get_default_graph().get_operations():
+        #     print str(op.name) 
+        # assert False
         self.s = graph.get_tensor_by_name("s:0")
         self.q_target = graph.get_tensor_by_name("Q_target:0")
-        self.q_eval = graph.get_tensor_by_name("l2/q_eval")
+        self.q_eval = graph.get_tensor_by_name("eval_net/l2/q_eval:0")
+        self.loss = graph.get_tensor_by_name("loss/Mean:0")
 
     def _build_net(self):
         # ------------------ build evaluate_net ------------------
@@ -121,7 +124,7 @@ class DeepQNetwork:
             with tf.variable_scope('l2'):
                 w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
                 b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
-                self.q_next = tf.matmul(l1, w2) + b2
+                self.q_next = tf.add(tf.matmul(l1, w2), b2, name="q_next")
 
     def store_transition(self, s, a, r, s_):
         if not hasattr(self, 'memory_counter'):
@@ -218,9 +221,12 @@ class DeepQNetwork:
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
         self.learn_step_counter += 1
 
-    def save_model(self):
+    def save_model(self, isFianl=False):
         saver = tf.train.Saver()
-        saver.save(self.sess, os.path.join(self.save_path, 'my_model'), global_step=self.learn_step_counter)
+        if isFianl is False:
+            saver.save(self.sess, os.path.join(self.save_path, 'my_model'), global_step=self.learn_step_counter)
+        else:
+            saver.save(self.sess, os.path.join(self.save_path, 'my_final_model'), global_step=self.learn_step_counter)
 
     def plot_cost(self):
         import matplotlib.pyplot as plt

@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     episode_count = 0
     RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.99, e_greedy=0.9, 
-                    replace_target_iter=200, memory_size=2000, output_graph=True, save_path=options.SavePath, restore_from_file=None)
+                    replace_target_iter=200, memory_size=2000, output_graph=True, save_path=options.SavePath, restore_from_file=options.RestoreFile)
 
     while episode_count < int(options.MaxEpisode):
 

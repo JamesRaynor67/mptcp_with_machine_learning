@@ -13,7 +13,7 @@ from log_monitor_time_bytes import AnalyzeSentBytes
 from log_monitor_time_bytes import AnalyzeReceivedBytes
 from log_monitor_time_bytes import AnalyzeBytes
 from log_monitor_time_sendingRate import AnalyzeMonitorSendingRate
-from log_monitor_time_sendingRate import  AnalyzeMonitorSendingRateUtilization
+from log_monitor_time_sendingRate import AnalyzeMonitorSendingRateUtilization
 from log_time_tcb import AnalyzeClientRtt
 from log_time_tcb import AnalyzeClientCwnd
 from log_time_tcb import AnalyzeClientRwnd
