@@ -15,9 +15,13 @@ function preProcess(){
   timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
   dirPath="/home/hong/result_figure/0_static_${timestamp}"
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
-  mkdir $dirPath
+  mkdir "$dirPath"
+  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/RL-MPTCP_experiment_parameters.sh" "$dirPath/script_parameters.sh"  
   cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script_train.sh"
-  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/RL-MPTCP_experiment_parameters.sh" "$dirPath/script_parameters.sh"
+  mkdir "$dirPath/NS3Code"
+  mkdir "$dirPath/machineLearning"
+  cp -a "/home/hong/workspace/mptcp/ns3/scratch/run/." "$dirPath/NS3Code/"
+  cp /home/hong/workspace/mptcp/ns3/machineLearning/*.py "$dirPath/machineLearning"
   source ./RL-MPTCP_experiment_parameters.sh
 }
 
@@ -43,7 +47,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=100 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=16 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
 }
 
 #####################
@@ -55,26 +59,40 @@ for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
-  case "$(( ( RANDOM % 10 ) ))" in
-  1) loadDefaultBufferSetting; loadParamExp21
+  case "$(( ( RANDOM % 16 ) ))" in
+  0) loadDefaultBufferSetting; loadParamExp21
     ;;
-  2) loadDefaultBufferSetting; loadParamExp22
+  1) loadDefaultBufferSetting; loadParamExp22
     ;;    
-  3) loadDefaultBufferSetting; loadParamExp23
+  2) loadDefaultBufferSetting; loadParamExp23
     ;;
-  4) loadDefaultBufferSetting; loadParamExp24
+  3) loadDefaultBufferSetting; loadParamExp24
     ;;
-  5) loadDefaultBufferSetting; loadParamExp25
+  4) loadDefaultBufferSetting; loadParamExp25
     ;;
-  6) loadDefaultBufferSetting; loadParamExp26
+  5) loadDefaultBufferSetting; loadParamExp26
     ;;
-  7) loadDefaultBufferSetting; loadParamExp27
+  6) loadDefaultBufferSetting; loadParamExp27
     ;;
-  8) loadDefaultBufferSetting; loadParamExp28
+  7) loadDefaultBufferSetting; loadParamExp28
+    ;;    
+  8) loadDefaultBufferSetting; loadParamExp29
     ;;
-  9) loadDefaultBufferSetting; loadParamExp29
-    ;;                        
-  *) loadDefaultBufferSetting; loadParamExp29 # I can't left it empty. Or episode count gets wrong.
+  9) loadDefaultBufferSetting; loadParamExp30
+    ;;
+  10) loadDefaultBufferSetting; loadParamExp31
+    ;;
+  11) loadDefaultBufferSetting; loadParamExp32
+    ;;
+  12) loadDefaultBufferSetting; loadParamExp33
+    ;;    
+  13) loadDefaultBufferSetting; loadParamExp34
+    ;;
+  14) loadDefaultBufferSetting; loadParamExp35
+    ;;
+  15) loadDefaultBufferSetting; loadParamExp36
+    ;;
+  *) echo 'Error!'; exit
     ;;
   esac
 
@@ -90,5 +108,5 @@ done
 postProcess
 
 ### above is training, below is testing
-modelFile="$(find ${dirPath} -name 'events*')"
+modelFile="$(find ${dirPath} -name my_final_model*meta)"
 bash ./RL-MPTCP_test.sh "${modelFile}"

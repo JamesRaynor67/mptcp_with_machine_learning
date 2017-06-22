@@ -3,8 +3,12 @@
 export DISPLAY=:0  # # This is only for remote execution. However, above is recommended on the Internet (but not works perfect
 declare -A RLConfig; declare -A Ns3Config
 
-# 8M = 8388608
-# 256KB = 262144
+# tcp_buffer="262144"    
+# router_b_buffer="100"
+# router_c_buffer="100"
+# link_b_BER="0"
+# topology_id="0"
+
 scheduler="RL-Choose"
 dirPath=""
 
@@ -13,7 +17,8 @@ function preProcess(){
   dirPath="/home/hong/result_figure/0_static_${timestamp}"
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir $dirPath
-  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script.sh" 
+  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script.sh"
+  source ./RL-MPTCP_experiment_parameters.sh
 }
 
 function postProcess(){
@@ -42,16 +47,6 @@ function loadRLPara(){
   RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=20 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
 }
 
-function loadParamExp15() {
-  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="100Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="250ms" ["link_c_delay"]="15ms" \
-              ["tcpBuffer"]="262144" ["linkBBuffer"]="1" ["linkCBuffer"]="100" ["link_b_BER"]="0" ["topology_id"]="0" ["experiment"]="Exp15")  
-}
-
-function loadParamExp17() {
-  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="50Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
-              ["tcpBuffer"]="262144" ["linkBBuffer"]="1" ["linkCBuffer"]="100" ["link_b_BER"]="0" ["topology_id"]="0" ["experiment"]="Exp17")  
-}
-
 #####################
 preProcess
 loadRLPara
@@ -62,14 +57,12 @@ do
   unset Ns3Config; declare -A Ns3Config
   
   case "$(( ( RANDOM % 2 ) ))" in
-  1) loadParamExp15
+  1) loadDefaultBufferSetting; loadParamExp15
     ;;
-  *) loadParamExp17
+  *) loadDefaultBufferSetting; loadParamExp17
     ;;
   esac
 
-  # loadParamExp15
-  
   runNS3 "$episodeNum"
   # record "$episodeNum"
  if !(($episodeNum % 20))

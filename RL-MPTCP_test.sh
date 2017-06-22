@@ -3,13 +3,9 @@
 export DISPLAY=:0  # # This is only for remote execution. However, above is recommended on the Internet (but not works perfect
 declare -A RLConfig; declare -A Ns3Config
 
-tcp_buffer="262144"    
-router_b_buffer="1"
-router_c_buffer="1"
-link_b_BER="0"
-topology_id="0"
 scheduler="RL-Choose"
 dirPath=""
+maxEpisode=6
 # restoreFromFile="/home/hong/result_figure/0_static_20170612_2017-06-12_17-21-18/my_model-169977.meta"
 restoreFromFile="${1}" # This is the input of this script
 
@@ -18,7 +14,9 @@ function preProcess(){
   dirPath="/home/hong/result_figure/0_static_${timestamp}_test"
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir $dirPath
-  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script.sh" 
+  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script_test.sh"
+  cp "$restoreFromFile" "$dirPath/$(basename $restoreFromFile)"
+  source ./RL-MPTCP_experiment_parameters.sh
 }
 
 function postProcess(){
@@ -27,6 +25,7 @@ function postProcess(){
 }
 
 function runRL(){
+  echo "${restoreFromFile}"
   python ./machineLearning/rl_test.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" -r "${restoreFromFile}"&
 }
 
@@ -43,42 +42,9 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=10 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=$maxEpisode ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
 }
 
-function loadParamExp22() {
-  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="100Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
-              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp22")
-}
-
-function loadParamExp23() {
-  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
-              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp23")
-}
-
-######## Below to do testing by trained model (restoreFromFile) #######
-preProcess
-loadRLPara
-runRL
-sleep 2
-for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
-do
-  unset Ns3Config; declare -A Ns3Config
-  
-  case "$(( ( $episodeNum % 2 ) ))" in
-  1) loadParamExp22
-    ;;
-  *) loadParamExp23
-    ;;
-  esac
-  
-  runNS3
-  record "$episodeNum"
-
-done
-
-
-######## Below apply 4 schedulers to each case to compare #######
 function runSet() {
   python ./machineLearning/rl_server.py -f "${PyConfig["forceReply"]}" -m "${PyConfig["maxEpisode"]}" &
   sleep 3
@@ -112,10 +78,66 @@ function runByAllSchedulers(){
   runSet
 }
 
-unset Ns3Config; declare -A Ns3Config
-loadParamExp22
-runByAllSchedulers
+######## Below to do testing by trained model (restoreFromFile) #######
+preProcess
+loadRLPara
+runRL
+sleep 8  # restore takes some longer time, may need to set this value larger in the future
+for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
+do
+  unset Ns3Config; declare -A Ns3Config
+  
+  case "$(( ( $episodeNum % 6 ) ))" in
+  0) loadDefaultBufferSetting; loadParamExp31
+    ;;
+  1) loadDefaultBufferSetting; loadParamExp32
+    ;;    
+  2) loadDefaultBufferSetting; loadParamExp33
+    ;;
+  3) loadDefaultBufferSetting; loadParamExp34
+    ;;
+  4) loadDefaultBufferSetting; loadParamExp35
+    ;;
+  5) loadDefaultBufferSetting; loadParamExp36
+    ;;
+  *) echo 'Error!'; exit
+    ;;
+  esac
+  
+  runNS3
+  record "$episodeNum"
 
-unset Ns3Config; declare -A Ns3Config
-loadParamExp23
-runByAllSchedulers
+done
+
+
+######## Below apply 4 schedulers to each case to compare #######
+for (( episodeNum=0; episodeNum<6; episodeNum++ ))
+do
+  unset Ns3Config; declare -A Ns3Config
+  
+  case "$(( ( $episodeNum % 6 ) ))" in
+  0) loadDefaultBufferSetting; loadParamExp31
+    ;;
+  1) loadDefaultBufferSetting; loadParamExp32
+    ;;    
+  2) loadDefaultBufferSetting; loadParamExp33
+    ;;
+  3) loadDefaultBufferSetting; loadParamExp34
+    ;;
+  4) loadDefaultBufferSetting; loadParamExp35
+    ;;
+  5) loadDefaultBufferSetting; loadParamExp36
+    ;;
+  *) echo 'Error!'; exit
+    ;;
+  esac
+  runByAllSchedulers
+done
+
+python ./machineLearning/log_bytes.py
+cp "/home/hong/result_figure/rcv.png" "/home/hong/result_figure/summary/rcv_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.png"
+cp "/home/hong/result_figure/sent.png" "/home/hong/result_figure/summary/sent_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.png"
+cp "/home/hong/result_figure/statistic.csv" "/home/hong/result_figure/summary/statistic_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.csv"
+mv "/home/hong/result_figure/rcv.png" "${dirPath}/rcv_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.png"
+mv "/home/hong/result_figure/sent.png" "${dirPath}/sent_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.png"
+mv "/home/hong/result_figure/statistic.csv" "${dirPath}/statistic_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.csv"
