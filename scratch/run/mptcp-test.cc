@@ -101,40 +101,36 @@ int main(int argc, char* argv[])
   NodeContainer middle;
   NodeContainer other_servers;
   NodeContainer other_clients;
-  vector<Ptr<NetDevice>> unstableDevices;
+  NetDeviceContainer unstableDevices;
   NetDeviceContainer traceQueueDevices;
 
   // unstableDevices = CreateSimplestNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
   switch(g_topology_id){
-    case 0:{
-        unstableDevices = CreateNetwork5(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients, traceQueueDevices);
+    case 5:{
+        std::cout<<"Hong Jiaming: Using topology 5\n";
+        CreateNetwork5(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients, traceQueueDevices, unstableDevices);
         break;
       }
-
+    case 11:{
+        std::cout<<"Hong Jiaming: Using topology 11\n";
+        CreateNetwork11(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients, traceQueueDevices, unstableDevices);
+        break;
+      }
     default:{
       NS_FATAL_ERROR("Unknown topology!");
       break;
       }
   }
+  std::cout<<"Hong Jiaming: Construct topology and routing complete.\n";
 
-//  // CreateSimplestNetworkWithOtherTraffic(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-//  // CreateClassicNetwork(segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-//  // CreateExtendedClassicNetwork (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
-//  // CreateClassicNetworkWithOtherTraffic (segmentSizeWithoutHeaders, server, client, middle, other_servers, other_clients);
   ConfigureTracing(outputDir, server, client, middle, other_servers, other_clients);
 
   //Create and install the applications on the server and client
   if(appType == onoff)
   {
     std::cout << "Application type: onoff\n";
-    // NodeContainer tmp_servers;
-    // NodeContainer tmp_clients;
-    // tmp_servers.Add(server);
-    // tmp_servers.Add(other_servers);
-    // tmp_clients.Add(client);
-    // tmp_clients.Add(other_clients);
     InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
-    // InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
+    InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
     // InstallOnOffApplications(tmp_servers, tmp_clients, segmentSizeWithoutHeaders);
     // InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
     // InstallFileTransferApplications(other_servers, other_clients, segmentSizeWithoutHeaders, queueSize);
@@ -142,6 +138,7 @@ int main(int argc, char* argv[])
   else if (appType == filetransfer)
   {
     std::cout << "Application type: filetransfer\n";
+    NS_FATAL_ERROR("Don't use this type right now.");
     InstallFileTransferApplications(server, client, segmentSizeWithoutHeaders, queueSize);
   }
 
@@ -152,15 +149,12 @@ int main(int argc, char* argv[])
   g.PrintRoutingTableAllAt (Seconds (0), routingStream);
   Ptr<OutputStreamWrapper> routingStream2 = Create<OutputStreamWrapper> ("dynamic-global-routing-mptcp.routes-16", std::ios::out);
   g.PrintRoutingTableAllAt (Seconds (16), routingStream2);
+
   //Create an output directory and configure tracing
   AnimationInterface anim ("mptcp-animation.xml");
 
   // Simulator::Schedule(Seconds(7.9), &PrintMonitorStates);
   // Simulator::Schedule(Seconds(8), &PrintMonitorStates);
-  // Simulator::Schedule(Seconds(12), &PrintMonitorStates);
-  // Simulator::Schedule(Seconds(16), &PrintMonitorStates);
-  // Simulator::Schedule(Seconds(20), &PrintMonitorStates);
-  // Simulator::Schedule(Seconds(30), &PrintMonitorStates);
   for(int i = 0; i < simulationDuration * 10;i++){
     Simulator::Schedule(Seconds(i/10.0), &TraceMonitorStates, outputDir);
   }
@@ -168,13 +162,13 @@ int main(int argc, char* argv[])
     Simulator::Schedule(Seconds(i/50.0), &TraceQueueLength, outputDir, traceQueueDevices);
   }
 
-  for(auto dev:unstableDevices){
-    Simulator::Schedule(Seconds (30.0), ChangeLinkErrorRate, dev, 1.0);
-  }
+  // for(auto dev:unstableDevices){
+  //   Simulator::Schedule(Seconds (30.0), ChangeLinkErrorRate, dev, 1.0);
+  // }
 
-  for(auto dev:unstableDevices){
-    Simulator::Schedule(Seconds (40.0), ChangeLinkErrorRate, dev, 0);
-  }
+  // for(auto dev:unstableDevices){
+  //   Simulator::Schedule(Seconds (40.0), ChangeLinkErrorRate, dev, 0);
+  // }
 
 
   Simulator::Stop (Seconds(simulationDuration));

@@ -2172,6 +2172,7 @@ TcpSocketBase::SendPacket(TcpHeader header, Ptr<Packet> p)
         m_highTxAck = header.GetAckNumber ();
       }
     }
+  // std::cout << "Hong Jiaming 60: sent by TcpSocketBase at " << Simulator::Now().GetMilliSeconds() << "\n";
 }
 
 /* Send an empty packet with specified TCP flags
@@ -3323,12 +3324,13 @@ TcpSocketBase::AddOptionTimestamp (TcpHeader& header)
   Ptr<TcpOptionTS> option = CreateObject<TcpOptionTS> ();
 
   option->SetTimestamp (TcpOptionTS::NowToTsValue ());
+  // std::cout << m_endPoint->GetLocalAddress() << ": st = " << Simulator::Now ().GetMilliSeconds () << " ts = " << option->GetTimestamp() << " ";
   option->SetEcho (m_timestampToEcho);
 
   bool tsAdded = header.AppendOption (option);
   // std::cout << "Hong Jiaming 15 TS added: " << tsAdded << std::endl;
-  NS_LOG_INFO (m_node->GetId () << "Hong Jiaming 15: Add option TS, ts=" <<
-               option->GetTimestamp () << " echo=" << m_timestampToEcho << " rtt=" << 2*(option->GetTimestamp () - m_timestampToEcho) << " rttEstimator.rtt=" << this->GetRttEstimator()->GetEstimate().GetMicroSeconds());
+  // NS_LOG_INFO (m_node->GetId () << "Hong Jiaming 15: Add option TS, ts=" <<
+  //              option->GetTimestamp () << " echo=" << m_timestampToEcho << " rtt=" << 2*(option->GetTimestamp () - m_timestampToEcho) << " rttEstimator.rtt=" << this->GetRttEstimator()->GetEstimate().GetMicroSeconds());
 }
 
 bool

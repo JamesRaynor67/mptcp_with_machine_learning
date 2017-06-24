@@ -412,7 +412,7 @@ void
 QueueDisc::Drop (Ptr<QueueItem> item)
 {
   NS_LOG_FUNCTION (this << item);
-
+  // std::cout << "Hong Jiaming: QueueDisc::Drop!\n";
   // if the wake mode of this queue disc is WAKE_CHILD, packets are directly
   // enqueued/dequeued from the child queue discs, thus this queue disc does not
   // keep valid packets/bytes counters and no actions need to be performed.

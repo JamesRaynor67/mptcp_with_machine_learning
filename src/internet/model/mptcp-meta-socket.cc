@@ -2291,6 +2291,7 @@ MpTcpMetaSocket::Send(Ptr<Packet> p, uint32_t flags)
       }
     }
     // This does not match the return type uint32_t != int
+    // std::cout << "Hong Jiaming 61: sent by MPTCP at " << Simulator::Now().GetMilliSeconds() << "\n";
     return p->GetSize ();
   }
   else

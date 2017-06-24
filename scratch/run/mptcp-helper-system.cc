@@ -34,6 +34,7 @@ void SetConfigDefaults (uint32_t segmentSize, uint32_t segmentSizeWithoutHeaders
   Config::SetDefault ("ns3::TcpSocket::RcvBufSize", UintegerValue(1<<30));
 
   //I need timestap to be enabled to calculate RTT correctly
+  // Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(false));
   Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(true));
 
   //Set the mptcp option
@@ -47,13 +48,13 @@ void SetConfigDefaults (uint32_t segmentSize, uint32_t segmentSizeWithoutHeaders
   //Config::SetDefault("ns3::Queue::Mode", EnumValue(Queue::QUEUE_MODE_BYTES));
   //Config::SetDefault("ns3::Queue::MaxBytes", UintegerValue(queueSize));
 
-  Config::SetDefault("ns3::RedQueueDisc::Mode", EnumValue(Queue::QUEUE_MODE_BYTES));
-  Config::SetDefault("ns3::RedQueueDisc::MinTh", DoubleValue(queueSize * 0.33));
-  Config::SetDefault("ns3::RedQueueDisc::MaxTh", DoubleValue(queueSize * 0.66));
-  Config::SetDefault("ns3::RedQueueDisc::QueueLimit", UintegerValue(queueSize));
-  Config::SetDefault("ns3::RedQueueDisc::QW", DoubleValue(1));
-  Config::SetDefault("ns3::RedQueueDisc::LInterm", DoubleValue(10));
-  Config::SetDefault("ns3::RedQueueDisc::Wait", BooleanValue(false));
+  // Config::SetDefault("ns3::RedQueueDisc::Mode", EnumValue(Queue::QUEUE_MODE_BYTES));
+  // Config::SetDefault("ns3::RedQueueDisc::MinTh", DoubleValue(queueSize * 0.33));
+  // Config::SetDefault("ns3::RedQueueDisc::MaxTh", DoubleValue(queueSize * 0.66));
+  // Config::SetDefault("ns3::RedQueueDisc::QueueLimit", UintegerValue(queueSize));
+  // Config::SetDefault("ns3::RedQueueDisc::QW", DoubleValue(1));
+  // Config::SetDefault("ns3::RedQueueDisc::LInterm", DoubleValue(10));
+  // Config::SetDefault("ns3::RedQueueDisc::Wait", BooleanValue(false));
 
   //Set the send buffer to be the n * queue size to accomodate n subflows
   //Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (interfaces * queueSize));

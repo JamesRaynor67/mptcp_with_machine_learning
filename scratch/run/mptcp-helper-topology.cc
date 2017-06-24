@@ -72,21 +72,23 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
   // disc on a netdevice is not mandatory. If a netdevice does not have a queue disc installed
   // on it, the traffic control layer sends the packets directly to the netdevice.
 
-  // TrafficControlHelper tchRed;
+  TrafficControlHelper tchRed;
   std::cout << "Queue size == " << queueSize << ", MeanPktSize size == " << packetSize << "\n";
   // tchRed.SetRootQueueDisc ("ns3::RedQueueDisc",
   //                         "MeanPktSize", UintegerValue(packetSize),
   //                         "LinkBandwidth", DataRateValue(linkRate),
   //                         "LinkDelay", TimeValue(delay));
+  tchRed.SetRootQueueDisc ("ns3::PfifoFastQueueDisc", "Limit", UintegerValue(10));
+  // tchRed.SetAttribute("Limit", UintegerValue(1));
 
   NS_ASSERT(queueSize > 0);
   pointToPoint.SetQueue("ns3::DropTailQueue",
                         "MaxPackets", UintegerValue(queueSize));
-  // pointToPoint.EnablePcapAll ("mptcp"); // This is only for debug use
+  pointToPoint.EnablePcapAll ("mptcp"); // This is only for debug use
   NetDeviceContainer linkedDevices;
   linkedDevices = pointToPoint.Install (linkedNodes);
 
-  // tchRed.Install(linkedDevices);
+  tchRed.Install(linkedDevices);
 
   return linkedDevices;
 }
@@ -364,7 +366,7 @@ void CreateNetwork11 (uint32_t packetSize,
                         NetDeviceContainer& traceQueueDevices,
                         NetDeviceContainer& unstableDevices)
 {
-  //                     H (s0)    I (c0)
+  //                     H (s0)    J (c0)
   //                      \       /
   //                       D --- E
   //                      /       \
@@ -372,14 +374,14 @@ void CreateNetwork11 (uint32_t packetSize,
   //                      \       /
   //                       F --- G
   //                      /       \
-  //                     J (s1)    K (c1)
+  //                     I (s1)    K (c1)
 
   //Create the internet stack helper.
   client.Create(1);           // A, Alice
   server.Create(1);           // B, Bob
-  middle.Create(3);           // C, D, E, F, G
-  other_servers.Create(2)     // H, J
-  other_clients.Create(2)     // I, K
+  middle.Create(5);           // C, D, E, F, G
+  other_servers.Create(2);     // H, I
+  other_clients.Create(2);     // J, K
 
   Ptr<Node> A = client.Get(0);
   Ptr<Node> B = server.Get(0);
@@ -389,8 +391,8 @@ void CreateNetwork11 (uint32_t packetSize,
   Ptr<Node> F = middle.Get(3);
   Ptr<Node> G = middle.Get(4);
   Ptr<Node> H = other_servers.Get(0);
-  Ptr<Node> J = other_servers.Get(1);
-  Ptr<Node> I = other_clients.Get(0);
+  Ptr<Node> I = other_servers.Get(1);
+  Ptr<Node> J = other_clients.Get(0);
   Ptr<Node> K = other_clients.Get(1);
 
   AnimationInterface::SetConstantPosition	(B, 0, 200);
@@ -401,8 +403,8 @@ void CreateNetwork11 (uint32_t packetSize,
   AnimationInterface::SetConstantPosition	(F, 300, 300);
   AnimationInterface::SetConstantPosition	(G, 500, 300);
   AnimationInterface::SetConstantPosition	(H, 200, 0);
-  AnimationInterface::SetConstantPosition	(I, 600, 0);
-  AnimationInterface::SetConstantPosition	(J, 200, 400);
+  AnimationInterface::SetConstantPosition	(J, 600, 0);
+  AnimationInterface::SetConstantPosition	(I, 200, 400);
   AnimationInterface::SetConstantPosition	(K, 600, 400);
 
   bool useStaticRouting = true;
@@ -434,10 +436,10 @@ void CreateNetwork11 (uint32_t packetSize,
     addressHelper.Assign(PointToPointCreate(D, E, DataRate("300Kbps"), Time("6ms"), packetSize));
 
     addressHelper.SetBase("192.168.5.0", "255.255.255.0");
-    addressHelper.Assign(PointToPointCreate(E, I, DataRate("100Kbps"), Time("500ms"), packetSize));
+    addressHelper.Assign(PointToPointCreate(E, J, DataRate("100Kbps"), Time("500ms"), packetSize));
 
     addressHelper.SetBase("192.168.6.0", "255.255.255.0");
-    addressHelper.Assign(PointToPointCreate(F, J, DataRate("100Kbps"), Time("15ms"), packetSize));
+    addressHelper.Assign(PointToPointCreate(F, I, DataRate("100Kbps"), Time("15ms"), packetSize));
 
     addressHelper.SetBase("192.168.7.0", "255.255.255.0");
     addressHelper.Assign(PointToPointCreate(F, G, DataRate("300Kbps"), Time("6ms"), packetSize));
@@ -492,11 +494,11 @@ void CreateNetwork11 (uint32_t packetSize,
     Ipv4InterfaceContainer deInterfaces = addressHelper.Assign(linkedDevices);
 
     addressHelper.SetBase("192.168.5.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(E, I, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size); //
+    linkedDevices = PointToPointCreate(E, J, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size); //
     Ipv4InterfaceContainer eiInterfaces = addressHelper.Assign(linkedDevices);
 
     addressHelper.SetBase("192.168.6.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(F, J, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size); //
+    linkedDevices = PointToPointCreate(F, I, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size); //
     Ipv4InterfaceContainer fjInterfaces = addressHelper.Assign(linkedDevices);
 
     addressHelper.SetBase("192.168.7.0", "255.255.255.0");
@@ -567,10 +569,10 @@ void CreateNetwork11 (uint32_t packetSize,
     routing = GetNodeStaticRoutingProtocol(H); // other server
     routing->AddHostRouteTo(eiInterfaces.GetAddress(1), dhInterfaces.GetAddress(0), 1);
 
-    routing = GetNodeStaticRoutingProtocol(I); // other client
+    routing = GetNodeStaticRoutingProtocol(J); // other client
     routing->AddHostRouteTo(dhInterfaces.GetAddress(1), eiInterfaces.GetAddress(0), 1);
 
-    routing = GetNodeStaticRoutingProtocol(J); // other server
+    routing = GetNodeStaticRoutingProtocol(I); // other server
     routing->AddHostRouteTo(gkInterfaces.GetAddress(1), fjInterfaces.GetAddress(0), 1);
 
     routing = GetNodeStaticRoutingProtocol(K); // router

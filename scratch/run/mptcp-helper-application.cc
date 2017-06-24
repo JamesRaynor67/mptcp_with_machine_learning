@@ -3,6 +3,7 @@
 #include "ns3/internet-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/traffic-control-module.h"
+#include "ns3/random-variable-stream.h"
 #include "file-transfer-helper.h"
 #include "file-transfer-application.h"
 
@@ -10,7 +11,8 @@ namespace ns3{
 
 void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, uint32_t packetSize)
 {
-  // Create and install the applications on the server and client
+  // Create and install the applications on nodes
+  // The first pair will be installed with MPTCP, and the rest will be installed with TCP
   static int mptcpAppNum = 1;
   NS_ASSERT(servers.GetN() == clients.GetN());
 
@@ -32,7 +34,7 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
       MpOnOff->SetAttribute("Remote", AddressValue (sinkAddress));
       MpOnOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
       MpOnOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
-      MpOnOff->SetAttribute("DataRate", DataRateValue (DataRate("0.3Mbps")));
+      MpOnOff->SetAttribute("DataRate", DataRateValue (DataRate("2Mbps")));
       MpOnOff->SetAttribute("PacketSize", UintegerValue (packetSize));
       onOff = ns3::DynamicCast<Application>(MpOnOff);
 
@@ -47,15 +49,19 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
     }
     else{
       std::cout << "TCP OnOff App installed" << std::endl;
+      // PacketSinkHelper packetSinkHelper ("ns3::UdpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
       PacketSinkHelper packetSinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
       ApplicationContainer sinkApps = packetSinkHelper.Install(servers.Get(i));
       // sinkApps.Start (Seconds (0.));
       // sinkApps.Stop (Seconds (60.));
 
       OnOffHelper onOffHelper ("ns3::TcpSocketFactory", sinkAddress);
+      // OnOffHelper onOffHelper ("ns3::UdpSocketFactory", sinkAddress);
       onOffHelper.SetAttribute ("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
       onOffHelper.SetAttribute ("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
-      onOffHelper.SetAttribute ("DataRate",StringValue ("0.2Mbps"));
+      // onOffHelper.SetAttribute ("OnTime", StringValue("ns3::UniformRandomVariable[Min=0|Max=5]"));
+      // onOffHelper.SetAttribute ("OffTime", StringValue("ns3::UniformRandomVariable[Min=0|Max=5]"));
+      onOffHelper.SetAttribute ("DataRate",StringValue ("0.3Mbps"));
       onOffHelper.SetAttribute ("PacketSize", UintegerValue (packetSize));
 
       ApplicationContainer source;

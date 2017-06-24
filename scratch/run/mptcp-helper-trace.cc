@@ -106,21 +106,30 @@ void TraceMacTx(Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
 void TraceQueueItemDrop(Ptr<OutputStreamWrapper> stream, Ptr<const QueueItem> item)
 {
   Ptr<const Ipv4QueueDiscItem> qitem = StaticCast<const Ipv4QueueDiscItem>(item);
-
   Ipv4Header ipheader = qitem->GetHeader();
   TcpHeader tcpHeader;
-
+  // std::cout << "1" << std::endl;
   if ((qitem->GetProtocol() == Ipv4L3Protocol::PROT_NUMBER)
       && (ipheader.GetProtocol() == TcpL4Protocol::PROT_NUMBER))
   {
+    // std::cout << "2" << std::endl;
     Ptr<Packet> copy = item->GetPacket();
     copy->RemoveHeader(tcpHeader);
+    // std::cout << "3" << std::endl;
+    MpTcpSubflowTag subflowTag;
+    bool found = copy->PeekPacketTag(subflowTag);
+
+    int subflowId = -1;
+    if (found){
+      subflowId =  subflowTag.GetSubflowId();
+    }
 
     //Figure out if this is a FIN packet, or SYN packet
     bool isFin = tcpHeader.GetFlags() & TcpHeader::FIN;
     bool isSyn = tcpHeader.GetFlags() & TcpHeader::SYN;
+    // std::cout << "4" << std::endl;
 
-    (*stream->GetStream()) << Simulator::Now().GetNanoSeconds()  << ","
+    (*stream->GetStream()) << Simulator::Now().GetNanoSeconds()  << "," << subflowId << ","
     << tcpHeader.GetSequenceNumber() << "," << tcpHeader.GetAckNumber()
     << "," << isSyn << "," << isFin << endl;
 
@@ -175,9 +184,11 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   stringstream dfile;
   dfile << outputDir << "/mptcp_drops";
   Ptr<OutputStreamWrapper> dropsFile = Create<OutputStreamWrapper>(dfile.str(), std::ios::out);
-  *(dropsFile->GetStream()) << "timestamp,seqno,ackno,isSyn,isFin" << endl;
-  Config::ConnectWithoutContext("/NodeList/*/$ns3::TrafficControlLayer/RootQueueDiscList/*/Drop",
-                                MakeBoundCallback(TraceQueueItemDrop, dropsFile));
+  *(dropsFile->GetStream()) << "timestamp,subflowId,seqno,ackno,isSyn,isFin" << endl;
+  Config::ConnectWithoutContext("/NodeList/*/$ns3::TrafficControlLayer/RootQueueDiscList/*/Drop", MakeBoundCallback(TraceQueueItemDrop, dropsFile));
+  // Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::QueueDisc/Drop", MakeBoundCallback(TraceQueueItemDrop, dropsFile));
+  // Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::Queue/*/Drop",
+  //                               MakeBoundCallback(TraceQueueItemDrop, dropsFile));
 
   uint32_t clientId = client.Get(0)->GetId();
   cout << "server node is: " << serverId << endl;
@@ -299,23 +310,29 @@ void PrintMonitorStates(void){
   std::cout << endl;
 }
 
+// Hong Jiaming: This function may be a potential breaking point (or problematic point). 
+// This queue means the TxQueue of netDevice. And I In fact somehow more interested in QueueDisc Length (in case of pfifo)
+// This means I should modify this future. 
 void TraceQueueLength(const string& outputDir, const NetDeviceContainer devs){
   static bool initialized = false;
   static Ptr<OutputStreamWrapper> logFile;
+  static Ptr<DropTailQueue> droptail;
+  static Ptr<DropTailQueue> droptail1;
 
   if(!initialized){
     logFile = Create<OutputStreamWrapper>(outputDir + "/routers_queue_len", std::ios::out);
-    *(logFile->GetStream()) << "Timestamp,Queue0,Queue1" << endl;
+    *(logFile->GetStream()) << "Timestamp,Queue0,Queue1,Queue0Dropped,Queue1Dropped" << endl;
     initialized = true;
+    PointerValue val;
+    devs.Get(0)->GetAttribute ("TxQueue", val);
+    droptail = val.Get<DropTailQueue> ();
+    devs.Get(1)->GetAttribute ("TxQueue", val);
+    droptail1 = val.Get<DropTailQueue> ();
   }
 
-  *(logFile->GetStream()) << Simulator::Now().GetNanoSeconds() << ",";
-  PointerValue txQueue0;
-  devs.Get(0)->GetAttribute ("TxQueue", txQueue0);
-  *(logFile->GetStream()) << txQueue0.Get<DropTailQueue> ()->GetNPackets() << ",";
-  PointerValue txQueue1;
-  devs.Get(1)->GetAttribute ("TxQueue", txQueue1);
-  *(logFile->GetStream()) << txQueue1.Get<DropTailQueue> ()->GetNPackets() << std::endl;
+  *(logFile->GetStream()) << Simulator::Now().GetNanoSeconds() << ","
+                          << droptail->GetNPackets() << "," << droptail1->GetNPackets() << ","
+                          << droptail->GetTotalDroppedPackets() << "," << droptail1->GetTotalDroppedPackets() << "\n";
 
   // for(uint32_t index = 0; index < devs.GetN(); index++){
   //   PointerValue txQueue;

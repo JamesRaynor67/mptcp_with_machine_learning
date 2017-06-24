@@ -305,7 +305,7 @@ bool
 RedQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
 {
   NS_LOG_FUNCTION (this << item);
-
+  std::cout << "Hong Jiaming: RedQueueDisc::DoEnqueue!\n";
   uint32_t nQueued = 0;
 
   if (GetMode () == Queue::QUEUE_MODE_BYTES)

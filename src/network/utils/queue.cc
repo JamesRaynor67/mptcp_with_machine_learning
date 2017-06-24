@@ -364,7 +364,7 @@ void
 Queue::Drop (Ptr<QueueItem> item)
 {
   NS_LOG_FUNCTION (this << item);
-
+  std::cout << "Hong Jiaming: One queueItem is dropped!\n";
   m_nTotalDroppedPackets++;
   m_nTotalDroppedBytes += item->GetPacketSize ();
 

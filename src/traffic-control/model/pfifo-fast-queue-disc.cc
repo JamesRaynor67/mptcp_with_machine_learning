@@ -64,6 +64,7 @@ bool
 PfifoFastQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
 {
   NS_LOG_FUNCTION (this << item);
+  // std::cout << "Hong Jiaming: PfifoFastQueueDisc::DoEnqueue " << m_limit << "\n";
 
   if (GetNPackets () > m_limit)
     {
@@ -126,7 +127,7 @@ PfifoFastQueueDisc::DoPeek (void) const
       return item;
     }
   }
-  
+
   NS_LOG_LOGIC ("Queue empty");
   return item;
 }

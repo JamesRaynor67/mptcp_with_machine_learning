@@ -260,8 +260,8 @@ def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_
         # subflow id is from 0 to n-1
         x[row[1]].append(row[0])
         y[row[1]].append(row[2])
-    subflow_1_server, = plt.plot(x[0], y[0], 'b-')
-    subflow_2_server, = plt.plot(x[1], y[1], 'r-')
+    subflow_1_server, = sns.plt.plot(x[0], y[0], 'b-')
+    subflow_2_server, = sns.plt.plot(x[1], y[1], 'r-')
     server_max_seqSum = sum([row[-1] for row in y])
     
     g_resultRecord["Subflow0_Server_Rcv"] = y[0][-1]
@@ -274,11 +274,12 @@ def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_
         next(spamreader)
         for row in spamreader:
             timestamp = int(row[0])/1e9
-            seqnum = int(row[1])
-            x.append(timestamp)
-            y.append(seqnum)
-
-    drop_mark, = plt.plot(x, y, 'kx')
+            subflowId = int(row[1])
+            seqnum = int(row[2])
+            if subflowId != -1:
+                x.append(timestamp)
+                y.append(seqnum)
+    drop_mark, = sns.plt.plot(x, y, 'k^')
     drop_count = len(x)
     
     sns.plt.legend([subflow_1_server, subflow_2_server, subflow_1_client, subflow_2_client, drop_mark], 
