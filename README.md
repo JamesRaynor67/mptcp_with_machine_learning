@@ -68,3 +68,5 @@ And this specific simulation can be regarded as IPhone use multiple subflows to 
 >
 >      HMAC-A = HMAC(Key=(Key-A+Key-B), Msg=(R-A+R-B))
 >      HMAC-B = HMAC(Key=(Key-B+Key-A), Msg=(R-B+R-A))
+
+2. On-off application put data into txBuffer at configured rate during on-period. If txBuffer is full, application just fails to put data into txBuffer, which means these data even didn't become packets.

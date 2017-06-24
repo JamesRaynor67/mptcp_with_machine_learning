@@ -47,7 +47,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=16 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=64 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
 }
 
 #####################
@@ -98,7 +98,7 @@ do
 
   runNS3 "$episodeNum"
   # record "$episodeNum"
- if !(($episodeNum % 20))
+ if !(($episodeNum % 5))
  then
    record "$episodeNum"
  else

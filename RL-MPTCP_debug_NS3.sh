@@ -32,7 +32,7 @@ cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.c
 mkdir $dirPath
 
 unset PyConfig; unset Ns3Config; declare -A PyConfig; declare -A Ns3Config
-loadParamExp21
+loadParamExp999
 scheduler="RR";
 PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
 runSet

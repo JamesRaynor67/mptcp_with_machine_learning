@@ -5,7 +5,7 @@ declare -A RLConfig; declare -A Ns3Config
 
 scheduler="RL-Choose"
 dirPath=""
-maxEpisode=6
+maxEpisode=10
 # restoreFromFile="/home/hong/result_figure/0_static_20170612_2017-06-12_17-21-18/my_model-169977.meta"
 restoreFromFile="${1}" # This is the input of this script
 
@@ -87,18 +87,26 @@ for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
-  case "$(( ( $episodeNum % 6 ) ))" in
-  0) loadDefaultBufferSetting; loadParamExp31
+  case "$(( ( $episodeNum % ${RLConfig["maxEpisode"]} ) ))" in
+  0) loadDefaultBufferSetting; loadParamExp21
     ;;
-  1) loadDefaultBufferSetting; loadParamExp32
+  1) loadDefaultBufferSetting; loadParamExp22
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp33
+  2) loadDefaultBufferSetting; loadParamExp23
     ;;
-  3) loadDefaultBufferSetting; loadParamExp34
+  3) loadDefaultBufferSetting; loadParamExp24
     ;;
-  4) loadDefaultBufferSetting; loadParamExp35
+  4) loadDefaultBufferSetting; loadParamExp25
     ;;
-  5) loadDefaultBufferSetting; loadParamExp36
+  5) loadDefaultBufferSetting; loadParamExp26
+    ;;
+  6) loadDefaultBufferSetting; loadParamExp27
+    ;;
+  7) loadDefaultBufferSetting; loadParamExp28
+    ;;    
+  8) loadDefaultBufferSetting; loadParamExp29
+    ;;
+  9) loadDefaultBufferSetting; loadParamExp30
     ;;
   *) echo 'Error!'; exit
     ;;
@@ -111,22 +119,30 @@ done
 
 
 ######## Below apply 4 schedulers to each case to compare #######
-for (( episodeNum=0; episodeNum<6; episodeNum++ ))
+for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
-  case "$(( ( $episodeNum % 6 ) ))" in
-  0) loadDefaultBufferSetting; loadParamExp31
+  case "$(( ( $episodeNum % ${RLConfig["maxEpisode"]} ) ))" in
+  0) loadDefaultBufferSetting; loadParamExp21
     ;;
-  1) loadDefaultBufferSetting; loadParamExp32
+  1) loadDefaultBufferSetting; loadParamExp22
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp33
+  2) loadDefaultBufferSetting; loadParamExp23
     ;;
-  3) loadDefaultBufferSetting; loadParamExp34
+  3) loadDefaultBufferSetting; loadParamExp24
     ;;
-  4) loadDefaultBufferSetting; loadParamExp35
+  4) loadDefaultBufferSetting; loadParamExp25
     ;;
-  5) loadDefaultBufferSetting; loadParamExp36
+  5) loadDefaultBufferSetting; loadParamExp26
+    ;;
+  6) loadDefaultBufferSetting; loadParamExp27
+    ;;
+  7) loadDefaultBufferSetting; loadParamExp28
+    ;;    
+  8) loadDefaultBufferSetting; loadParamExp29
+    ;;
+  9) loadDefaultBufferSetting; loadParamExp30
     ;;
   *) echo 'Error!'; exit
     ;;
