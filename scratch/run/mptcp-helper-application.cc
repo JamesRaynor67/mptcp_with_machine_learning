@@ -34,7 +34,7 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
       MpOnOff->SetAttribute("Remote", AddressValue (sinkAddress));
       MpOnOff->SetAttribute("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
       MpOnOff->SetAttribute("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
-      MpOnOff->SetAttribute("DataRate", DataRateValue (DataRate("2Mbps")));
+      MpOnOff->SetAttribute("DataRate", DataRateValue (DataRate("0.3Mbps")));
       MpOnOff->SetAttribute("PacketSize", UintegerValue (packetSize));
       onOff = ns3::DynamicCast<Application>(MpOnOff);
 

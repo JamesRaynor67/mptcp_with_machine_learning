@@ -34,8 +34,8 @@ void SetConfigDefaults (uint32_t segmentSize, uint32_t segmentSizeWithoutHeaders
   Config::SetDefault ("ns3::TcpSocket::RcvBufSize", UintegerValue(1<<30));
 
   //I need timestap to be enabled to calculate RTT correctly
-  // Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(false));
-  Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(true));
+  Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(false));
+  // Config::SetDefault("ns3::TcpSocketImpl::Timestamp", BooleanValue(true));
 
   //Set the mptcp option
   Config::SetDefault("ns3::TcpSocketImpl::EnableMpTcp", BooleanValue(true));

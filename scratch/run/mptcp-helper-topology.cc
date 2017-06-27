@@ -78,7 +78,7 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
   //                         "MeanPktSize", UintegerValue(packetSize),
   //                         "LinkBandwidth", DataRateValue(linkRate),
   //                         "LinkDelay", TimeValue(delay));
-  tchRed.SetRootQueueDisc ("ns3::PfifoFastQueueDisc", "Limit", UintegerValue(10));
+  tchRed.SetRootQueueDisc ("ns3::PfifoFastQueueDisc", "Limit", UintegerValue(queueSize));
   // tchRed.SetAttribute("Limit", UintegerValue(1));
 
   NS_ASSERT(queueSize > 0);
@@ -301,8 +301,8 @@ void CreateNetwork5 (uint32_t packetSize,
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
-    // unstableDevices.Add(linkedDevices.Get(0));
-    // unstableDevices.Add(linkedDevices.Get(1));
+    unstableDevices.Add(linkedDevices.Get(0));
+    unstableDevices.Add(linkedDevices.Get(1));
 
     if(g_link_b_BER != 0){
       std::cout << "Error model installed in link D-A" << std::endl;
@@ -520,8 +520,8 @@ void CreateNetwork11 (uint32_t packetSize,
       linkedDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
       linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
     }
-    // unstableDevices.push_back(linkedDevices.Get(0));
-    // unstableDevices.push_back(linkedDevices.Get(1));
+    unstableDevices.Add(linkedDevices.Get(0));
+    unstableDevices.Add(linkedDevices.Get(1));
 
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
     linkedDevices = PointToPointCreate(G, A, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size);
