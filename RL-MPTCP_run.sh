@@ -10,7 +10,7 @@ tcp_buffer="$1"
 router_b_buffer="$2"
 router_c_buffer="$3"
 link_b_BER="$4"
-topology_id="0"
+topology_id="11"
 
 function runSet() {
   python ./machineLearning/rl_server.py -f "${PyConfig["forceReply"]}" -m "${PyConfig["maxEpisode"]}" &
@@ -53,11 +53,43 @@ cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.c
 mkdir $dirPath
 
 unset Ns3Config; declare -A Ns3Config
+loadParamExp21
+runByAllSchedulers
+
+unset Ns3Config; declare -A Ns3Config
 loadParamExp22
 runByAllSchedulers
 
 unset Ns3Config; declare -A Ns3Config
 loadParamExp23
+runByAllSchedulers
+
+unset Ns3Config; declare -A Ns3Config
+loadParamExp24
+runByAllSchedulers
+
+unset Ns3Config; declare -A Ns3Config
+loadParamExp25
+runByAllSchedulers
+
+unset Ns3Config; declare -A Ns3Config
+loadParamExp26
+runByAllSchedulers
+
+unset Ns3Config; declare -A Ns3Config
+loadParamExp27
+runByAllSchedulers
+
+unset Ns3Config; declare -A Ns3Config
+loadParamExp28
+runByAllSchedulers
+
+unset Ns3Config; declare -A Ns3Config
+loadParamExp29
+runByAllSchedulers
+
+unset Ns3Config; declare -A Ns3Config
+loadParamExp30
 runByAllSchedulers
 
 python ./machineLearning/log_bytes.py

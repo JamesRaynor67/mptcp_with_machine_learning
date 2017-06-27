@@ -5,13 +5,14 @@ declare -A RLConfig; declare -A Ns3Config
 
 scheduler="RL-Choose"
 dirPath=""
-maxEpisode=10
+maxEpisode=48
 # restoreFromFile="/home/hong/result_figure/0_static_20170612_2017-06-12_17-21-18/my_model-169977.meta"
 restoreFromFile="${1}" # This is the input of this script
+commentStr="${2}"
 
 function preProcess(){
   timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
-  dirPath="/home/hong/result_figure/0_static_${timestamp}_test"
+  dirPath="/home/hong/result_figure/${timestamp}_${commentStr}_test"
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir $dirPath
   cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script_test.sh"
@@ -87,7 +88,7 @@ for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
-  case "$(( ( $episodeNum % ${RLConfig["maxEpisode"]} ) ))" in
+  case "$(( ( $episodeNum % 16 ) ))" in
   0) loadDefaultBufferSetting; loadParamExp21
     ;;
   1) loadDefaultBufferSetting; loadParamExp22
@@ -108,6 +109,18 @@ do
     ;;
   9) loadDefaultBufferSetting; loadParamExp30
     ;;
+  10) loadDefaultBufferSetting; loadParamExp31
+    ;;
+  11) loadDefaultBufferSetting; loadParamExp32
+    ;;
+  12) loadDefaultBufferSetting; loadParamExp33
+    ;;    
+  13) loadDefaultBufferSetting; loadParamExp34
+    ;;
+  14) loadDefaultBufferSetting; loadParamExp35
+    ;;
+  15) loadDefaultBufferSetting; loadParamExp36
+  ;;
   *) echo 'Error!'; exit
     ;;
   esac
@@ -119,11 +132,11 @@ done
 
 
 ######## Below apply 4 schedulers to each case to compare #######
-for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
+for (( episodeNum=0; episodeNum<16; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
-  case "$(( ( $episodeNum % ${RLConfig["maxEpisode"]} ) ))" in
+  case "$(( ( $episodeNum % 16 ) ))" in
   0) loadDefaultBufferSetting; loadParamExp21
     ;;
   1) loadDefaultBufferSetting; loadParamExp22
@@ -144,6 +157,18 @@ do
     ;;
   9) loadDefaultBufferSetting; loadParamExp30
     ;;
+  10) loadDefaultBufferSetting; loadParamExp31
+    ;;
+  11) loadDefaultBufferSetting; loadParamExp32
+    ;;
+  12) loadDefaultBufferSetting; loadParamExp33
+    ;;    
+  13) loadDefaultBufferSetting; loadParamExp34
+    ;;
+  14) loadDefaultBufferSetting; loadParamExp35
+    ;;
+  15) loadDefaultBufferSetting; loadParamExp36
+  ;;
   *) echo 'Error!'; exit
     ;;
   esac

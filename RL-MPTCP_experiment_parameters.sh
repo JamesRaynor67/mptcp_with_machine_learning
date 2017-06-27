@@ -11,7 +11,7 @@ function checkNoneEmpty(){
 }
 
 function loadDefaultBufferSetting(){
-  tcp_buffer="262144";router_b_buffer="1";router_c_buffer="1";link_b_BER="0";topology_id="11"
+  tcp_buffer="262144";router_b_buffer="100";router_c_buffer="100";link_b_BER="0";topology_id="5"
   echo 'tcp_buffer='$tcp_buffer ' router_b_buffer='$router_b_buffer ' router_c_buffer='$router_b_buffer ' link_b_BER='$link_b_BER ' topology_id='$topology_id 
 }
 

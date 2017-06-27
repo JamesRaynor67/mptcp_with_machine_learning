@@ -45,7 +45,7 @@ import numpy as np
 # By this, record and modification is much easier.
 def plotFinalBytes(path):
 	df = pd.read_csv(path)
-	df = df.sort_values(by=['Experiment'], ascending=[True])
+	df = df.sort_values(by=['Experiment', 'Scheduler'], ascending=[True, False])
 	print df
 	df['Total_Client_Sent'] = pd.Series((df['Subflow0_Client_Sent'] + df['Subflow1_Client_Sent']).values, index=df.index)
 	df['Total_Server_Rcv'] = pd.Series((df['Subflow0_Server_Rcv'] + df['Subflow1_Server_Rcv']).values, index=df.index)

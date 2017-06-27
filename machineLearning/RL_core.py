@@ -73,9 +73,6 @@ class DeepQNetwork:
         saver.restore(self.sess, tf.train.latest_checkpoint(dirname))
 
         graph = tf.get_default_graph()
-        # for op in tf.get_default_graph().get_operations():
-        #     print str(op.name) 
-        # assert False
         self.s = graph.get_tensor_by_name("s:0")
         self.q_target = graph.get_tensor_by_name("Q_target:0")
         self.q_eval = graph.get_tensor_by_name("eval_net/l2/q_eval:0")
@@ -87,10 +84,11 @@ class DeepQNetwork:
         self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='Q_target')  # for calculating loss
         with tf.variable_scope('eval_net'):
             # c_names(collections_names) are the collections to store variables
-            c_names, n_l1, w_initializer, b_initializer = \
-                ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES], 10, \
-                tf.random_normal_initializer(0., 0.3), tf.constant_initializer(0.1)  # config of layers
-
+            c_names = ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
+            n_l1 = 10
+            w_initializer = tf.random_normal_initializer(0., 0.3)
+            b_initializer = tf.constant_initializer(0.1)
+            
             # first layer. collections is used later when assign to target net
             with tf.variable_scope('l1'):
                 w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)

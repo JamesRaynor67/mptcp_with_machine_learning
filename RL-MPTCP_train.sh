@@ -10,10 +10,11 @@ declare -A RLConfig; declare -A Ns3Config
 # topology_id="0"
 scheduler="RL-Choose"
 dirPath=""
+commentStr="${1}"
 
 function preProcess(){
   timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
-  dirPath="/home/hong/result_figure/0_static_${timestamp}"
+  dirPath="/home/hong/result_figure/${timestamp}_${commentStr}"
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir "$dirPath"
   cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/RL-MPTCP_experiment_parameters.sh" "$dirPath/script_parameters.sh"  
@@ -47,7 +48,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=64 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=16 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
 }
 
 #####################
@@ -109,4 +110,4 @@ postProcess
 
 ### above is training, below is testing
 modelFile="$(find ${dirPath} -name my_final_model*meta)"
-bash ./RL-MPTCP_test.sh "${modelFile}"
+bash ./RL-MPTCP_test.sh "${modelFile}" "${commentStr}"
