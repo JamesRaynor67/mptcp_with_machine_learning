@@ -11,7 +11,7 @@ function checkNoneEmpty(){
 }
 
 function loadDefaultBufferSetting(){
-  tcp_buffer="262144";router_b_buffer="100";router_c_buffer="100";link_b_BER="0";topology_id="5"
+  tcp_buffer="262144";router_b_buffer="100";router_c_buffer="100";link_b_BER="0";topology_id="11"
   echo 'tcp_buffer='$tcp_buffer ' router_b_buffer='$router_b_buffer ' router_c_buffer='$router_b_buffer ' link_b_BER='$link_b_BER ' topology_id='$topology_id 
 }
 
@@ -115,7 +115,65 @@ function loadParamExp36() {
 
 
 
+function loadParamExp900() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="60Kbps" ["link_c_BW"]="110Kbps" ["link_a_delay"]="3ms" ["link_b_delay"]="40ms" ["link_c_delay"]="25ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp21")
+}
 
+function loadParamExp901() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="100Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="300Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="125ms" ["link_c_delay"]="15ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp22")
+}
+
+function loadParamExp902() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="300Kbps" ["link_b_BW"]="500Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="150ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp23")
+}
+
+function loadParamExp903() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="70Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="35ms" ["link_c_delay"]="15ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp24")
+}
+
+function loadParamExp904() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="200Kbps" ["link_b_BW"]="150Kbps" ["link_c_BW"]="30Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="5ms" ["link_c_delay"]="250ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp25")
+}
+
+function loadParamExp905() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="25ms" ["link_c_delay"]="15ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp26")
+}
+
+function loadParamExp906() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="250Kbps" ["link_b_BW"]="120Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="150ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp27")
+}
+
+function loadParamExp907() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="100Kbps" ["link_b_BW"]="300Kbps" ["link_c_BW"]="200Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp28")
+}
+
+function loadParamExp908() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="150Kbps" ["link_b_BW"]="100Kbps" ["link_c_BW"]="250Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="135ms" ["link_c_delay"]="15ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp29")
+}
+
+function loadParamExp909() {
+  checkNoneEmpty
+  Ns3Config+=(["link_a_BW"]="150Kbps" ["link_b_BW"]="70Kbps" ["link_c_BW"]="50Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
+              ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp30")
+}
 
 function loadParamExp999() {
   checkNoneEmpty

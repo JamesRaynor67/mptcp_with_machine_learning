@@ -95,6 +95,7 @@ int main(int argc, char* argv[])
 
   //Enable logging
   EnableLogging ();
+  SeedManager::SetRun ((unsigned)std::time(0)); // For random variables
 
   SetConfigDefaults(segmentSize, segmentSizeWithoutHeaders, queueSize);
 
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
     std::cout << "Application type: onoff\n";
     InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
     if(g_topology_id > 5){
-      // InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
+      InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
     }
   }
   else if (appType == filetransfer)
@@ -163,16 +164,15 @@ int main(int argc, char* argv[])
     Simulator::Schedule(Seconds(i/50.0), &TraceQueueLength, outputDir, traceQueueDevices);
   }
 
-  SeedManager::SetRun ((unsigned)std::time(0));
-  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-  double failureInterval = uv->GetValue (1.0, 10.0);
-  double failureStartTime = uv->GetValue (1.0, 180 - failureInterval);
-  for(uint32_t i = 0; i < unstableDevices.GetN(); i++){
-    Simulator::Schedule(Seconds (failureStartTime), ChangeLinkErrorRate, unstableDevices.Get(i), 1.0);
-  }
-  for(uint32_t i = 0; i < unstableDevices.GetN(); i++){
-    Simulator::Schedule(Seconds (failureStartTime + failureInterval), ChangeLinkErrorRate, unstableDevices.Get(i), 0);
-  }
+  // Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+  // double failureInterval = uv->GetValue (1.0, 10.0);
+  // double failureStartTime = uv->GetValue (1.0, 180 - failureInterval);
+  // for(uint32_t i = 0; i < unstableDevices.GetN(); i++){
+  //   Simulator::Schedule(Seconds (failureStartTime), ChangeLinkErrorRate, unstableDevices.Get(i), 1.0);
+  // }
+  // for(uint32_t i = 0; i < unstableDevices.GetN(); i++){
+  //   Simulator::Schedule(Seconds (failureStartTime + failureInterval), ChangeLinkErrorRate, unstableDevices.Get(i), 0);
+  // }
 
   Simulator::Stop (Seconds(simulationDuration));
 

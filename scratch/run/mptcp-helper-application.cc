@@ -57,12 +57,12 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
 
       OnOffHelper onOffHelper ("ns3::TcpSocketFactory", sinkAddress);
       // OnOffHelper onOffHelper ("ns3::UdpSocketFactory", sinkAddress);
-      onOffHelper.SetAttribute ("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
-      onOffHelper.SetAttribute ("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
-      // onOffHelper.SetAttribute ("OnTime", StringValue("ns3::UniformRandomVariable[Min=0|Max=5]"));
-      // onOffHelper.SetAttribute ("OffTime", StringValue("ns3::UniformRandomVariable[Min=0|Max=5]"));
-      onOffHelper.SetAttribute ("DataRate",StringValue ("0.3Mbps"));
-      onOffHelper.SetAttribute ("PacketSize", UintegerValue (packetSize));
+      // onOffHelper.SetAttribute ("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+      // onOffHelper.SetAttribute ("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+      onOffHelper.SetAttribute ("OnTime", StringValue("ns3::UniformRandomVariable[Min=0|Max=5]"));
+      onOffHelper.SetAttribute ("OffTime", StringValue("ns3::UniformRandomVariable[Min=0|Max=5]"));
+      onOffHelper.SetAttribute ("DataRate", StringValue("0.3Mbps"));
+      onOffHelper.SetAttribute ("PacketSize", UintegerValue(packetSize));
 
       ApplicationContainer source;
 
