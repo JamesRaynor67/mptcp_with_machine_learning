@@ -64,6 +64,8 @@ def AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records, sche
     meta_schedulerId, = sns.plt.plot(list(schedulerId_data[:,0]), schedulerId_list, 'ko')
     legendStr = [format(ele*1.0/len(schedulerId_list), '.2f') for ele in [schedulerId_list.count(0), schedulerId_list.count(1), schedulerId_list.count(2), schedulerId_list.count(3)]]
     sns.plt.legend([meta_schedulerId], [legendStr], loc='best')
+    axes = sns.plt.gca()
+    axes.set_ylim([0, 3]) # NOTE: Here we only have 4 kinds of schedueler, so set it to be 0 to 3
     sns.plt.title('Time-SchedulerId')
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('SchedulerId', fontsize = 14, color = 'black')

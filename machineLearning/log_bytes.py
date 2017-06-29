@@ -43,7 +43,7 @@ def plotThroughputs(path):
 	# ax.legend_.remove() # remove the redundant legends 
 	# sns.plt.savefig("/home/hong/result_figure/rcv.png", dpi = 150, bbox_inches='tight')
 	plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-	# sns.plt.savefig("/home/hong/result_figure/rcv.png", dpi = 150)
+	sns.plt.savefig("/home/hong/result_figure/rcv.png", dpi = 150)
 	return df
 
 def plotThroughputSummary(df):
@@ -64,6 +64,7 @@ def plotThroughputSummary(df):
 
 	g = sns.factorplot(data=scheduler_sum_df, x="Scheduler", y="ReceivedBytes", kind="bar", palette=sns.light_palette("red"))
 	sns.plt.savefig("/home/hong/result_figure/rcv_sum_by_scheduler.png", dpi = 150)
+	scheduler_sum_df.to_csv("/home/hong/result_figure/tmp_sum_result.csv")
 
 if __name__ == '__main__':
 	df = plotThroughputs('/home/hong/result_figure/statistic.csv')
