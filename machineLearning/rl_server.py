@@ -242,7 +242,7 @@ if __name__ == "__main__":
 
         dataRecorder.add_one_record(recv_str)
         observation_before_action = extract_observation(dataRecorder)
-        reward = calculate_reward(dataRecorder, reset = True)
+        reward = calculate_reward(dataRecorder, reset = True, byAck=False)
 
         print 'episode: ', episode_count
         f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
@@ -274,7 +274,7 @@ if __name__ == "__main__":
 
             dataRecorder.add_one_record(recv_str)
             observation_after_action = extract_observation(dataRecorder)
-            reward = calculate_reward(dataRecorder)
+            reward = calculate_reward(dataRecorder, reset = False, byAck=False)
             accumulativeReward += reward
             # # Update memory
             RL.store_transition(observation_before_action, action, accumulativeReward, observation_after_action)

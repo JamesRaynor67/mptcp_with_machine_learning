@@ -301,29 +301,48 @@ def apply_action(interacter_socket, dataRecorder, action):
 # calculate_reward.lastAckedSeqSum = 0
 
 
-def calculate_reward(dataRecorder, reset = False):
-    if reset == False:
-        last_record = dataRecorder.get_latest_data()
-        # print last_record
-        # print '--calculate_reward'
-        # print 'old lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
-        reward = 0
-        for i in range(last_record['nbOfSubflows']):
-            reward += last_record["lastAckedSeq" + str(i)]
-        reward -= calculate_reward.lastAckedSeqSum
+def calculate_reward(dataRecorder, reset = False, byAck=True):
+    if byAck is True:
+        if reset == False:
+            last_record = dataRecorder.get_latest_data()
+            # print last_record
+            # print '--calculate_reward'
+            # print 'old lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
+            reward = 0
+            for i in range(last_record['nbOfSubflows']):
+                reward += last_record["lastAckedSeq" + str(i)]
+            reward -= calculate_reward.lastAckedSeqSum
 
-        calculate_reward.lastAckedSeqSum = 0
-        for i in range(last_record['nbOfSubflows']):
-            calculate_reward.lastAckedSeqSum += last_record["lastAckedSeq" + str(i)]
+            calculate_reward.lastAckedSeqSum = 0
+            for i in range(last_record['nbOfSubflows']):
+                calculate_reward.lastAckedSeqSum += last_record["lastAckedSeq" + str(i)]
 
-        # if dataRecorder.action or dataRecorder.action[-1] != 'not send':
-        #     reward -= 10
-        # print 'new lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
-        # print 'reward == ' + str(reward)
-        return reward / 1418.0
-        # don't condiser seq_num wrap
+            # if dataRecorder.action or dataRecorder.action[-1] != 'not send':
+            #     reward -= 10
+            # print 'new lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
+            # print 'reward == ' + str(reward)
+            return reward / 1500.0
+            # don't condiser seq_num wrap
+        else:
+            # print 'In last episode, calculate_reward.lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
+            calculate_reward.lastAckedSeqSum = 0
     else:
-        # print 'In last episode, calculate_reward.lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
-        calculate_reward.lastAckedSeqSum = 0
+        if reset == False:
+            last_record = dataRecorder.get_latest_data()
+
+            reward = 0
+            for i in range(last_record['nbOfSubflows']):
+                reward += last_record["highTxMark" + str(i)]
+            reward -= calculate_reward.highTxSeqSum
+
+            calculate_reward.highTxSeqSum = 0
+            for i in range(last_record['nbOfSubflows']):
+                calculate_reward.highTxSeqSum += last_record["highTxMark" + str(i)]
+
+            return reward / 1500.0
+            # don't condiser seq_num wrap
+        else:
+            calculate_reward.highTxSeqSum = 0
 
 calculate_reward.lastAckedSeqSum = 0
+calculate_reward.highTxSeqSum = 0
