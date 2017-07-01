@@ -14,6 +14,7 @@ from log_monitor_time_bytes import AnalyzeReceivedBytes
 from log_monitor_time_bytes import AnalyzeBytes
 from log_monitor_time_sendingRate import AnalyzeMonitorSendingRate
 from log_monitor_time_sendingRate import AnalyzeMonitorSendingRateUtilization
+from log_monitor_time_sendingRate import AnalyzeMonitorThroughput
 from log_time_tcb import AnalyzeClientRtt
 from log_time_tcb import AnalyzeClientCwnd
 from log_time_tcb import AnalyzeClientRwnd
@@ -214,7 +215,7 @@ def proprocess_schedulerId_data(file_path):
     return scheduler_records
 
 def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_path):
-    record = []
+    client_tx_record = []
     with open(client_file_path, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
@@ -223,12 +224,13 @@ def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_
                 timestamp = int(row[0])/1e9
                 subflowId = int(row[3])
                 seqnum = int(row[4])
+                psize = int(row[7])
                 if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
-                    record.append([timestamp, subflowId, seqnum])
+                    client_tx_record.append([timestamp, subflowId, seqnum, psize])
 
-    record.sort(key=lambda ele:ele[0])
+    client_tx_record.sort(key=lambda ele:ele[0])
     x, y = [[],[]], [[],[]]
-    for row in record:
+    for row in client_tx_record:
         # subflow id is from 0 to n-1
         x[row[1]].append(row[0])
         y[row[1]].append(row[2])
@@ -242,7 +244,7 @@ def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_
     client_max_seqSum = sum([row[-1] for row in y])
 
     ### Above is about client
-    record = []
+    server_rx_record = []
     with open(server_file_path, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         next(spamreader)
@@ -251,12 +253,13 @@ def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_
                 timestamp = int(row[0])/1e9
                 subflowId = int(row[3])
                 seqnum = int(row[4])
+                psize = int(row[7])
                 if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
-                    record.append([timestamp, subflowId, seqnum])
+                    server_rx_record.append([timestamp, subflowId, seqnum, psize])
 
-    record.sort(key=lambda ele:ele[0])
+    server_rx_record.sort(key=lambda ele:ele[0])
     x, y = [[],[]], [[],[]]
-    for row in record:
+    for row in server_rx_record:
         # subflow id is from 0 to n-1
         x[row[1]].append(row[0])
         y[row[1]].append(row[2])
@@ -287,6 +290,7 @@ def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_
     sns.plt.title('Server & Client Time-Seqence number, Max Server/Client SeqSum == ' + str(server_max_seqSum) + '/' + str(client_max_seqSum) + ', Dropped ' + str(drop_count) + ' packets')
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Seqence number', fontsize = 14, color = 'black')
+    return server_rx_record
 
 def analyze_reward(file_path):
     record = []
@@ -309,6 +313,54 @@ def analyze_reward(file_path):
     sns.plt.title('Time-Reward')
     sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
     sns.plt.ylabel('Reward', fontsize = 14, color = 'black')
+
+def AnalyzeThroughput(server_rx_record):
+    # server_rx_record.append([timestamp, subflowId, seqnum, psize])
+    x, y = [[],[]], [[],[]]
+    for row in server_rx_record:
+        # subflow id is from 0 to n-1
+        x[row[1]].append(row[0])
+        y[row[1]].append(row[3])
+    
+    ts = np.arange(0.0, 180, 0.5) # NOTE: 180 is a magic number, because simulation time last for 180s
+    sub0_throughPut = np.empty(ts.shape)
+    sub1_throughPut = np.empty(ts.shape)
+    total_throughPut = np.empty(ts.shape)
+    sub0_headIndex, sub0_tailIndex, sub1_headIndex, sub1_tailIndex = 0, 0, 0, 0
+    sub0_psizeInWindow, sub1_psizeInWindow, total_psizeInWindow = 0, 0, 0
+    halfInterval = 0.5
+    for i in range(ts.shape[0]):
+        # print x[0][headIndex]
+        # print sub0_ts[i]
+        while sub0_headIndex < len(x[0]) and x[0][sub0_headIndex] < ts[i] + halfInterval:
+            sub0_psizeInWindow += y[0][sub0_headIndex]
+            sub0_headIndex += 1
+        while sub0_tailIndex < len(x[0]) and x[0][sub0_tailIndex] <= ts[i] - halfInterval:
+            sub0_psizeInWindow -= y[0][sub0_tailIndex]
+            sub0_tailIndex += 1
+
+        while sub1_headIndex < len(x[1]) and x[1][sub1_headIndex] < ts[i] + halfInterval:
+            sub1_psizeInWindow += y[1][sub1_headIndex]
+            sub1_headIndex += 1
+        while sub1_tailIndex < len(x[1]) and x[1][sub1_tailIndex] <= ts[i] - halfInterval:
+            sub1_psizeInWindow -= y[1][sub1_tailIndex]
+            sub1_tailIndex += 1
+        
+        sub0_throughPut[i] = sub0_psizeInWindow / (halfInterval * 2.0)
+        sub1_throughPut[i] = sub1_psizeInWindow / (halfInterval * 2.0)
+        total_throughPut[i] = (sub0_psizeInWindow + sub1_psizeInWindow) / (halfInterval * 2.0)
+
+    sub0_throughPut = sub0_throughPut * 8 / 1000.0 # convert bytes into Kbit
+    sub1_throughPut = sub1_throughPut * 8 / 1000.0 # convert bytes into Kbit
+    total_throughPut = total_throughPut * 8 / 1000.0
+
+    sub0_throughPut_plt, = plt.plot(ts, sub0_throughPut, 'b-')
+    sub1_throughPut_plt, = plt.plot(ts, sub1_throughPut, 'r-')
+    total_throughPut_plt, = plt.plot(ts, total_throughPut, 'k-')
+    sns.plt.legend([sub0_throughPut_plt, sub1_throughPut_plt, total_throughPut_plt], ['Throughput of subflow 0', 'ThroughPut of subflow 0', 'Overall throughput'], loc='best')
+    sns.plt.title('Time-Throughput')
+    sns.plt.xlabel('Time / s', fontsize = 14, color = 'black')
+    sns.plt.ylabel('Throughput / Kbps', fontsize = 14, color = 'black')
 
 def recordResultToCsv():
     global g_resultRecord
@@ -351,10 +403,12 @@ if __name__ == '__main__':
     server_file_path = '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server'
     client_file_path = '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client'
     drop_file_path = '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_drops'
-    analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_path)
+    server_rx_record = analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_path)
     
     sns.plt.subplot(4,2,2)
-    AnalyzeQueueLength('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_routers_queue_len')
+    AnalyzeThroughput(server_rx_record)
+    # sns.plt.subplot(4,2,2)
+    # AnalyzeQueueLength('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_routers_queue_len')
 
     sns.plt.subplot(4,2,3)
     AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
@@ -364,10 +418,10 @@ if __name__ == '__main__':
     
     sns.plt.subplot(4,2,4)
     monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_monitor')
-    subflow_rates, smoothed_subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
-    
+    subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
+
     sns.plt.subplot(4,2,5)
-    AnalyzeMonitorSendingRateUtilization(subflow_rates, smoothed_subflow_rates, [int(options.LinkBBW[:-4]), int(options.LinkCBW[:-4])])
+    AnalyzeMonitorSendingRateUtilization(subflow_rates, [int(options.LinkBBW[:-4]), int(options.LinkCBW[:-4])])
     
     sns.plt.subplot(4,2,6)
     rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_client_rtt')
@@ -399,5 +453,5 @@ if __name__ == '__main__':
     sns.plt.close()
 
     recordResultToCsv()
-
+    print os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + '_meta_' + options.EpisodeNum + ".png")
     # analyze_reward('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_calculate_reward')
