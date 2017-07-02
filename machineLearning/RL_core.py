@@ -250,12 +250,12 @@ class Actor(object):
         self.s = tf.placeholder(tf.float32, [1, self.n_features], "state")
         self.a = tf.placeholder(tf.int32, None, "act")
         self.td_error = tf.placeholder(tf.float32, None, "td_error")  # TD_error
-        n_l1 = 20
+        n_l1 = 10
         with tf.variable_scope('Actor'):
             with tf.variable_scope('l1'):
                 w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=tf.random_normal_initializer(0.0, 0.1))
                 b1 = tf.get_variable('b1', [1, n_l1], initializer=tf.constant_initializer(0.1))
-                l1 = tf.nn.relu(tf.matmul(self.s, w1) + b1)
+                l1 = tf.nn.tanh(tf.matmul(self.s, w1) + b1)
             with tf.variable_scope('l2'):
                 w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=tf.random_normal_initializer(0.0, 0.1))
                 b2 = tf.get_variable('b2', [1, self.n_actions], initializer=tf.constant_initializer(0.1))
@@ -302,7 +302,7 @@ class Critic(object):
         self.s = tf.placeholder(tf.float32, [1, n_features], "state")
         self.v_ = tf.placeholder(tf.float32, [1, 1], "v_next")
         self.r = tf.placeholder(tf.float32, None, 'r')
-        n_l1 = 20
+        n_l1 = 10
         GAMMA = 0.9
         with tf.variable_scope('Critic'):
             with tf.variable_scope('l1'):
