@@ -7,7 +7,7 @@ declare -A RLConfig; declare -A Ns3Config
 # router_b_buffer="100"
 # router_c_buffer="100"
 # link_b_BER="0"
-# topology_id="0"
+# topology_id="11"
 
 scheduler="RL-Choose"
 dirPath=""
@@ -27,15 +27,15 @@ function postProcess(){
 }
 
 function runRL(){
-  python ./machineLearning/rl_server.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" &
+  python ./machineLearning/rl_server.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" -a "${RLConfig["algorithm"]}" &
 }
 
 function runNS3(){
 #  local episodeNum="${1}"
   ./waf --run scratch/run/run --command="%s --link_a_BW="${Ns3Config["link_a_BW"]}" --link_b_BW="${Ns3Config["link_b_BW"]}" --link_c_BW="${Ns3Config["link_c_BW"]}"\
-                              --link_a_delay="${Ns3Config["link_a_delay"]}" --link_b_delay="${Ns3Config["link_b_delay"]}" --link_c_delay="${Ns3Config["link_c_delay"]}"\
-                              --link_b_BER="${Ns3Config["link_b_BER"]}" --tcp_buffer_size="${Ns3Config["tcpBuffer"]}" --router_b_buffer_size="${Ns3Config["linkBBuffer"]}"\
-                              --router_c_buffer_size="${Ns3Config["linkCBuffer"]}" --topology_id="${Ns3Config["topology_id"]}""
+                                --link_a_delay="${Ns3Config["link_a_delay"]}" --link_b_delay="${Ns3Config["link_b_delay"]}" --link_c_delay="${Ns3Config["link_c_delay"]}"\
+                                --link_b_BER="${Ns3Config["link_b_BER"]}" --tcp_buffer_size="${Ns3Config["tcp_buffer"]}" --router_b_buffer_size="${Ns3Config["router_b_buffer"]}"\
+                                --router_c_buffer_size="${Ns3Config["router_c_buffer"]}" --topology_id="${Ns3Config["topology_id"]}""
 }
 
 function record(){
@@ -44,7 +44,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=20 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=20 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}" ["algorithm"]="ActorCritic")
 }
 
 #####################
@@ -57,9 +57,9 @@ do
   unset Ns3Config; declare -A Ns3Config
   
   case "$(( ( RANDOM % 2 ) ))" in
-  1) loadDefaultBufferSetting; loadParamExp15
+  1) loadDefaultBufferSetting; loadParamExp901
     ;;
-  *) loadDefaultBufferSetting; loadParamExp17
+  *) loadDefaultBufferSetting; loadParamExp902
     ;;
   esac
 

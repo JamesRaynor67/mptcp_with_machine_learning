@@ -6,9 +6,10 @@ declare -A RLConfig; declare -A Ns3Config
 scheduler="RL-Choose"
 dirPath=""
 experimentNum=16
-maxEpisode=$experimentNum*3 # if change 3 into another unmber, must modify plotThroughputSummary() in log_bytes.py
+maxEpisode=$(( $experimentNum * 3 )) # if change 3 into another unmber, must modify plotThroughputSummary() in log_bytes.py
 restoreFromFile="${1}" # This is the input of this script
 commentStr="${2}"
+algorithm="ActorCritic"
 
 function preProcess(){
   timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
@@ -27,7 +28,7 @@ function postProcess(){
 
 function runRL(){
   echo "${restoreFromFile}"
-  python ./machineLearning/rl_test.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" -r "${restoreFromFile}"&
+  python ./machineLearning/rl_test.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" -r "${restoreFromFile}" -a "${RLConfig["algorithm"]}" &
 }
 
 function runNS3(){
@@ -43,7 +44,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=$maxEpisode ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=$maxEpisode ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}" ["algorithm"]="${algorithm}")
 }
 
 function runSet() {
@@ -89,37 +90,37 @@ do
   unset Ns3Config; declare -A Ns3Config
   
   case "$(( ( $episodeNum % $experimentNum ) ))" in
-  0) loadDefaultBufferSetting; loadParamExp21
+  0) loadDefaultBufferSetting; loadParamExp900
     ;;
-  1) loadDefaultBufferSetting; loadParamExp22
+  1) loadDefaultBufferSetting; loadParamExp901
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp23
+  2) loadDefaultBufferSetting; loadParamExp902
     ;;
-  3) loadDefaultBufferSetting; loadParamExp24
+  3) loadDefaultBufferSetting; loadParamExp903
     ;;
-  4) loadDefaultBufferSetting; loadParamExp25
+  4) loadDefaultBufferSetting; loadParamExp904
     ;;
-  5) loadDefaultBufferSetting; loadParamExp26
+  5) loadDefaultBufferSetting; loadParamExp905
     ;;
-  6) loadDefaultBufferSetting; loadParamExp27
+  6) loadDefaultBufferSetting; loadParamExp906
     ;;
-  7) loadDefaultBufferSetting; loadParamExp28
+  7) loadDefaultBufferSetting; loadParamExp907
     ;;    
-  8) loadDefaultBufferSetting; loadParamExp29
+  8) loadDefaultBufferSetting; loadParamExp908
     ;;
-  9) loadDefaultBufferSetting; loadParamExp30
+  9) loadDefaultBufferSetting; loadParamExp909
     ;;
-  10) loadDefaultBufferSetting; loadParamExp31
+  10) loadDefaultBufferSetting; loadParamExp910
     ;;
-  11) loadDefaultBufferSetting; loadParamExp32
+  11) loadDefaultBufferSetting; loadParamExp911
     ;;
-  12) loadDefaultBufferSetting; loadParamExp33
+  12) loadDefaultBufferSetting; loadParamExp912
     ;;    
-  13) loadDefaultBufferSetting; loadParamExp34
+  13) loadDefaultBufferSetting; loadParamExp913
     ;;
-  14) loadDefaultBufferSetting; loadParamExp35
+  14) loadDefaultBufferSetting; loadParamExp914
     ;;
-  15) loadDefaultBufferSetting; loadParamExp36
+  15) loadDefaultBufferSetting; loadParamExp915
   ;;
   *) echo 'Error!'; exit
     ;;
@@ -137,37 +138,37 @@ do
   unset Ns3Config; declare -A Ns3Config
   
   case "$(( ( $episodeNum % $experimentNum ) ))" in
-  0) loadDefaultBufferSetting; loadParamExp21
+  0) loadDefaultBufferSetting; loadParamExp900
     ;;
-  1) loadDefaultBufferSetting; loadParamExp22
+  1) loadDefaultBufferSetting; loadParamExp901
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp23
+  2) loadDefaultBufferSetting; loadParamExp902
     ;;
-  3) loadDefaultBufferSetting; loadParamExp24
+  3) loadDefaultBufferSetting; loadParamExp903
     ;;
-  4) loadDefaultBufferSetting; loadParamExp25
+  4) loadDefaultBufferSetting; loadParamExp904
     ;;
-  5) loadDefaultBufferSetting; loadParamExp26
+  5) loadDefaultBufferSetting; loadParamExp905
     ;;
-  6) loadDefaultBufferSetting; loadParamExp27
+  6) loadDefaultBufferSetting; loadParamExp906
     ;;
-  7) loadDefaultBufferSetting; loadParamExp28
+  7) loadDefaultBufferSetting; loadParamExp907
     ;;    
-  8) loadDefaultBufferSetting; loadParamExp29
+  8) loadDefaultBufferSetting; loadParamExp908
     ;;
-  9) loadDefaultBufferSetting; loadParamExp30
+  9) loadDefaultBufferSetting; loadParamExp909
     ;;
-  10) loadDefaultBufferSetting; loadParamExp31
+  10) loadDefaultBufferSetting; loadParamExp910
     ;;
-  11) loadDefaultBufferSetting; loadParamExp32
+  11) loadDefaultBufferSetting; loadParamExp911
     ;;
-  12) loadDefaultBufferSetting; loadParamExp33
+  12) loadDefaultBufferSetting; loadParamExp912
     ;;    
-  13) loadDefaultBufferSetting; loadParamExp34
+  13) loadDefaultBufferSetting; loadParamExp913
     ;;
-  14) loadDefaultBufferSetting; loadParamExp35
+  14) loadDefaultBufferSetting; loadParamExp914
     ;;
-  15) loadDefaultBufferSetting; loadParamExp36
+  15) loadDefaultBufferSetting; loadParamExp915
   ;;
   *) echo 'Error!'; exit
     ;;

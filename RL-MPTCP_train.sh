@@ -32,7 +32,7 @@ function postProcess(){
 }
 
 function runRL(){
-  python ./machineLearning/rl_server.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" &
+  python ./machineLearning/rl_server.py -m "${RLConfig["maxEpisode"]}" -i "${RLConfig["sendInterval"]}" -p "${RLConfig["savePath"]}" -a "${RLConfig["algorithm"]}" &
 }
 
 function runNS3(){
@@ -48,7 +48,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=16 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=64 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}" ["algorithm"]="ActorCritic")
 }
 
 #####################

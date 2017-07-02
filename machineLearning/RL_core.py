@@ -10,8 +10,8 @@ from rl_socket import Interacter_socket
 def clip(x, low, high):
     return low if x < low else high if x > high else x
 
-np.random.seed(1)
-tf.set_random_seed(1)
+#np.random.seed(1)
+#tf.set_random_seed(1)
 
 # Deep Q Network off-policy
 class DeepQNetwork:
@@ -233,6 +233,109 @@ class DeepQNetwork:
         plt.xlabel('training steps')
         plt.show()
 
+class Actor(object):
+    def __init__(self, sess, n_features, n_actions, lr=0.001, save_path=None, restore_from_file=None):
+        self.sess = sess
+        self.restore_from_file = restore_from_file
+        self.save_path = save_path
+        self.n_features = n_features
+        self.n_actions = n_actions
+        self.lr = lr
+        if self.restore_from_file is None:
+            self._build_net()
+        else:
+            self._restore()
+
+    def _build_net(self):
+        self.s = tf.placeholder(tf.float32, [1, self.n_features], "state")
+        self.a = tf.placeholder(tf.int32, None, "act")
+        self.td_error = tf.placeholder(tf.float32, None, "td_error")  # TD_error
+        n_l1 = 20
+        with tf.variable_scope('Actor'):
+            with tf.variable_scope('l1'):
+                w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=tf.random_normal_initializer(0.0, 0.1))
+                b1 = tf.get_variable('b1', [1, n_l1], initializer=tf.constant_initializer(0.1))
+                l1 = tf.nn.relu(tf.matmul(self.s, w1) + b1)
+            with tf.variable_scope('l2'):
+                w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=tf.random_normal_initializer(0.0, 0.1))
+                b2 = tf.get_variable('b2', [1, self.n_actions], initializer=tf.constant_initializer(0.1))
+                self.acts_prob = tf.nn.softmax(tf.add(tf.matmul(l1, w2), b2), name="acts_prob")
+        with tf.variable_scope('exp_v'):
+            log_prob = tf.log(self.acts_prob[0, self.a])
+            self.exp_v = tf.reduce_mean(log_prob * self.td_error)  # advantage (TD_error) guided loss
+        with tf.variable_scope('train'):
+            self.train_op = tf.train.AdamOptimizer(self.lr).minimize(-self.exp_v)  # minimize(-exp_v) = maximize(exp_v)
+
+    def learn(self, s, a, td):
+        s = s[np.newaxis, :]
+        feed_dict = {self.s: s, self.a: a, self.td_error: td}
+        _, exp_v = self.sess.run([self.train_op, self.exp_v], feed_dict)
+        return exp_v
+
+    def choose_action(self, s):
+        s = s[np.newaxis, :]
+        probs = self.sess.run(self.acts_prob, {self.s: s})   # get probabilities for all actions
+        return np.random.choice(np.arange(probs.shape[1]), p=probs.ravel())   # return a int
+
+    def _restore(self):
+        print "Restore net from file: " + self.restore_from_file
+        saver = tf.train.import_meta_graph(self.restore_from_file)
+        dirname = os.path.dirname(os.path.abspath(self.restore_from_file))
+        saver.restore(self.sess, tf.train.latest_checkpoint(dirname))
+
+        graph = tf.get_default_graph()
+        self.s = graph.get_tensor_by_name("state:0")
+        self.acts_prob = graph.get_tensor_by_name("Actor/l2/acts_prob:0")
+        self.a = graph.get_tensor_by_name("act:0")
+        self.td_error = graph.get_tensor_by_name("td_error:0")
+
+    def save_model(self, step, isFianl=False):
+        saver = tf.train.Saver()
+        if isFianl is False:
+            saver.save(self.sess, os.path.join(self.save_path, 'my_model'), global_step=step)
+        else:
+            saver.save(self.sess, os.path.join(self.save_path, 'my_final_model'), global_step=step)
+
+class Critic(object):
+    def __init__(self, sess, n_features, lr=0.01, save_path=None, restore_from_file=None):
+        self.sess = sess
+        self.s = tf.placeholder(tf.float32, [1, n_features], "state")
+        self.v_ = tf.placeholder(tf.float32, [1, 1], "v_next")
+        self.r = tf.placeholder(tf.float32, None, 'r')
+        n_l1 = 20
+        GAMMA = 0.9
+        with tf.variable_scope('Critic'):
+            with tf.variable_scope('l1'):
+                w1 = tf.get_variable('w1', [n_features, n_l1], initializer=tf.random_normal_initializer(0.0, 0.1))
+                b1 = tf.get_variable('b1', [1, n_l1], initializer=tf.constant_initializer(0.1))
+                l1 = tf.nn.relu(tf.matmul(self.s, w1) + b1)
+
+            with tf.variable_scope('l2'):
+                w2 = tf.get_variable('w2', [n_l1, 1], initializer=tf.random_normal_initializer(0.0, 0.1))
+                b2 = tf.get_variable('b2', [1, 1], initializer=tf.constant_initializer(0.1))
+                self.v = tf.add(tf.matmul(l1, w2), b2, name="V")
+
+        with tf.variable_scope('squared_TD_error'):
+            self.td_error = self.r + GAMMA * self.v_ - self.v
+            self.loss = tf.square(self.td_error)    # TD_error = (r+gamma*V_next) - V_eval
+        with tf.variable_scope('train'):
+            self.train_op = tf.train.AdamOptimizer(lr).minimize(self.loss)
+
+    def learn(self, s, r, s_):
+        s, s_ = s[np.newaxis, :], s_[np.newaxis, :]
+
+        v_ = self.sess.run(self.v, {self.s: s_})
+        td_error, _ = self.sess.run([self.td_error, self.train_op],
+                                          {self.s: s, self.v_: v_, self.r: r})
+        return td_error
+
+    def _restore(self):
+        assert False
+        # There is no need for Critic to restore. I only use Actor when test
+
+    def save_model(self, isFianl=False):
+        assert False
+        # Let's save model file in Actor
 
 def extract_observation(dataRecorder):
     # let's set return value "observation" to be a np array with fixed length
@@ -260,45 +363,17 @@ def extract_observation(dataRecorder):
 def action_translator(dataRecorder, action):
     # action is a numpy array, so we need translator
     # let's set return value "action" to be an integer
-    # 0 choose subflow 0
-    # 1 choose subflow 1
-    # 2 choose subflow 2
+    # 0 choose RR
+    # 1 choose RTT
+    # 2 choose RD
+    # 3 choose L-DBP
     # print type(action), action
     return str(int(action))
 
 def apply_action(interacter_socket, dataRecorder, action):
     dataRecorder.action.append(action)
     tx_str = action_translator(dataRecorder, action)
-    # print dataRecorder.get_latest_subflow_data()
-    # print '-- apply action: dfdfddf'
     interacter_socket.send(tx_str) # apply action
-
-# def calculate_reward(dataRecorder, reset = False):
-#     if reset == False:
-#         last_record = dataRecorder.get_latest_data()
-#         # print last_record
-#         # print '--calculate_reward'
-#         # print 'old lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
-#         reward = 0
-#         for i in range(last_record['nbOfSubflows']):
-#             reward += last_record["lastAckedSeq" + str(i)]
-#         reward -= calculate_reward.lastAckedSeqSum
-
-#         calculate_reward.lastAckedSeqSum = 0
-#         for i in range(last_record['nbOfSubflows']):
-#             calculate_reward.lastAckedSeqSum += last_record["lastAckedSeq" + str(i)]
-
-#         # if dataRecorder.action or dataRecorder.action[-1] != 'not send':
-#         #     reward -= 10
-#         # print 'new lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
-#         # print 'reward == ' + str(reward)
-#         return reward
-#         # don't condiser seq_num wrap
-#     else:
-#         # print 'In last episode, calculate_reward.lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
-#         calculate_reward.lastAckedSeqSum = 0
-
-# calculate_reward.lastAckedSeqSum = 0
 
 
 def calculate_reward(dataRecorder, reset = False, byAck=True):
@@ -326,6 +401,7 @@ def calculate_reward(dataRecorder, reset = False, byAck=True):
         else:
             # print 'In last episode, calculate_reward.lastAckedSeqSum == ', calculate_reward.lastAckedSeqSum
             calculate_reward.lastAckedSeqSum = 0
+            return 0
     else:
         if reset == False:
             last_record = dataRecorder.get_latest_data()
@@ -343,6 +419,7 @@ def calculate_reward(dataRecorder, reset = False, byAck=True):
             # don't condiser seq_num wrap
         else:
             calculate_reward.highTxSeqSum = 0
+            return 0
 
 calculate_reward.lastAckedSeqSum = 0
 calculate_reward.highTxSeqSum = 0

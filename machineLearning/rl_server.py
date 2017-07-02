@@ -3,6 +3,7 @@ import pandas
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import tensorflow as tf
 from time import sleep
 from optparse import OptionParser
 
@@ -11,6 +12,8 @@ from RL_core import DeepQNetwork
 from RL_core import extract_observation
 from RL_core import calculate_reward
 from RL_core import apply_action
+from RL_core import Actor
+from RL_core import Critic
 from shutil import copyfile
 
 class RecordRTT():
@@ -217,88 +220,173 @@ if __name__ == "__main__":
     parser.add_option("-m", "--maxEpisode", dest="MaxEpisode", default=1, help="The number of times to train (launch NS3)")
     parser.add_option("-i", "--switchInterval", dest="SwitchInterval", default=-1, help="The interval of switching scheduler")
     parser.add_option("-p", "--savePath", dest="SavePath", default="./rl_training_data/logs/", help="The path to save model and log files")
+    parser.add_option("-a", "--algorithm", dest="Algorithm", default="DQN", help="The reinforcement learning algorithm to use ")
     (options, args) = parser.parse_args()
 
-    episode_count = 0
-    RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.99, e_greedy=0.9, 
+    if options.Algorithm == "DQN":
+        episode_count = 0
+        RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.99, e_greedy=0.9, 
                     replace_target_iter=200, memory_size=2000, output_graph=True, save_path=options.SavePath, restore_from_file=None)
+        while episode_count < int(options.MaxEpisode):
+            rttRecorder = RecordRTT('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rtt')
+            cWndRecorder = RecordCwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_cWnd')
+            rWndRecorder = RecordRwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rWnd')
+            unAckRecorder = RecordUnAck('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_unAck')
+            availableTxBufferRecord = RecordAvailableTxBuffer('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_txBufferSize')
+            metaRecorder = RecordMeta('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_meta_socket')
+            schedulerIdRecord = RecordSchedulerId('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_schedulerId')
+            dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder, availableTxBufferRecord, schedulerIdRecord, metaRecorder)
 
-    while episode_count < int(options.MaxEpisode):
-        rttRecorder = RecordRTT('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rtt')
-        cWndRecorder = RecordCwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_cWnd')
-        rWndRecorder = RecordRwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rWnd')
-        unAckRecorder = RecordUnAck('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_unAck')
-        availableTxBufferRecord = RecordAvailableTxBuffer('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_txBufferSize')
-        metaRecorder = RecordMeta('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_meta_socket')
-        schedulerIdRecord = RecordSchedulerId('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_schedulerId')
-        dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder, availableTxBufferRecord, schedulerIdRecord, metaRecorder)
+            socket = Interacter_socket(host = '', port = 12345)
+            socket.listen()
+            recv_str, this_episode_done = socket.recv()
 
-        socket = Interacter_socket(host = '', port = 12345)
-        socket.listen()
-        recv_str, this_episode_done = socket.recv()
-
-        if this_episode_done:
-            print "RL server ended too early! " + recv_str; exit()
-
-        dataRecorder.add_one_record(recv_str)
-        observation_before_action = extract_observation(dataRecorder)
-        reward = calculate_reward(dataRecorder, reset = True, byAck=False)
-
-        print 'episode: ', episode_count
-        f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
-        step, lastSchedulerTiming, accumulativeReward = 0, float("-inf"), 0 # float("-inf") ensures that a scheduler is choosen at first time
-
-        while True:
-            # Choose action
-            # print 'recv_str: ', recv_str
-            # print 'observation: ', observation_before_action
-            shouldUpdata = False
-            if dataRecorder.get_latest_data()["time"] - lastSchedulerTiming > int(options.SwitchInterval): # in microsecond
-                lastSchedulerTiming = dataRecorder.get_latest_data()["time"]
-                shouldUpdata = True
-                accumulativeReward = 0
-
-            if shouldUpdata:
-                action = RL.choose_action(observation_before_action)
-                if options.ForceReply is not None:
-                    action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
-                # print "Hong Jiaming RL: " + str(dataRecorder.get_latest_data()["time"]) + ": is going to use scheduler with id: " + str(action)
-                apply_action(socket, dataRecorder, action) # Apply action to environment
-            else:
-                apply_action(socket, dataRecorder, 999)
-            dataRecorder.add_pair_to_last_record(name="schedulerId", value=action)
-
-            recv_str, this_episode_done = socket.recv() # get new observation and reward
-            if this_episode_done is True:
-                break
+            if this_episode_done:
+                print "RL server ended too early! " + recv_str; exit()
 
             dataRecorder.add_one_record(recv_str)
-            observation_after_action = extract_observation(dataRecorder)
-            reward = calculate_reward(dataRecorder, reset = False, byAck=False)
-            accumulativeReward += reward
-            # # Update memory
-            RL.store_transition(observation_before_action, action, accumulativeReward, observation_after_action)
+            observation_before_action = extract_observation(dataRecorder)
+            reward = calculate_reward(dataRecorder, reset = True, byAck=False)
 
-            if (step > 200) and (step % 5 == 0):   # may need other parameters?
-                RL.learn()
+            print 'episode: ', episode_count
+            f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
+            step, lastSchedulerTiming, accumulativeReward = 0, float("-inf"), 0 # float("-inf") ensures that a scheduler is choosen at first time
 
-            observation_before_action = observation_after_action
+            while True:
+                # Choose action
+                # print 'recv_str: ', recv_str
+                # print 'observation: ', observation_before_action
+                shouldUpdata = False
+                if dataRecorder.get_latest_data()["time"] - lastSchedulerTiming > int(options.SwitchInterval): # in microsecond
+                    lastSchedulerTiming = dataRecorder.get_latest_data()["time"]
+                    shouldUpdata = True
+                    accumulativeReward = 0
 
-            f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(reward) + '\n')
-            step += 1
+                if shouldUpdata:
+                    action = RL.choose_action(observation_before_action)
+                    if options.ForceReply is not None:
+                        action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
+                    # print "Hong Jiaming RL: " + str(dataRecorder.get_latest_data()["time"]) + ": is going to use scheduler with id: " + str(action)
+                    apply_action(socket, dataRecorder, action) # Apply action to environment
+                else:
+                    apply_action(socket, dataRecorder, 999)
+                dataRecorder.add_pair_to_last_record(name="schedulerId", value=action)
 
-        if episode_count % 50 == 0:
-            RL.save_model(isFianl=False)
+                recv_str, this_episode_done = socket.recv() # get new observation and reward
+                if this_episode_done is True:
+                    break
 
-        socket.close()
-        socket = None
-        f.close()
+                dataRecorder.add_one_record(recv_str)
+                observation_after_action = extract_observation(dataRecorder)
+                reward = calculate_reward(dataRecorder, reset = False, byAck=False)
+                accumulativeReward += reward
+                # # Update memory
+                RL.store_transition(observation_before_action, action, accumulativeReward, observation_after_action)
 
-        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_calculate_reward')
-        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_client')
-        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_drops')
-        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_server')
-        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_monitor", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_monitor')
-        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/routers_queue_len", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_routers_queue_len')
-        episode_count += 1
-    RL.save_model(isFianl=True)
+                if (step > 200) and (step % 5 == 0):   # may need other parameters?
+                    RL.learn()
+
+                observation_before_action = observation_after_action
+
+                f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(reward) + '\n')
+                step += 1
+
+            if episode_count % 50 == 0:
+                RL.save_model(isFianl=False)
+
+            socket.close()
+            socket = None
+            f.close()
+
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_calculate_reward')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_client')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_drops')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_server')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_monitor", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_monitor')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/routers_queue_len", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_routers_queue_len')
+            episode_count += 1
+        RL.save_model(isFianl=True)
+    
+    elif options.Algorithm == "ActorCritic":
+        episode_count = 0
+        sess = tf.Session()
+        actor = Actor(sess, n_features=8, n_actions=4, lr=0.001, save_path=options.SavePath, restore_from_file=None)
+        critic = Critic(sess, n_features=8, lr=0.01)     # we need a good teacher, so the teacher should learn faster than the actor
+        sess.run(tf.global_variables_initializer())
+
+        while episode_count < int(options.MaxEpisode):
+            rttRecorder = RecordRTT('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rtt')
+            cWndRecorder = RecordCwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_cWnd')
+            rWndRecorder = RecordRwnd('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_rWnd')
+            unAckRecorder = RecordUnAck('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_unAck')
+            availableTxBufferRecord = RecordAvailableTxBuffer('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_client_txBufferSize')
+            metaRecorder = RecordMeta('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_meta_socket')
+            schedulerIdRecord = RecordSchedulerId('/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_schedulerId')
+            dataRecorder = DataRecorder(rttRecorder, cWndRecorder, rWndRecorder, unAckRecorder, availableTxBufferRecord, schedulerIdRecord, metaRecorder)
+            socket = Interacter_socket(host = '', port = 12345)
+            socket.listen()
+            recv_str, this_episode_done = socket.recv()
+
+            if this_episode_done:
+                print "RL server ended too early! " + recv_str; exit()
+
+            dataRecorder.add_one_record(recv_str)
+            observation_before_action = extract_observation(dataRecorder)
+            reward = calculate_reward(dataRecorder, reset = True, byAck=False)
+
+            print 'episode: ', episode_count
+            f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
+            step, lastSchedulerTiming, accumulativeReward = 0, float("-inf"), 0 # float("-inf") ensures that a scheduler is choosen at first time
+
+            while True:
+                # Choose action
+                # print 'recv_str: ', recv_str
+                # print 'observation: ', observation_before_action
+                shouldUpdata = False
+                if dataRecorder.get_latest_data()["time"] - lastSchedulerTiming > int(options.SwitchInterval): # in microsecond
+                    lastSchedulerTiming = dataRecorder.get_latest_data()["time"]
+                    shouldUpdata = True
+
+                if shouldUpdata:
+                    action = actor.choose_action(observation_before_action)
+                    if options.ForceReply is not None:
+                        action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
+                    # print "Hong Jiaming RL: " + str(dataRecorder.get_latest_data()["time"]) + ": is going to use scheduler with id: " + str(action)
+                    apply_action(socket, dataRecorder, action) # Apply action to environment
+                else:
+                    apply_action(socket, dataRecorder, 999)
+                dataRecorder.add_pair_to_last_record(name="schedulerId", value=action)
+
+                recv_str, this_episode_done = socket.recv() # get new observation and reward
+                if this_episode_done is True:
+                    break
+
+                dataRecorder.add_one_record(recv_str)
+                observation_after_action = extract_observation(dataRecorder)            
+                reward = calculate_reward(dataRecorder, reset = False, byAck=False)
+                td_error = critic.learn(observation_before_action, reward, observation_after_action)
+                actor.learn(observation_before_action, action, td_error)
+
+                observation_before_action = observation_after_action
+
+                f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(reward) + '\n')
+                step += 1
+
+            if episode_count % 50 == 0:
+                actor.save_model(step=step, isFianl=False)
+
+            socket.close()
+            socket = None
+            f.close()
+
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_calculate_reward')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_client')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_drops')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_server')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_monitor", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_monitor')
+            copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/routers_queue_len", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_routers_queue_len')
+            episode_count += 1
+        actor.save_model(step=step, isFianl=True)
+    else:
+        print "Unknow RL algorithm"
+        assert False

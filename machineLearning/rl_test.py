@@ -3,11 +3,13 @@ import pandas
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import tensorflow as tf
 from time import sleep
 from optparse import OptionParser
 
 from rl_socket import Interacter_socket
 from RL_core import DeepQNetwork
+from RL_core import Actor 
 from RL_core import extract_observation
 from RL_core import calculate_reward
 from RL_core import apply_action
@@ -30,13 +32,21 @@ if __name__ == "__main__":
     parser.add_option("-i", "--switchInterval", dest="SwitchInterval", default=-1, help="The interval of switching scheduler, note this value maybe better to be the same with the one used in training.")
     parser.add_option("-p", "--savePath", dest="SavePath", default="./rl_training_data/logs/", help="The path to save model and log files")
     parser.add_option("-r", "--storeFile", dest="RestoreFile", default=None, help="The file from which to restore net")
+    parser.add_option("-a", "--algorithm", dest="Algorithm", default="DQN", help="The reinforcement learning algorithm to use")
     (options, args) = parser.parse_args()
 
     assert options.RestoreFile is not None
 
     episode_count = 0
-    RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.99, e_greedy=0.9, 
+    if options.Algorithm == "DQN":
+        RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.99, e_greedy=0.9, 
                     replace_target_iter=200, memory_size=2000, output_graph=True, save_path=options.SavePath, restore_from_file=options.RestoreFile)
+    elif options.Algorithm == "ActorCritic":
+        sess = tf.Session()
+        RL = Actor(sess, n_features=8, n_actions=4, lr=0.001, save_path=options.SavePath, restore_from_file=options.RestoreFile)
+    else:
+        assert False
+        # unimplemented RL algorithm
 
     while episode_count < int(options.MaxEpisode):
 
