@@ -8,6 +8,8 @@
 #include "file-transfer-application.h"
 
 namespace ns3{
+extern std::string g_link_b_BW;
+extern std::string g_link_c_BW;
 
 void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, uint32_t packetSize)
 {
@@ -48,7 +50,6 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
       sinkPort++;
     }
     else{
-      std::cout << "TCP OnOff App installed" << std::endl;
       // PacketSinkHelper packetSinkHelper ("ns3::UdpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
       PacketSinkHelper packetSinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
       ApplicationContainer sinkApps = packetSinkHelper.Install(servers.Get(i));
@@ -59,9 +60,16 @@ void InstallOnOffApplications(NodeContainer& servers, NodeContainer& clients, ui
       // OnOffHelper onOffHelper ("ns3::UdpSocketFactory", sinkAddress);
       // onOffHelper.SetAttribute ("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
       // onOffHelper.SetAttribute ("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
-      onOffHelper.SetAttribute ("OnTime", StringValue("ns3::UniformRandomVariable[Min=0|Max=5]"));
+      onOffHelper.SetAttribute ("OnTime", StringValue("ns3::ExponentialRandomVariable[Mean=5|Bound=10]"));
       onOffHelper.SetAttribute ("OffTime", StringValue("ns3::UniformRandomVariable[Min=0|Max=5]"));
-      onOffHelper.SetAttribute ("DataRate", StringValue("0.3Mbps"));
+      if(servers.Get(i)->GetId() == 10){
+        onOffHelper.SetAttribute ("DataRate", StringValue(g_link_b_BW));  // 95867K * 1500 / 1438 = 100M
+        std::cout << g_link_b_BW << " (b) TCP OnOff App installed on node " << clients.Get(i)->GetId() << std::endl;
+      }
+      else{
+        onOffHelper.SetAttribute ("DataRate", StringValue(g_link_c_BW));  // 95867K * 1500 / 1438 = 100M
+        std::cout << g_link_c_BW << " (c) TCP OnOff App installed on node " << clients.Get(i)->GetId() << std::endl;
+      }
       onOffHelper.SetAttribute ("PacketSize", UintegerValue(packetSize));
 
       ApplicationContainer source;

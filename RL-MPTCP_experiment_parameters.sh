@@ -10,8 +10,9 @@ function checkNoneEmpty(){
   fi
 }
 
+# router_b_buffer and router_c_buffer becomes almost useless. Bucause it sets device queue only. Queue disc setting is decided by link bandwidth
 function loadDefaultBufferSetting(){
-  tcp_buffer="262144";router_b_buffer="100";router_c_buffer="100";link_b_BER="0.0000002";topology_id="11"
+  tcp_buffer="262144";router_b_buffer="100";router_c_buffer="100";link_b_BER="0";topology_id="5"
   echo 'tcp_buffer='$tcp_buffer ' router_b_buffer='$router_b_buffer ' router_c_buffer='$router_b_buffer ' link_b_BER='$link_b_BER ' topology_id='$topology_id 
 }
 
@@ -39,16 +40,16 @@ function loadParamExp24() {
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp24")
 }
 
-# Modified, switched link b and link c
+# Modified, switched link b and link c X
 function loadParamExp25() {
   checkNoneEmpty
-  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="50Kbps" ["link_c_BW"]="200Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="250ms" ["link_c_delay"]="15ms" \
+  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="50Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="50ms" ["link_c_delay"]="15ms" \
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp25")
 }
 
 function loadParamExp26() {
   checkNoneEmpty
-  Ns3Config+=(["link_a_BW"]="250Kbps" ["link_b_BW"]="100Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="250ms" ["link_c_delay"]="15ms" \
+  Ns3Config+=(["link_a_BW"]="250Kbps" ["link_b_BW"]="100Kbps" ["link_c_BW"]="100Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="50ms" ["link_c_delay"]="15ms" \
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp26")
 }
 
@@ -64,10 +65,10 @@ function loadParamExp28() {
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp28")
 }
 
-# Modified, switched link b and link c
+# Modified, switched link b and link c X
 function loadParamExp29() {
   checkNoneEmpty
-  Ns3Config+=(["link_a_BW"]="250Kbps" ["link_b_BW"]="50Kbps" ["link_c_BW"]="200Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
+  Ns3Config+=(["link_a_BW"]="250Kbps" ["link_b_BW"]="200Kbps" ["link_c_BW"]="50Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp29")
 }
 
@@ -89,10 +90,10 @@ function loadParamExp32() {
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp32")
 }
 
-# Modified, switched link b and link c
+# Modified, switched link b and link c X
 function loadParamExp33() {
   checkNoneEmpty
-  Ns3Config+=(["link_a_BW"]="250Kbps" ["link_b_BW"]="50Kbps" ["link_c_BW"]="250Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
+  Ns3Config+=(["link_a_BW"]="250Kbps" ["link_b_BW"]="250Kbps" ["link_c_BW"]="50Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp33")
 }
 
@@ -108,10 +109,10 @@ function loadParamExp35() {
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp35")
 }
 
-# Modified, switched link b and link c
+# Modified, switched link b and link c X
 function loadParamExp36() {
   checkNoneEmpty
-  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="50Kbps" ["link_c_BW"]="250Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
+  Ns3Config+=(["link_a_BW"]="400Kbps" ["link_b_BW"]="250Kbps" ["link_c_BW"]="50Kbps" ["link_a_delay"]="6ms" ["link_b_delay"]="15ms" ["link_c_delay"]="15ms" \
               ["tcp_buffer"]="$tcp_buffer" ["router_b_buffer"]="$router_b_buffer" ["router_c_buffer"]="$router_c_buffer" ["link_b_BER"]="$link_b_BER" ["topology_id"]="$topology_id" ["experiment"]="Exp36")
 }
 

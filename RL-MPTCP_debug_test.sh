@@ -44,7 +44,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=$maxEpisode ["scheduler"]=$scheduler ["sendInterval"]="1000000" ["savePath"]="${dirPath}" ["algorithm"]="${algorithm}")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=$maxEpisode ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}" ["algorithm"]="${algorithm}")
 }
 
 function runSet() {
@@ -84,7 +84,7 @@ function runByAllSchedulers(){
 preProcess
 loadRLPara
 runRL
-sleep 8  # restore takes some longer time, may need to set this value larger in the future
+sleep 20  # restore takes some longer time, may need to set this value larger in the future
 for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
@@ -92,11 +92,11 @@ do
   case "$(( ( $episodeNum % $experimentNum ) ))" in
   0) loadDefaultBufferSetting; loadParamExp22
     ;;
-  1) loadDefaultBufferSetting; loadParamExp25
+  1) loadDefaultBufferSetting; loadParamExp22
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp26
+  2) loadDefaultBufferSetting; loadParamExp22
     ;;
-  3) loadDefaultBufferSetting; loadParamExp29
+  3) loadDefaultBufferSetting; loadParamExp22
   ;;
   *) echo 'Error!'; exit
     ;;
@@ -116,11 +116,11 @@ do
   case "$(( ( $episodeNum % $experimentNum ) ))" in
   0) loadDefaultBufferSetting; loadParamExp22
     ;;
-  1) loadDefaultBufferSetting; loadParamExp25
+  1) loadDefaultBufferSetting; loadParamExp22
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp26
+  2) loadDefaultBufferSetting; loadParamExp22
     ;;
-  3) loadDefaultBufferSetting; loadParamExp29
+  3) loadDefaultBufferSetting; loadParamExp22
     ;;
   *) echo 'Error!'; exit
     ;;

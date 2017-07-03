@@ -39,9 +39,11 @@ if __name__ == "__main__":
 
     episode_count = 0
     if options.Algorithm == "DQN":
+        print "Test by DQN"
         RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.99, e_greedy=0.9, 
-                    replace_target_iter=200, memory_size=2000, output_graph=True, save_path=options.SavePath, restore_from_file=options.RestoreFile)
+                    replace_target_iter=200, memory_size=2000, output_graph=False, save_path=options.SavePath, restore_from_file=options.RestoreFile)
     elif options.Algorithm == "ActorCritic":
+        print "Test by ActorCritic"
         sess = tf.Session()
         RL = Actor(sess, n_features=8, n_actions=4, lr=0.001, save_path=options.SavePath, restore_from_file=options.RestoreFile)
     else:
@@ -68,11 +70,9 @@ if __name__ == "__main__":
 
         dataRecorder.add_one_record(recv_str)
         observation = extract_observation(dataRecorder)
-        reward = calculate_reward(dataRecorder, reset = True)
 
         print 'episode: ', episode_count
-        f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
-        lastSchedulerTiming, accumulativeReward = float("-inf"), 0 # float("-inf") ensures that a scheduler is choosen at first time
+        lastSchedulerTiming = float("-inf") # float("-inf") ensures that a scheduler is choosen at first time
 
         while True:
             # Choose action
@@ -82,7 +82,6 @@ if __name__ == "__main__":
             if dataRecorder.get_latest_data()["time"] - lastSchedulerTiming > int(options.SwitchInterval): # in microsecond
                 lastSchedulerTiming = dataRecorder.get_latest_data()["time"]
                 shouldUpdata = True
-                accumulativeReward = 0
 
             if shouldUpdata:
                 action = RL.choose_action(observation)
@@ -101,13 +100,9 @@ if __name__ == "__main__":
             dataRecorder.add_one_record(recv_str)
             observation = extract_observation(dataRecorder)
 
-            f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(reward) + '\n')
-
         socket.close()
         socket = None
-        f.close()
 
-        copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_calculate_reward')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_client", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_client')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_drops", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_drops')
         copyfile("/home/hong/workspace/mptcp/ns3/mptcp_output/mptcp_server", '/home/hong/workspace/mptcp/ns3/rl_training_data/' + str(episode_count) + '_mptcp_server')

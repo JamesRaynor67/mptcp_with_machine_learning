@@ -220,10 +220,12 @@ if __name__ == "__main__":
     parser.add_option("-m", "--maxEpisode", dest="MaxEpisode", default=1, help="The number of times to train (launch NS3)")
     parser.add_option("-i", "--switchInterval", dest="SwitchInterval", default=-1, help="The interval of switching scheduler")
     parser.add_option("-p", "--savePath", dest="SavePath", default="./rl_training_data/logs/", help="The path to save model and log files")
-    parser.add_option("-a", "--algorithm", dest="Algorithm", default="DQN", help="The reinforcement learning algorithm to use ")
+    parser.add_option("-a", "--algorithm", dest="Algorithm", default="DQN", help="The reinforcement learning algorithm to use")
+    parser.add_option("-r", "--rewardByAck", dest="RewardByAck", default=True, help="Reward is calculated by lastAckedSeqNum")
     (options, args) = parser.parse_args()
 
     if options.Algorithm == "DQN":
+        print "Training by DQN"
         episode_count = 0
         RL = DeepQNetwork(n_actions=4, n_features=8, learning_rate=0.01, reward_decay=0.99, e_greedy=0.9, 
                     replace_target_iter=200, memory_size=2000, output_graph=True, save_path=options.SavePath, restore_from_file=None)
@@ -245,8 +247,10 @@ if __name__ == "__main__":
                 print "RL server ended too early! " + recv_str; exit()
 
             dataRecorder.add_one_record(recv_str)
-            observation_before_action = extract_observation(dataRecorder)
-            reward = calculate_reward(dataRecorder, reset = True, byAck=False)
+            observation_last_action = extract_observation(dataRecorder)
+            latest_observation = observation_last_action
+            reward = calculate_reward(dataRecorder, reset = True, byAck=options.RewardByAck)
+            action = 3
 
             print 'episode: ', episode_count
             f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
@@ -260,10 +264,10 @@ if __name__ == "__main__":
                 if dataRecorder.get_latest_data()["time"] - lastSchedulerTiming > int(options.SwitchInterval): # in microsecond
                     lastSchedulerTiming = dataRecorder.get_latest_data()["time"]
                     shouldUpdata = True
-                    accumulativeReward = 0
 
                 if shouldUpdata:
-                    action = RL.choose_action(observation_before_action)
+                    last_action = action
+                    action = RL.choose_action(latest_observation)
                     if options.ForceReply is not None:
                         action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
                     # print "Hong Jiaming RL: " + str(dataRecorder.get_latest_data()["time"]) + ": is going to use scheduler with id: " + str(action)
@@ -277,19 +281,20 @@ if __name__ == "__main__":
                     break
 
                 dataRecorder.add_one_record(recv_str)
-                observation_after_action = extract_observation(dataRecorder)
-                reward = calculate_reward(dataRecorder, reset = False, byAck=False)
+                latest_observation = extract_observation(dataRecorder)
+                observation_this_action = latest_observation
+                reward = calculate_reward(dataRecorder, reset = False, byAck=options.RewardByAck)
                 accumulativeReward += reward
                 # # Update memory
-                RL.store_transition(observation_before_action, action, accumulativeReward, observation_after_action)
 
-                if (step > 200) and (step % 5 == 0):   # may need other parameters?
-                    RL.learn()
-
-                observation_before_action = observation_after_action
-
-                f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(reward) + '\n')
-                step += 1
+                if shouldUpdata:
+                    RL.store_transition(observation_last_action, last_action, accumulativeReward, observation_this_action)
+                    if (step > 200) and (step % 5 == 0):   # may need other parameters?
+                        RL.learn()
+                    observation_last_action = observation_this_action
+                    f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(accumulativeReward) + '\n')
+                    accumulativeReward = 0
+                    step += 1
 
             if episode_count % 50 == 0:
                 RL.save_model(isFianl=False)
@@ -308,6 +313,7 @@ if __name__ == "__main__":
         RL.save_model(isFianl=True)
     
     elif options.Algorithm == "ActorCritic":
+        print "Training by ActorCritic"
         episode_count = 0
         sess = tf.Session()
         actor = Actor(sess, n_features=8, n_actions=4, lr=0.001, save_path=options.SavePath, restore_from_file=None)
@@ -331,8 +337,10 @@ if __name__ == "__main__":
                 print "RL server ended too early! " + recv_str; exit()
 
             dataRecorder.add_one_record(recv_str)
-            observation_before_action = extract_observation(dataRecorder)
-            reward = calculate_reward(dataRecorder, reset = True, byAck=False)
+            last_observation = extract_observation(dataRecorder)
+            latest_observation = last_observation
+            reward = calculate_reward(dataRecorder, reset = True, byAck=options.RewardByAck)
+            action = 1
 
             print 'episode: ', episode_count
             f = open("/home/hong/workspace/mptcp/ns3/mptcp_output/calculate_reward", 'w'); f.write("time,reward\n")
@@ -348,7 +356,8 @@ if __name__ == "__main__":
                     shouldUpdata = True
 
                 if shouldUpdata:
-                    action = actor.choose_action(observation_before_action)
+                    last_action = action
+                    action = actor.choose_action(latest_observation)
                     if options.ForceReply is not None:
                         action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
                     # print "Hong Jiaming RL: " + str(dataRecorder.get_latest_data()["time"]) + ": is going to use scheduler with id: " + str(action)
@@ -362,15 +371,18 @@ if __name__ == "__main__":
                     break
 
                 dataRecorder.add_one_record(recv_str)
-                observation_after_action = extract_observation(dataRecorder)            
-                reward = calculate_reward(dataRecorder, reset = False, byAck=False)
-                td_error = critic.learn(observation_before_action, reward, observation_after_action)
-                actor.learn(observation_before_action, action, td_error)
+                latest_observation = extract_observation(dataRecorder)
+                this_observation = latest_observation
+                reward = calculate_reward(dataRecorder, reset = False, byAck=options.RewardByAck)
+                accumulativeReward += reward
 
-                observation_before_action = observation_after_action
-
-                f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(reward) + '\n')
-                step += 1
+                if shouldUpdata == True:
+                    td_error = critic.learn(last_observation, accumulativeReward, this_observation)
+                    actor.learn(last_observation, last_action, td_error)
+                    last_observation = this_observation
+                    f.write(str(dataRecorder.get_latest_data()["time"]) + ',' + str(accumulativeReward) + '\n')
+                    accumulativeReward = 0
+                    step += 1
 
             if episode_count % 50 == 0:
                 actor.save_model(step=step, isFianl=False)

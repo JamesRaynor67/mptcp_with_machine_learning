@@ -95,7 +95,8 @@ int main(int argc, char* argv[])
 
   //Enable logging
   EnableLogging ();
-  SeedManager::SetRun ((unsigned)std::time(0)); // For random variables
+  // SeedManager::SetRun ((unsigned)std::time(0)); // For random variables
+  SeedManager::SetRun (1); // Fix seed for reproducebility
 
   SetConfigDefaults(segmentSize, segmentSizeWithoutHeaders, queueSize);
 
@@ -134,7 +135,7 @@ int main(int argc, char* argv[])
     std::cout << "Application type: onoff\n";
     InstallOnOffApplications(server, client, segmentSizeWithoutHeaders);
     if(g_topology_id > 5){
-      InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
+      //InstallOnOffApplications(other_servers, other_clients, segmentSizeWithoutHeaders);
     }
   }
   else if (appType == filetransfer)
@@ -153,7 +154,7 @@ int main(int argc, char* argv[])
   g.PrintRoutingTableAllAt (Seconds (16), routingStream2);
 
   //Create an output directory and configure tracing
-  AnimationInterface anim ("mptcp-animation.xml");
+  // AnimationInterface anim ("mptcp-animation.xml");
 
   // Simulator::Schedule(Seconds(7.9), &PrintMonitorStates);
   // Simulator::Schedule(Seconds(8), &PrintMonitorStates);

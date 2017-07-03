@@ -403,6 +403,7 @@ def calculate_reward(dataRecorder, reset = False, byAck=True):
             calculate_reward.lastAckedSeqSum = 0
             return 0
     else:
+        assert False # Disable is part temporaly
         if reset == False:
             last_record = dataRecorder.get_latest_data()
 

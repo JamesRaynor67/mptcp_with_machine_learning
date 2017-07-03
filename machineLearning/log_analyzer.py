@@ -413,15 +413,15 @@ if __name__ == '__main__':
     sns.plt.subplot(4,2,3)
     AnalyzeBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client', '/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
     
-    # AnalyzeSentBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client')
-    # AnalyzeReceivedBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
+    AnalyzeSentBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_client')
+    AnalyzeReceivedBytes('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_server')
     
     sns.plt.subplot(4,2,4)
-    # monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_monitor')
-    # subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
+    monitor_records = preprocess_monitor_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_monitor')
+    subflow_rates = AnalyzeMonitorSendingRate(monitor_records)
 
     sns.plt.subplot(4,2,5)
-    # AnalyzeMonitorSendingRateUtilization(subflow_rates, [int(options.LinkBBW[:-4]), int(options.LinkCBW[:-4])])
+    AnalyzeMonitorSendingRateUtilization(subflow_rates, [int(options.LinkBBW[:-4]), int(options.LinkCBW[:-4])])
     
     sns.plt.subplot(4,2,6)
     rtt_records = proprocess_rtt_data('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_client_rtt')

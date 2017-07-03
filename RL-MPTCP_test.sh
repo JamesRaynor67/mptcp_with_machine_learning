@@ -9,7 +9,7 @@ experimentNum=16
 maxEpisode=$(( $experimentNum * 3 )) # if change 3 into another unmber, must modify plotThroughputSummary() in log_bytes.py
 restoreFromFile="${1}" # This is the input of this script
 commentStr="${2}"
-algorithm="ActorCritic"
+algorithm="DQN"
 
 function preProcess(){
   timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
@@ -84,44 +84,44 @@ function runByAllSchedulers(){
 preProcess
 loadRLPara
 runRL
-sleep 8  # restore takes some longer time, may need to set this value larger in the future
+sleep 20  # restore takes some longer time, may need to set this value larger in the future
 for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
   case "$(( ( $episodeNum % $experimentNum ) ))" in
-  0) loadDefaultBufferSetting; loadParamExp900
+  0) loadDefaultBufferSetting; loadParamExp21
     ;;
-  1) loadDefaultBufferSetting; loadParamExp901
+  1) loadDefaultBufferSetting; loadParamExp22
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp902
+  2) loadDefaultBufferSetting; loadParamExp23
     ;;
-  3) loadDefaultBufferSetting; loadParamExp903
+  3) loadDefaultBufferSetting; loadParamExp24
     ;;
-  4) loadDefaultBufferSetting; loadParamExp904
+  4) loadDefaultBufferSetting; loadParamExp25
     ;;
-  5) loadDefaultBufferSetting; loadParamExp905
+  5) loadDefaultBufferSetting; loadParamExp26
     ;;
-  6) loadDefaultBufferSetting; loadParamExp906
+  6) loadDefaultBufferSetting; loadParamExp27
     ;;
-  7) loadDefaultBufferSetting; loadParamExp907
+  7) loadDefaultBufferSetting; loadParamExp28
     ;;    
-  8) loadDefaultBufferSetting; loadParamExp908
+  8) loadDefaultBufferSetting; loadParamExp29
     ;;
-  9) loadDefaultBufferSetting; loadParamExp909
+  9) loadDefaultBufferSetting; loadParamExp30
     ;;
-  10) loadDefaultBufferSetting; loadParamExp910
+  10) loadDefaultBufferSetting; loadParamExp31
     ;;
-  11) loadDefaultBufferSetting; loadParamExp911
+  11) loadDefaultBufferSetting; loadParamExp32
     ;;
-  12) loadDefaultBufferSetting; loadParamExp912
+  12) loadDefaultBufferSetting; loadParamExp33
     ;;    
-  13) loadDefaultBufferSetting; loadParamExp913
+  13) loadDefaultBufferSetting; loadParamExp34
     ;;
-  14) loadDefaultBufferSetting; loadParamExp914
+  14) loadDefaultBufferSetting; loadParamExp35
     ;;
-  15) loadDefaultBufferSetting; loadParamExp915
-  ;;
+  15) loadDefaultBufferSetting; loadParamExp36
+    ;;
   *) echo 'Error!'; exit
     ;;
   esac
@@ -138,38 +138,38 @@ do
   unset Ns3Config; declare -A Ns3Config
   
   case "$(( ( $episodeNum % $experimentNum ) ))" in
-  0) loadDefaultBufferSetting; loadParamExp900
+  0) loadDefaultBufferSetting; loadParamExp21
     ;;
-  1) loadDefaultBufferSetting; loadParamExp901
+  1) loadDefaultBufferSetting; loadParamExp22
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp902
+  2) loadDefaultBufferSetting; loadParamExp23
     ;;
-  3) loadDefaultBufferSetting; loadParamExp903
+  3) loadDefaultBufferSetting; loadParamExp24
     ;;
-  4) loadDefaultBufferSetting; loadParamExp904
+  4) loadDefaultBufferSetting; loadParamExp25
     ;;
-  5) loadDefaultBufferSetting; loadParamExp905
+  5) loadDefaultBufferSetting; loadParamExp26
     ;;
-  6) loadDefaultBufferSetting; loadParamExp906
+  6) loadDefaultBufferSetting; loadParamExp27
     ;;
-  7) loadDefaultBufferSetting; loadParamExp907
+  7) loadDefaultBufferSetting; loadParamExp28
     ;;    
-  8) loadDefaultBufferSetting; loadParamExp908
+  8) loadDefaultBufferSetting; loadParamExp29
     ;;
-  9) loadDefaultBufferSetting; loadParamExp909
+  9) loadDefaultBufferSetting; loadParamExp30
     ;;
-  10) loadDefaultBufferSetting; loadParamExp910
+  10) loadDefaultBufferSetting; loadParamExp31
     ;;
-  11) loadDefaultBufferSetting; loadParamExp911
+  11) loadDefaultBufferSetting; loadParamExp32
     ;;
-  12) loadDefaultBufferSetting; loadParamExp912
+  12) loadDefaultBufferSetting; loadParamExp33
     ;;    
-  13) loadDefaultBufferSetting; loadParamExp913
+  13) loadDefaultBufferSetting; loadParamExp34
     ;;
-  14) loadDefaultBufferSetting; loadParamExp914
+  14) loadDefaultBufferSetting; loadParamExp35
     ;;
-  15) loadDefaultBufferSetting; loadParamExp915
-  ;;
+  15) loadDefaultBufferSetting; loadParamExp36
+    ;;
   *) echo 'Error!'; exit
     ;;
   esac

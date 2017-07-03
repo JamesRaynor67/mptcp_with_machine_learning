@@ -48,7 +48,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=3 ["scheduler"]=$scheduler ["sendInterval"]="1000000" ["savePath"]="${dirPath}" ["algorithm"]="DQN")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=32 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}" ["algorithm"]="DQN")
 }
 
 #####################
@@ -60,38 +60,14 @@ for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
-  case "$(( ( RANDOM % 16 ) ))" in
-  0) loadDefaultBufferSetting; loadParamExp21
+  case "$(( ( RANDOM % 4 ) ))" in
+  0) loadDefaultBufferSetting; loadParamExp22
     ;;
   1) loadDefaultBufferSetting; loadParamExp22
+    ;;
+  2) loadDefaultBufferSetting; loadParamExp22
     ;;    
-  2) loadDefaultBufferSetting; loadParamExp23
-    ;;
-  3) loadDefaultBufferSetting; loadParamExp24
-    ;;
-  4) loadDefaultBufferSetting; loadParamExp25
-    ;;
-  5) loadDefaultBufferSetting; loadParamExp26
-    ;;
-  6) loadDefaultBufferSetting; loadParamExp27
-    ;;
-  7) loadDefaultBufferSetting; loadParamExp28
-    ;;    
-  8) loadDefaultBufferSetting; loadParamExp29
-    ;;
-  9) loadDefaultBufferSetting; loadParamExp30
-    ;;
-  10) loadDefaultBufferSetting; loadParamExp31
-    ;;
-  11) loadDefaultBufferSetting; loadParamExp32
-    ;;
-  12) loadDefaultBufferSetting; loadParamExp33
-    ;;    
-  13) loadDefaultBufferSetting; loadParamExp34
-    ;;
-  14) loadDefaultBufferSetting; loadParamExp35
-    ;;
-  15) loadDefaultBufferSetting; loadParamExp36
+  3) loadDefaultBufferSetting; loadParamExp22
     ;;
   *) echo 'Error!'; exit
     ;;
@@ -99,7 +75,7 @@ do
 
   runNS3 "$episodeNum"
   # record "$episodeNum"
- if !(($episodeNum % 5))
+ if !(($episodeNum % 4))
  then
    record "$episodeNum"
  else
