@@ -73,22 +73,18 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
   // on it, the traffic control layer sends the packets directly to the netdevice.
 
   TrafficControlHelper tchRed;
-  std::cout << "Queue size == " << queueSize << ", however, not used; MeanPktSize size == " << packetSize << "\n";
+  std::cout << "Queue size == " << queueSize << ", MeanPktSize size == " << packetSize << "\n";
   // tchRed.SetRootQueueDisc ("ns3::RedQueueDisc",
   //                         "MeanPktSize", UintegerValue(packetSize),
   //                         "LinkBandwidth", DataRateValue(linkRate),
   //                         "LinkDelay", TimeValue(delay));
-  uint32_t fifoQueueSize = uint32_t(std::max(int(linkRate.GetBitRate()/(8.0 * 1500) * 0.05), 50));
-  cout << "fifoQueueSize == " << fifoQueueSize << "\n";
-  NS_ASSERT(fifoQueueSize > 0);
-  
-  tchRed.SetRootQueueDisc ("ns3::PfifoFastQueueDisc", "Limit", UintegerValue(fifoQueueSize));
+  tchRed.SetRootQueueDisc ("ns3::PfifoFastQueueDisc", "Limit", UintegerValue(queueSize));
   // tchRed.SetAttribute("Limit", UintegerValue(1));
 
-  // NS_ASSERT(queueSize > 0);
+  NS_ASSERT(queueSize > 0);
   pointToPoint.SetQueue("ns3::DropTailQueue",
-                        "MaxPackets", UintegerValue(fifoQueueSize));
-  // pointToPoint.EnablePcapAll ("mptcp"); // This is only for debug use
+                        "MaxPackets", UintegerValue(queueSize));
+  pointToPoint.EnablePcapAll ("mptcp"); // This is only for debug use
   NetDeviceContainer linkedDevices;
   linkedDevices = pointToPoint.Install (linkedNodes);
 
@@ -305,8 +301,8 @@ void CreateNetwork5 (uint32_t packetSize,
     interfaces = addressHelper.Assign(linkedDevices);
     routerInterfaces.Add(interfaces.Get(0));
     clientInterfaces.Add(interfaces.Get(1));
-    unstableDevices.Add(linkedDevices.Get(0));
-    unstableDevices.Add(linkedDevices.Get(1));
+    // unstableDevices.Add(linkedDevices.Get(0));
+    // unstableDevices.Add(linkedDevices.Get(1));
 
     if(g_link_b_BER != 0){
       std::cout << "Error model installed in link D-A" << std::endl;
@@ -490,7 +486,7 @@ void CreateNetwork11 (uint32_t packetSize,
     Ipv4InterfaceContainer cfInterfaces = addressHelper.Assign(linkedDevices);
 
     addressHelper.SetBase("192.168.3.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(D, H, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize, g_router_b_buffer_size); // 
+    linkedDevices = PointToPointCreate(D, H, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size); // 
     Ipv4InterfaceContainer dhInterfaces = addressHelper.Assign(linkedDevices);
 
     addressHelper.SetBase("192.168.4.0", "255.255.255.0");
@@ -498,7 +494,7 @@ void CreateNetwork11 (uint32_t packetSize,
     Ipv4InterfaceContainer deInterfaces = addressHelper.Assign(linkedDevices);
 
     addressHelper.SetBase("192.168.5.0", "255.255.255.0");
-    linkedDevices = PointToPointCreate(E, J, DataRate(g_link_b_BW), Time(g_link_b_delay), packetSize, g_router_b_buffer_size); //
+    linkedDevices = PointToPointCreate(E, J, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size); //
     Ipv4InterfaceContainer eiInterfaces = addressHelper.Assign(linkedDevices);
 
     addressHelper.SetBase("192.168.6.0", "255.255.255.0");
@@ -524,8 +520,8 @@ void CreateNetwork11 (uint32_t packetSize,
       linkedDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
       linkedDevices.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
     }
-    unstableDevices.Add(linkedDevices.Get(0));
-    unstableDevices.Add(linkedDevices.Get(1));
+    // unstableDevices.push_back(linkedDevices.Get(0));
+    // unstableDevices.push_back(linkedDevices.Get(1));
 
     addressHelper.SetBase("192.168.11.0", "255.255.255.0");
     linkedDevices = PointToPointCreate(G, A, DataRate(g_link_c_BW), Time(g_link_c_delay), packetSize, g_router_c_buffer_size);

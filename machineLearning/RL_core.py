@@ -78,6 +78,52 @@ class DeepQNetwork:
         self.q_eval = graph.get_tensor_by_name("eval_net/l2/q_eval:0")
         self.loss = graph.get_tensor_by_name("loss/Mean:0")
 
+    # def _build_net(self):
+    #     # ------------------ build evaluate_net ------------------
+    #     self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')  # input
+    #     self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='Q_target')  # for calculating loss
+    #     with tf.variable_scope('eval_net'):
+    #         # c_names(collections_names) are the collections to store variables
+    #         c_names = ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
+    #         n_l1 = 10 
+    #         w_initializer = tf.random_normal_initializer(0., 0.3)
+    #         b_initializer = tf.constant_initializer(0.1)
+
+    #         # first layer. collections is used later when assign to target net
+    #         with tf.variable_scope('l1'):
+    #             w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
+    #             b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
+    #             l1 = tf.nn.relu(tf.matmul(self.s, w1) + b1)
+
+    #         # second layer. collections is used later when assign to target net
+    #         with tf.variable_scope('l2'):
+    #             w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
+    #             b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
+    #             self.q_eval = tf.add(tf.matmul(l1, w2), b2, name="q_eval")
+
+    #     with tf.variable_scope('loss'):
+    #         self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
+    #     with tf.variable_scope('train'):
+    #         self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
+
+    #     # ------------------ build target_net ------------------
+    #     self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')    # input
+    #     with tf.variable_scope('target_net'):
+    #         # c_names(collections_names) are the collections to store variables
+    #         c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
+
+    #         # first layer. collections is used later when assign to target net
+    #         with tf.variable_scope('l1'):
+    #             w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
+    #             b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
+    #             l1 = tf.nn.relu(tf.matmul(self.s_, w1) + b1)
+
+    #         # second layer. collections is used later when assign to target net
+    #         with tf.variable_scope('l2'):
+    #             w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
+    #             b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
+    #             self.q_next = tf.add(tf.matmul(l1, w2), b2, name="q_next")
+
     def _build_net(self):
         # ------------------ build evaluate_net ------------------
         self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')  # input
@@ -85,15 +131,21 @@ class DeepQNetwork:
         with tf.variable_scope('eval_net'):
             # c_names(collections_names) are the collections to store variables
             c_names = ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
-            n_l1 = 10 
+            n_l0 = 10
+            n_l1 = 4
             w_initializer = tf.random_normal_initializer(0., 0.3)
             b_initializer = tf.constant_initializer(0.1)
 
             # first layer. collections is used later when assign to target net
+            with tf.variable_scope('l0'):
+                w0 = tf.get_variable('w0', [self.n_features, n_l0], initializer=w_initializer, collections=c_names)
+                b0 = tf.get_variable('b0', [1, n_l0], initializer=b_initializer, collections=c_names)
+                l0 = tf.nn.sigmoid(tf.matmul(self.s, w0) + b0)
+
             with tf.variable_scope('l1'):
-                w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
+                w1 = tf.get_variable('w1', [n_l0, n_l1], initializer=w_initializer, collections=c_names)
                 b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
-                l1 = tf.nn.relu(tf.matmul(self.s, w1) + b1)
+                l1 = tf.nn.relu(tf.matmul(l0, w1) + b1)
 
             # second layer. collections is used later when assign to target net
             with tf.variable_scope('l2'):
@@ -113,10 +165,15 @@ class DeepQNetwork:
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
 
             # first layer. collections is used later when assign to target net
+            with tf.variable_scope('l0'):
+                w0 = tf.get_variable('w0', [self.n_features, n_l0], initializer=w_initializer, collections=c_names)
+                b0 = tf.get_variable('b0', [1, n_l0], initializer=b_initializer, collections=c_names)
+                l0 = tf.nn.sigmoid(tf.matmul(self.s_, w0) + b0)
+
             with tf.variable_scope('l1'):
-                w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
+                w1 = tf.get_variable('w1', [n_l0, n_l1], initializer=w_initializer, collections=c_names)
                 b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
-                l1 = tf.nn.relu(tf.matmul(self.s_, w1) + b1)
+                l1 = tf.nn.relu(tf.matmul(l0, w1) + b1)
 
             # second layer. collections is used later when assign to target net
             with tf.variable_scope('l2'):
@@ -358,7 +415,7 @@ def extract_observation(dataRecorder):
         observation[i*4+2] = value_dic[name]
         name = "availableTxBuffer" + str(i)
         observation[i*4+3] = value_dic[name]
-    return observation
+    return observation / 1e6 # make it close to 1 to help training
 
 def action_translator(dataRecorder, action):
     # action is a numpy array, so we need translator

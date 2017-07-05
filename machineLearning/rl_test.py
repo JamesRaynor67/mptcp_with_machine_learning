@@ -87,6 +87,7 @@ if __name__ == "__main__":
                 action = RL.choose_action(observation)
                 if options.ForceReply is not None:
                     action = int({"RR":"0", "RTT":"1", "RD":"2", "L-DBP":"3"}[options.ForceReply])
+                    # action = int({"L-DBP":"0", "RD":"1", "RR":"2", "RTT":"3"}[options.ForceReply])
                 # print "Hong Jiaming RL: " + str(dataRecorder.get_latest_data()["time"]) + ": is going to use scheduler with id: " + str(action)
                 apply_action(socket, dataRecorder, action) # Apply action to environment
             else:
