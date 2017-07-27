@@ -75,7 +75,7 @@ def proprocess_meta_socket_data(file_path):
 
     columns = ['Timestamp', 'LastAckedSeq', 'HighTxMark', 'AvailableTxBuffer', 'NextTxSeq', 'TotalCwnd', 'UnAck']
     meta_socket_records = pd.DataFrame(record, columns=columns)
-
+    meta_socket_records.to_csv(os.path.join(g_resultRecord['DirPath'], "metaSocketData_"+g_resultRecord['Experiment']+"_"+g_resultRecord['Scheduler']+"_"+g_resultRecord['EpisodeNum']+".csv"))
     return meta_socket_records
 
 
@@ -196,7 +196,7 @@ def proprocess_clientAvailableTxBuffer_data(file_path):
 
     columns = ['Timestamp','availableTxBuffer0','availableTxBuffer1']
     availableTxBuffer_records = pd.DataFrame(record, columns=columns)
-
+    availableTxBuffer_records.to_csv(os.path.join(g_resultRecord['DirPath'], "subflowTxBufferData_"+g_resultRecord['Experiment']+"_"+g_resultRecord['Scheduler']+"_"+g_resultRecord['EpisodeNum']+".csv"))
     return availableTxBuffer_records
 
 def proprocess_schedulerId_data(file_path):
@@ -211,7 +211,7 @@ def proprocess_schedulerId_data(file_path):
 
     columns = ['Timestamp','schedulerId']
     scheduler_records = pd.DataFrame(record, columns=columns)
-
+    scheduler_records.to_csv(os.path.join(g_resultRecord['DirPath'], "scheduler_"+g_resultRecord['Experiment']+"_"+g_resultRecord['Scheduler']+"_"+g_resultRecord['EpisodeNum']+".csv"))
     return scheduler_records
 
 def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_path):
@@ -224,7 +224,7 @@ def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_
                 timestamp = int(row[0])/1e9
                 subflowId = int(row[3])
                 seqnum = int(row[4])
-                psize = int(row[7])
+                psize = int(row[6]) ######################################################### change 7 to 6
                 if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
                     client_tx_record.append([timestamp, subflowId, seqnum, psize])
 
@@ -253,7 +253,7 @@ def analyze_server_client_seq_num(server_file_path, client_file_path, drop_file_
                 timestamp = int(row[0])/1e9
                 subflowId = int(row[3])
                 seqnum = int(row[4])
-                psize = int(row[7])
+                psize = int(row[6]) ######################################################### change 7 to 6
                 if subflowId >= 0: # for non-mptcp packet, subflowId will be -1
                     server_rx_record.append([timestamp, subflowId, seqnum, psize])
 
@@ -354,6 +354,11 @@ def AnalyzeThroughput(server_rx_record):
     sub1_throughPut = sub1_throughPut * 8 / 1000.0 # convert bytes into Kbit
     total_throughPut = total_throughPut * 8 / 1000.0
 
+    global g_resultRecord
+    throughputData = {"sub0": sub0_throughPut, "sub1":sub1_throughPut, "total":total_throughPut}
+    df = pd.DataFrame.from_dict(throughputData)
+    df.to_csv(os.path.join(g_resultRecord['DirPath'], "throughputData_"+g_resultRecord['Experiment']+"_"+g_resultRecord['Scheduler']+"_"+g_resultRecord['EpisodeNum']+".csv"))
+
     sub0_throughPut_plt, = plt.plot(ts, sub0_throughPut, 'b-')
     sub1_throughPut_plt, = plt.plot(ts, sub1_throughPut, 'r-')
     total_throughPut_plt, = plt.plot(ts, total_throughPut, 'k-')
@@ -380,6 +385,50 @@ def recordResultToCsv():
         print "Not recording result: ", g_resultRecord
     g_resultRecord = {}
 
+def extract_other_server_rx_record(other_server_file_path):
+    other_server_rx_record = []
+    with open(other_server_file_path, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        next(spamreader)
+        for row in spamreader:
+            if int(row[1]) == 0: # not send record
+                timestamp = int(row[0])/1e9
+                seqnum = int(row[4])
+                psize = int(row[6]) ######################################################### change 7 to 6
+                other_server_rx_record.append([timestamp, seqnum, psize])
+    other_server_rx_record.sort(key=lambda ele:ele[0])
+    return other_server_rx_record
+
+def WriteOtherServerThroughputToCsv(other_server_rx_record, other_server_id):
+    x, y = [], []
+    for row in other_server_rx_record:
+        x.append(row[0])
+        y.append(row[2])
+
+    ts = np.arange(0.0, 180, 0.5) # NOTE: 180 is a magic number, because simulation time last for 180s
+    throughPut = np.empty(ts.shape)
+    headIndex, tailIndex, psizeInWindow = 0, 0, 0
+    halfInterval = 0.5
+    for i in range(ts.shape[0]):
+        # print x[0][headIndex]
+        # print sub0_ts[i]
+        while headIndex < len(x) and x[headIndex] < ts[i] + halfInterval:
+            psizeInWindow += y[headIndex]
+            headIndex += 1
+        while tailIndex < len(x) and x[tailIndex] <= ts[i] - halfInterval:
+            psizeInWindow -= y[tailIndex]
+            tailIndex += 1
+        
+        throughPut[i] = psizeInWindow / (halfInterval * 2.0)
+
+    throughPut = throughPut * 8 / 1000.0 # convert bytes into Kbit
+
+    global g_resultRecord
+    throughputData = {"throughPut": throughPut}
+    df = pd.DataFrame.from_dict(throughputData)
+    assert other_server_id == 0 or other_server_id == 1
+    df.to_csv(os.path.join(g_resultRecord['DirPath'], "other_server_" + str(other_server_id) + "_throughputData_"+g_resultRecord['Experiment']+"_"+g_resultRecord['Scheduler']+"_"+g_resultRecord['EpisodeNum']+".csv"))
+
 if __name__ == '__main__':
 
     parser = OptionParser()
@@ -395,6 +444,7 @@ if __name__ == '__main__':
     g_resultRecord['Experiment'] = options.Experiment
     g_resultRecord['Scheduler'] = options.Scheduler
     g_resultRecord['DirPath'] = options.DirPath
+    g_resultRecord['EpisodeNum'] = options.EpisodeNum
     assert os.path.isdir(options.DirPath) is True
 
     sns.plt.figure(figsize=(16*2, 9*2))
@@ -451,6 +501,11 @@ if __name__ == '__main__':
     AnalyzeMetaSocket(meta_socket_records, clientAvailableTxBuffer_records, schedulerId_records)
     sns.plt.savefig(os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + '_meta_' + options.EpisodeNum + ".png"), dpi = 150, bbox_inches='tight')
     sns.plt.close()
+
+    other_server_rx_record = extract_other_server_rx_record('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_other_server_0')
+    WriteOtherServerThroughputToCsv(other_server_rx_record, 0)
+    other_server_rx_record = extract_other_server_rx_record('/home/hong/workspace/mptcp/ns3/rl_training_data/' + options.EpisodeNum + '_mptcp_other_server_1')
+    WriteOtherServerThroughputToCsv(other_server_rx_record, 1)
 
     recordResultToCsv()
     print os.path.join(options.DirPath, options.Experiment + "_" + options.Scheduler + '_meta_' + options.EpisodeNum + ".png")

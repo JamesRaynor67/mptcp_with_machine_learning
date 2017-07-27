@@ -18,7 +18,7 @@ function preProcess(){
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir "$dirPath"
   cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/RL-MPTCP_experiment_parameters.sh" "$dirPath/script_parameters.sh"  
-  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script_train.sh"
+  cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/RL-MPTCP_train.sh" "$dirPath/script_train.sh"
   mkdir "$dirPath/NS3Code"
   mkdir "$dirPath/machineLearning"
   cp -a "/home/hong/workspace/mptcp/ns3/scratch/run/." "$dirPath/NS3Code/"
@@ -48,7 +48,7 @@ function record(){
 }
 
 function loadRLPara(){
-  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=6 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}" ["algorithm"]="DQN")
+  RLConfig+=(["forceReply"]=$scheduler ["maxEpisode"]=64 ["scheduler"]=$scheduler ["sendInterval"]="100000" ["savePath"]="${dirPath}" ["algorithm"]="DQN")
 }
 
 #####################
@@ -60,14 +60,26 @@ for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
   
-  case "$(( ( RANDOM % 4 ) ))" in
-  0) loadDefaultBufferSetting; loadParamExp22
+  case "$(( ( RANDOM % 10 ) ))" in
+  0) loadDefaultBufferSetting; loadParamExp10
     ;;
-  1) loadDefaultBufferSetting; loadParamExp25
-    ;;
-  2) loadDefaultBufferSetting; loadParamExp26
+  1) loadDefaultBufferSetting; loadParamExp11
     ;;    
-  3) loadDefaultBufferSetting; loadParamExp29
+  2) loadDefaultBufferSetting; loadParamExp12
+    ;;
+  3) loadDefaultBufferSetting; loadParamExp13
+    ;;
+  4) loadDefaultBufferSetting; loadParamExp14
+    ;;
+  5) loadDefaultBufferSetting; loadParamExp15
+    ;;
+  6) loadDefaultBufferSetting; loadParamExp16
+    ;;
+  7) loadDefaultBufferSetting; loadParamExp17
+    ;;    
+  8) loadDefaultBufferSetting; loadParamExp18
+    ;;
+  9) loadDefaultBufferSetting; loadParamExp19
     ;;
   *) echo 'Error!'; exit
     ;;
@@ -75,7 +87,7 @@ do
 
   runNS3 "$episodeNum"
   # record "$episodeNum"
- if !(($episodeNum % 4))
+ if !(($episodeNum % 20))
  then
    record "$episodeNum"
  else
@@ -84,6 +96,8 @@ do
 done
 postProcess
 
+sleep 10
 ### above is training, below is testing
+echo "$(find ${dirPath} -name my_final_model*meta)"
 modelFile="$(find ${dirPath} -name my_final_model*meta)"
-bash -x ./RL-MPTCP_debug_test.sh "${modelFile}" "${commentStr}"
+bash -x ./RL-MPTCP_test.sh "${modelFile}" "${commentStr}"

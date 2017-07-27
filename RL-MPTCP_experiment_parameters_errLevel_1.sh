@@ -12,7 +12,7 @@ function checkNoneEmpty(){
 
 # router_b_buffer and router_c_buffer becomes almost useless. Bucause it sets device queue only. Queue disc setting is decided by link bandwidth
 function loadDefaultBufferSetting(){
-  tcp_buffer="262144";router_b_buffer="50";router_c_buffer="50";link_b_BER="0";topology_id="11"
+  tcp_buffer="262144";router_b_buffer="50";router_c_buffer="50";link_b_BER="0.000002";topology_id="11"
   echo 'tcp_buffer='$tcp_buffer ' router_b_buffer='$router_b_buffer ' router_c_buffer='$router_b_buffer ' link_b_BER='$link_b_BER ' topology_id='$topology_id 
 }
 

@@ -2,7 +2,8 @@
 #export QT_QPA_PLATFORM=offscreen
 export DISPLAY=:0 # This is only for remote execution
 declare -A PyConfig; declare -A Ns3Config
-
+dirPath=""
+commentStr="${1}"
 # 8M = 8388608
 # 8M = 252144
 
@@ -27,35 +28,38 @@ function runSet() {
 source ./RL-MPTCP_experiment_parameters.sh
 timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
 loadDefaultBufferSetting
-dirPath="/home/hong/result_figure/0_static_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}"
+dirPath="/home/hong/result_figure/${timestamp}_${commentStr}"
 cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
 mkdir $dirPath
 
-unset PyConfig; unset Ns3Config; declare -A PyConfig; declare -A Ns3Config
-loadParamExp999
-scheduler="RR";
-PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
-runSet
+for (( j=1; j<2; j++ ))
+do
+  unset PyConfig; unset Ns3Config; declare -A PyConfig; declare -A Ns3Config
+  loadParamExp${j}
+  scheduler="RR";
+  PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
+  runSet
 
-# unset PyConfig; declare -A PyConfig;
-# scheduler="RTT"
-# PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
-# runSet
+  unset PyConfig; declare -A PyConfig;
+  scheduler="RTT"
+  PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
+  runSet
 
-# unset PyConfig; declare -A PyConfig;
-# scheduler="RD"
-# PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
-# runSet
+  unset PyConfig; declare -A PyConfig;
+  scheduler="RD"
+  PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
+  runSet
 
-# unset PyConfig; declare -A PyConfig;
-# scheduler="L-DBP"
-# PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
-# runSet
+  unset PyConfig; declare -A PyConfig;
+  scheduler="L-DBP"
+  PyConfig+=(["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
+  runSet
+done
 
-# python ./machineLearning/log_bytes.py
-# cp "/home/hong/result_figure/rcv.png" "/home/hong/result_figure/summary/rcv_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.png"
-# cp "/home/hong/result_figure/sent.png" "/home/hong/result_figure/summary}/sent_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.png"
-# cp "/home/hong/result_figure/statistic.csv" "/home/hong/result_figure/summary/statistic_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.csv"
-# mv "/home/hong/result_figure/rcv.png" "${dirPath}/rcv_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.png"
-# mv "/home/hong/result_figure/sent.png" "${dirPath}/sent_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.png"
-# mv "/home/hong/result_figure/statistic.csv" "${dirPath}/statistic_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.csv"
+python ./machineLearning/log_bytes.py
+cp "/home/hong/result_figure/rcv.png" "/home/hong/result_figure/summary/rcv_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.png"
+cp "/home/hong/result_figure/sent.png" "/home/hong/result_figure/summary}/sent_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.png"
+cp "/home/hong/result_figure/statistic.csv" "/home/hong/result_figure/summary/statistic_${timestamp}_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}_${link_b_BER}.csv"
+mv "/home/hong/result_figure/rcv.png" "${dirPath}/rcv_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.png"
+mv "/home/hong/result_figure/sent.png" "${dirPath}/sent_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.png"
+mv "/home/hong/result_figure/statistic.csv" "${dirPath}/statistic_${tcp_buffer}_${router_b_buffer}_${router_c_buffer}.csv"

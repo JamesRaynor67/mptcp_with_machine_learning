@@ -1,0 +1,139 @@
+#!/bin/bash
+
+mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh_backup_for_night
+mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh_backup_for_night
+
+cp /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters_topo_0.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh
+for (( i=0; i<3; i++ ))
+do
+  cp "/home/hong/workspace/mptcp/ns3/RL-MPTCP_train_${i}.sh" /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh
+  bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "basic_10relu_trainlevel_${i}"
+done
+
+mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh_backup_for_night /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh
+mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh_backup_for_night /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh
+
+
+mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh_backup_for_night
+mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh_backup_for_night
+mv /home/hong/workspace/mptcp/ns3/scratch/run/mptcp-helper-application.cc /home/hong/workspace/mptcp/ns3/mptcp-helper-application.cc_backup_for_night
+
+cp /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters_topo_1.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh
+for (( j=0; j<4; j++ ))
+  cp "/home/hong/workspace/mptcp/ns3/mptcp-helper-application_${j}.cc" "/home/hong/workspace/mptcp/ns3/scratch/run/mptcp-helper-application.cc"
+  for (( i=0; i<3; i++ ))
+  do
+    cp "/home/hong/workspace/mptcp/ns3/RL-MPTCP_train_${i}.sh" /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh
+    bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "std_10relu_app_${j}_trainlevel_${i}"
+  done
+done
+
+mv /home/hong/workspace/mptcp/ns3/mptcp-helper-application.cc_backup_for_night /home/hong/workspace/mptcp/ns3/scratch/run/mptcp-helper-application.cc
+mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh_backup_for_night /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh
+mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh_backup_for_night /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh
+
+
+
+
+
+
+###### Ver 0.4 About application rate
+
+# mv /home/hong/workspace/mptcp/ns3/scratch/run/mptcp-helper-application.cc /home/hong/workspace/mptcp/ns3/mptcp-helper-application.cc_backup_for_night
+
+# for (( j=0; j<4; j++ ))
+# do
+#   cp "/home/hong/workspace/mptcp/ns3/mptcp-helper-application_${j}.cc" "/home/hong/workspace/mptcp/ns3/scratch/run/mptcp-helper-application.cc"
+#   for (( i=0; i<3; i++ ))
+#   do
+#     bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "basic_otherTraffic_${j}_${i}"
+#   done
+# done
+
+# mv /home/hong/workspace/mptcp/ns3/mptcp-helper-application.cc_backup_for_night /home/hong/workspace/mptcp/ns3/scratch/run/mptcp-helper-application.cc
+
+######  Ver 0.3   About error rate and training method
+
+# mv /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py_backup_for_night
+# mv /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py_backup_for_night
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh_backup_for_night
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh_backup_for_night
+
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/rl_server_1e-2.py /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/RL_core_Adam.py /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py
+# cp /home/hong/workspace/mptcp/ns3/RL-MPTCP_train_1.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh
+# for (( j=0; j<3; j++ ))
+# do
+#   for (( i=0; i<3; i++ ))
+#   do
+#     cp "/home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters_errLevel_${i}.sh" "/home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh"
+#     bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "StdNormedOtherTrafficNoFailureAdam1e-2_trainLevel_1_errLevel_${i}_${j}"
+#   done
+# done
+
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh_backup_for_night /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh
+# mv /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py_backup_for_night /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py
+# mv /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py_backup_for_night /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh_backup_for_night /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh
+
+
+
+####     Ver 0.2
+
+# mv /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py_backup_for_night
+# mv /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py_backup_for_night
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh_backup_for_night
+
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/rl_server_1e-2.py /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/RL_core_Adam.py /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py
+# for (( i=0; i<3; i++ ))
+# do
+#   cp "/home/hong/workspace/mptcp/ns3/RL-MPTCP_train_${i}.sh" "/home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh"
+#   bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "StdNormedNoErrOtherTrafficNoFailureAdam1e-2_${i}"
+# done
+
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/rl_server_1e-2.py /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/RL_core_RMSProp.py /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py
+# for (( i=0; i<3; i++ ))
+# do
+#   cp "/home/hong/workspace/mptcp/ns3/RL-MPTCP_train_${i}.sh" "/home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh"
+#   bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "StdNormedNoErrOtherTrafficNoFailureRMSProp1e-2_${i}"
+# done
+
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/rl_server_1e-3.py /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/RL_core_Adam.py /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py
+# for (( i=0; i<3; i++ ))
+# do
+#   cp "/home/hong/workspace/mptcp/ns3/RL-MPTCP_train_${i}.sh" "/home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh"
+#   bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "StdNormedNoErrOtherTrafficNoFailureAdam1e-3_${i}"
+# done
+
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/rl_server_1e-3.py /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py
+# cp /home/hong/workspace/mptcp/ns3/machineLearning/RL_core_RMSProp.py /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py
+# for (( i=0; i<3; i++ ))
+# do
+#   bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "StdNormedNoErrOtherTrafficNoFailureRMSProp1e-3_${i}"
+# done
+
+# mv /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py_backup_for_night /home/hong/workspace/mptcp/ns3/machineLearning/rl_server.py
+# mv /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py_backup_for_night /home/hong/workspace/mptcp/ns3/machineLearning/RL_core.py
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh_backup_for_night /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh
+
+####     Ver 0.1 
+
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh_backup_for_night
+
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters_no_err.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh
+# for (( i=0; i<3; i++ ))
+# do
+#   bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "StdNormed2LayerSigmodNoErr${i}"
+# done
+
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters_2e-6_err.sh /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh
+# for (( i=0; i<3; i++ ))
+# do
+#   bash -x /home/hong/workspace/mptcp/ns3/RL-MPTCP_train.sh "StdNormed2LayerSigmod2e-6Err${i}"
+# done
+
+
+# mv /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh_backup_for_night /home/hong/workspace/mptcp/ns3/RL-MPTCP_experiment_parameters.sh

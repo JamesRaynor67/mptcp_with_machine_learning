@@ -2,6 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import sys
 
 # My design is to put received data into a csv file. Then read dataFrame from csv file.
 # By this, record and modification is much easier.
@@ -67,5 +68,9 @@ def plotThroughputSummary(df):
 	scheduler_sum_df.to_csv("/home/hong/result_figure/tmp_sum_result.csv")
 
 if __name__ == '__main__':
-	df = plotThroughputs('/home/hong/result_figure/statistic.csv')
+	if len(sys.argv) == 1:
+		df = plotThroughputs('/home/hong/result_figure/statistic.csv')
+	else:
+		assert len(sys.argv) == 2
+		df = plotThroughputs(sys.argv[1])
 	plotThroughputSummary(df)

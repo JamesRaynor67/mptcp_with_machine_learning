@@ -5,11 +5,13 @@ declare -A RLConfig; declare -A Ns3Config
 
 scheduler="RL-Choose"
 dirPath=""
-experimentNum=4
+experimentNum=6
 maxEpisode=$(( $experimentNum * 3 )) # if change 3 into another unmber, must modify plotThroughputSummary() in log_bytes.py
 restoreFromFile="${1}" # This is the input of this script
 commentStr="${2}"
-algorithm="DQN"
+# algorithm="DQN" # algotithm here!
+# algorithm="Q-learning" # algotithm here!
+algorithm="ActorCritic" # algotithm here!
 
 function preProcess(){
   timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
@@ -19,6 +21,10 @@ function preProcess(){
   cp "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${BASH_SOURCE[0]}" "$dirPath/script_test.sh"
   cp "$restoreFromFile" "$dirPath/$(basename $restoreFromFile)"
   source ./RL-MPTCP_experiment_parameters.sh
+  mkdir "$dirPath/NS3Code"
+  mkdir "$dirPath/machineLearning"
+  cp -a "/home/hong/workspace/mptcp/ns3/scratch/run/." "$dirPath/NS3Code/"
+  cp /home/hong/workspace/mptcp/ns3/machineLearning/*.py "$dirPath/machineLearning"
 }
 
 function postProcess(){
@@ -63,28 +69,32 @@ function runByAllSchedulers(){
   scheduler="RR";
   PyConfig+=(["experiment"]=${Ns3Config["experiment"]} ["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
   runSet
+  sleep 1
 
   unset PyConfig; declare -A PyConfig;
   scheduler="RTT"
   PyConfig+=(["experiment"]=${Ns3Config["experiment"]} ["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
   runSet
+  sleep 1
 
   unset PyConfig; declare -A PyConfig;
   scheduler="RD"
   PyConfig+=(["experiment"]=${Ns3Config["experiment"]} ["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
   runSet
+  sleep 1
 
   unset PyConfig; declare -A PyConfig;
   scheduler="L-DBP"
   PyConfig+=(["experiment"]=${Ns3Config["experiment"]} ["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
   runSet
+  sleep 1
 }
 
 ######## Below to do testing by trained model (restoreFromFile) #######
 preProcess
 loadRLPara
 runRL
-sleep 10  # restore takes some longer time, may need to set this value larger in the future
+sleep 20  # restore takes some longer time, may need to set this value larger in the future
 for (( episodeNum=0; episodeNum<${RLConfig["maxEpisode"]}; episodeNum++ ))
 do
   unset Ns3Config; declare -A Ns3Config
@@ -97,7 +107,11 @@ do
   2) loadDefaultBufferSetting; loadParamExp3
     ;;
   3) loadDefaultBufferSetting; loadParamExp4
-  ;;
+    ;;
+  4) loadDefaultBufferSetting; loadParamExp5
+    ;;
+  5) loadDefaultBufferSetting; loadParamExp6
+    ;;
   *) echo 'Error!'; exit
     ;;
   esac
@@ -121,6 +135,10 @@ do
   2) loadDefaultBufferSetting; loadParamExp3
     ;;
   3) loadDefaultBufferSetting; loadParamExp4
+    ;;
+  4) loadDefaultBufferSetting; loadParamExp5
+    ;;
+  5) loadDefaultBufferSetting; loadParamExp6
     ;;
   *) echo 'Error!'; exit
     ;;
