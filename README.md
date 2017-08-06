@@ -12,15 +12,20 @@ CXXFLAGS=" -std=c++11" ./waf --enable-examples configure
 ```
 3.1. To research into NS3 and force using one specific scheduler, run script 
 ```
-bash RL-MPTCP_run_sets.sh
+bash -x RL-MPTCP_run_sets.sh
 ```
 or
 ```
-bash RL-MPTCP_run_Expxx-xx.sh
+bash -x RL-MPTCP_run_Expxx-xx.sh
 ```
 3.2. To train RL model and test on trainned model, run script
 ```
-bash RL-MPTCP_training.sh
+bash -x RL-MPTCP_training.sh
+```
+or
+3.3 To train RL model with various settings for a long time (over night, for example), configure and run script
+```
+bash -x RL-MPTCP_scripts_for_night.sh
 ```
 
 (Some paths is hard coded, generally, you can do grep -rn "/home/hong" to find them out and replace them)
@@ -70,3 +75,9 @@ And this specific simulation can be regarded as IPhone use multiple subflows to 
 >      HMAC-B = HMAC(Key=(Key-B+Key-A), Msg=(R-B+R-A))
 
 2. On-off application put data into txBuffer at configured rate during on-period. If txBuffer is full, application just fails to put data into txBuffer, which means these data even didn't become packets.
+
+3. The large amount of bash scripts in root dir is for automatic configuration of experiments for long time.
+If all parameters of experiemnts can be passed as parameters, we don't need this ugly implementation.
+However, this is the easiest way to configure various expriemtents for a long time.
+
+4. This is part of the graduation thesis of Hong in UTokyo, in 2017.
