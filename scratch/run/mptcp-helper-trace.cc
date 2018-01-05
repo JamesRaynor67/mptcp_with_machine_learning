@@ -123,7 +123,7 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
 
   // Configure for clients
   stringstream devicePath;
-  devicePath << "/NodeList/" << client.Get(0)->GetId() << "/DeviceList/*/$ns3::PointToPointNetDevice/"; // Hong Jiaming: Should change for Wi-Fi
+  devicePath << "/NodeList/" << client.Get(0)->GetId() << "/DeviceList/*/$ns3::PointToPointNetDevice/"; //
 
   stringstream tfile;
   tfile << outputDir << "/mptcp_client";
@@ -132,13 +132,6 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
 
   Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, throughputFile));
   Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, throughputFile));
-
-  // Hong Jiaming: move rtt recorder to python
-  // stringstream clientRttFile;
-  // clientRttFile << outputDir << "/mptcp_client_rtt";
-  // Ptr<OutputStreamWrapper> clientRttFile = Create<OutputStreamWrapper>(clientRttFile.str(), std::ios::out);
-  // *(clientRttFile->GetStream()) << "timestamp,subflow0RTT,subflow1RTT" << endl;
-  // Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceRTT, clientRttFile, server.Get(0)));
 
   // configure for server
   uint32_t serverId = server.Get(0)->GetId();
@@ -151,13 +144,6 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
   *(serverFile->GetStream()) << "timestamp,send,connection,subflow,seqno,ackno,size,psize,isSyn,isFin" << endl;
   Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceMacTx, serverFile));
   Config::ConnectWithoutContext(devicePath.str() + "MacRx", MakeBoundCallback(TraceMacRx, serverFile));
-
-  // Hong Jiaming: move rtt recorder to python
-  // stringstream serverRttFile;
-  // serverRttFile << outputDir << "/mptcp_server_rtt";
-  // Ptr<OutputStreamWrapper> serverRttFile = Create<OutputStreamWrapper>(serverRttFile.str(), std::ios::out);
-  // *(serverRttFile->GetStream()) << "timestamp,subflow0RTT,subflow1RTT" << endl;
-  // Config::ConnectWithoutContext(devicePath.str() + "MacTx", MakeBoundCallback(TraceRTT, serverRttFile, server.Get(0)));
 
   // configure for droped packets
   stringstream dfile;
@@ -185,27 +171,6 @@ void ConfigureTracing (const string& outputDir, const NodeContainer& server,
     cout << " " << other_clients.Get(i)->GetId();
   }
   cout << endl;
-
-  // for(uint32_t i = 0; i < server.GetN(); ++i)
-  // {
-  //   PrintRoutingTable(server.Get(i), outputDir, "srv" + to_string(i));
-  // }
-  // for(uint32_t i = 0; i < client.GetN(); ++i)
-  // {
-  //   PrintRoutingTable(client.Get(i), outputDir, "cl" + to_string(i));
-  // }
-  // for (uint32_t  i = 0; i < middle.GetN(); ++i)
-  // {
-  //   PrintRoutingTable(middle.Get(i), outputDir, "middle" + to_string(i));
-  // }
-  // for (uint32_t  i = 0; i < other_servers.GetN(); ++i)
-  // {
-  //   PrintRoutingTable(other_servers.Get(i), outputDir, "other_servers" + to_string(i));
-  // }
-  // for (uint32_t  i = 0; i < other_clients.GetN(); ++i)
-  // {
-  //   PrintRoutingTable(other_clients.Get(i), outputDir, "other_clients" + to_string(i));
-  // }
 }
 
 void TraceMonitorStates(const string& outputDir){
@@ -244,7 +209,6 @@ void TraceMonitorStates(const string& outputDir){
       *(logFile->GetStream()) << "," <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM];
     }
     *(logFile->GetStream()) << "\n";
-    //std::cout << "Hong Jiaming: 3 " << i->first << endl;
   }
 }
 
@@ -276,7 +240,6 @@ void PrintMonitorStates(void){
       std::cout << ", Bad_checksum: " <<i->second.packetsDropped[Ipv4L3Protocol::DropReason::DROP_BAD_CHECKSUM];
     }
     std::cout << endl;
-    //std::cout << "Hong Jiaming: 3 " << i->first << endl;
   }
   std::cout << endl;
 }

@@ -12,8 +12,14 @@ CXXFLAGS=" -std=c++11" ./waf --enable-examples configure
 ```
 3.run script
 ```
+bash RL-MPTCP_debug_NS3.sh
+```
+P.S.
+```
 bash RL-MPTCP_run.sh
 ```
+runs multiple python program for statistic and analyzing. But lots of path for
+file storage in them is hard coded and only fits for my machine, my bad :(
 
 Env:
 gcc version 4.8.4 (Ubuntu 4.8.4-2ubuntu1~14.04.3)

@@ -1,12 +1,10 @@
 #!/bin/bash
+
 #export QT_QPA_PLATFORM=offscreen
-export DISPLAY=:0  # # This is only for remote execution. However, above is recommended on the Internet (but not works perfect
+export DISPLAY=:0 # This is only for remote execution. However, above is recommended on the Internet (but not works perfect
 declare -A PyConfig; declare -A Ns3Config
 
-# 8M = 8388608
-# 256KB = 252144
-
-tcpBuffer="252144"    
+tcpBuffer="252144"
 routerBBuffer="1"
 routerCBuffer="500"
 link_b_BER="0.000002"
@@ -17,12 +15,13 @@ function runSet() {
   cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
   mkdir $dirPath
   python ./machineLearning/rl_server.py -f "${PyConfig["forceReply"]}" -m "${PyConfig["maxEpisode"]}" &
+  # Delay to ensure rl_server.py starts to listen port before the start of ns3. (if not, rl::SocketException is thrown)
   sleep 3
   ./waf --run scratch/run/run --command="%s --link_a_BW="${Ns3Config["link_a_BW"]}" --link_b_BW="${Ns3Config["link_b_BW"]}" --link_c_BW="${Ns3Config["link_c_BW"]}"\
                                 --link_a_delay="${Ns3Config["link_a_delay"]}" --link_b_delay="${Ns3Config["link_b_delay"]}" --link_c_delay="${Ns3Config["link_c_delay"]}"\
                                 --link_b_BER="${Ns3Config["link_b_BER"]}" --tcp_buffer_size="$tcpBuffer" --router_b_buffer_size="$routerBBuffer"\
                                 --router_c_buffer_size="$routerCBuffer" --topology_id="$topology_id""
-                              # --link_b_BER="${Ns3Config["link_b_BER"]}""  > ~/result_figure/0_static_20170604/log_debug_mptcp.txt 2>&1
+
   python ./machineLearning/log_analyzer.py -e "${PyConfig["experiment"]}" -s "${PyConfig["scheduler"]}" -n "${PyConfig["episodeNum"]}" -b "${Ns3Config["link_b_BW"]}" -c "${Ns3Config["link_c_BW"]}" -d "$dirPath"
   mv "/home/hong/result_figure/statistic.csv" "${dirPath}/statistic.csv"
 }

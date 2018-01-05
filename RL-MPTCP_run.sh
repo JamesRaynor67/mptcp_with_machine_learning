@@ -1,12 +1,8 @@
 #!/bin/bash
-#export QT_QPA_PLATFORM=offscreen
 export DISPLAY=:0 # This is only for remote execution
 declare -A PyConfig; declare -A Ns3Config
 
-# 8M = 8388608
-# 8M = 252144
-
-tcpBuffer="$1"    
+tcpBuffer="$1"
 routerBBuffer="$2"
 routerCBuffer="$3"
 link_b_BER="$4"
@@ -19,11 +15,10 @@ function runSet() {
                                 --link_a_delay="${Ns3Config["link_a_delay"]}" --link_b_delay="${Ns3Config["link_b_delay"]}" --link_c_delay="${Ns3Config["link_c_delay"]}"\
                                 --link_b_BER="${Ns3Config["link_b_BER"]}" --tcp_buffer_size="$tcpBuffer" --router_b_buffer_size="$routerBBuffer"\
                                 --router_c_buffer_size="$routerCBuffer" --topology_id="$topology_id""
-#   > ~/result_figure/0_static_20170604/log_debug_mptcp.txt 2>&1
   python ./machineLearning/log_analyzer.py -e "${PyConfig["experiment"]}" -s "${PyConfig["scheduler"]}" -n "${PyConfig["episodeNum"]}" -b "${Ns3Config["link_b_BW"]}" -c "${Ns3Config["link_c_BW"]}" -d "$dirPath"
 }
 
-#####################
+# Parameter setting for groups of experiment.
 dirPath="/home/hong/result_figure/0_static_20170609_${tcpBuffer}_${routerBBuffer}_${routerCBuffer}_${link_b_BER}"
 cp "/home/hong/result_figure/template.csv" "/home/hong/result_figure/statistic.csv"
 mkdir $dirPath
@@ -247,6 +242,7 @@ scheduler="L-DBP"
 PyConfig+=(["experiment"]=$experiment ["forceReply"]=$scheduler ["maxEpisode"]="1" ["scheduler"]=$scheduler ["episodeNum"]="0")
 runSet
 
+# generate statistic of throughput (and others) results
 python ./machineLearning/log_bytes.py
 cp "/home/hong/result_figure/rcv.png" "${dirPath}/summary/rcv_${tcpBuffer}_${routerBBuffer}_${routerCBuffer}_${link_b_BER}.png"
 cp "/home/hong/result_figure/sent.png" "${dirPath}/summary/sent_${tcpBuffer}_${routerBBuffer}_${routerCBuffer}_${link_b_BER}.png"

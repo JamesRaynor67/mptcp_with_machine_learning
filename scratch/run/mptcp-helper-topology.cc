@@ -90,6 +90,7 @@ NetDeviceContainer PointToPointCreate(Ptr<Node> startNode,
   return linkedDevices;
 }
 
+// This topology is not good. Because its bandwidth is too large to test mptcp
 void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& server,
                         NodeContainer& client,
@@ -97,7 +98,6 @@ void CreateRealNetwork (uint32_t packetSize,
                         NodeContainer& ixs,
                         NodeContainer& other_servers,
                         NodeContainer& other_clients)
-                        // std::vector<std::pair<Ipv4Address, Ipv4Address>>& SCIpPairs)
 {
   //Create the internet stack helper.
   InternetStackHelper stackHelper = GetInternetStackHelper();
@@ -230,8 +230,6 @@ void CreateRealNetwork (uint32_t packetSize,
 
   other_servers.Add(isp_icb);
   other_servers.Add(isp_edu);
-  // other_servers.Add(isp_cu);
-  // other_clients.Add(isp_ct);
   other_clients.Add(isp_cm);
   other_clients.Add(isp_cst);
 
@@ -247,12 +245,10 @@ void CreateRealNetwork (uint32_t packetSize,
 
   // Ptr<Ipv4Interface> iface =  other_clients.Get(0)->GetObject<Ipv4>()->GetObject<Ipv4L3Protocol>()->GetInterface (2);
   // uint32_t address = iface->GetAddress(0).GetLocal().Get();
-  // cout << "--------Jiaming Hong Debug 2: node id: " << other_clients.Get(0)->GetId() << " ip: " << ((address >> 24) & 0xff) << "."
+  // cout << "--------Debug 2: node id: " << other_clients.Get(0)->GetId() << " ip: " << ((address >> 24) & 0xff) << "."
   //                          << ((address >> 16) & 0xff) << "."
   //                          << ((address >> 8) & 0xff) << "."
   //                          << ((address >> 0) & 0xff) << endl;
-
-
 }
 
 
@@ -269,10 +265,6 @@ vector<Ptr<NetDevice>> CreateSimplestNetwork (uint32_t packetSize,
   //                     \      /
   //                       ----
 
-  // #include "ns3/random-variable-stream.h"
-  // Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-
-  //Create the internet stack helper.
   client.Create(1);           // A, Alice
 
   server.Create(1);           // B, Bob
@@ -284,9 +276,9 @@ vector<Ptr<NetDevice>> CreateSimplestNetwork (uint32_t packetSize,
   Ptr<Node> B = server.Get(0);
   Ptr<Node> C = middle.Get(0);
 
-  AnimationInterface::SetConstantPosition	(B, 0, 200);
-  AnimationInterface::SetConstantPosition	(C, 200, 200);
-  AnimationInterface::SetConstantPosition	(A, 400, 200);
+  // AnimationInterface::SetConstantPosition	(B, 0, 200);
+  // AnimationInterface::SetConstantPosition	(C, 200, 200);
+  // AnimationInterface::SetConstantPosition	(A, 400, 200);
 
   bool useStaticRouting = true;
   if(useStaticRouting == false){
@@ -357,7 +349,7 @@ vector<Ptr<NetDevice>> CreateSimplestNetwork (uint32_t packetSize,
 
     //void ns3::Ipv4StaticRouting::AddHostRouteTo	(Ipv4Address dest, Ipv4Address nextHop, uint32_t interface, uint32_t metric = 0)
     // Notice that the 0th interface is bound to 127.0.0.0, and interface outgoing is from 1st.
-    std::cout << "Hong jiaming 58: clientInterfaces number == " << clientInterfaces.GetN() << std::endl;
+    std::cout << "ClientInterfaces number == " << clientInterfaces.GetN() << std::endl;
     Ptr<Ipv4StaticRouting> routing;
     routing = GetNodeStaticRoutingProtocol(A); // client
     routing->AddHostRouteTo(serverInterfaces.GetAddress(0), routerInterfaces.GetAddress(0), 1);
@@ -490,7 +482,7 @@ vector<Ptr<NetDevice>> CreateNetwork5 (uint32_t packetSize,
 
     //void ns3::Ipv4StaticRouting::AddHostRouteTo	(Ipv4Address dest, Ipv4Address nextHop, uint32_t interface, uint32_t metric = 0)
     // Notice that the 0th interface is bound to 127.0.0.0, and interface outgoing is from 1st.
-    std::cout << "Hong jiaming 58: clientInterfaces number == " << clientInterfaces.GetN() << std::endl;
+    std::cout << "ClientInterfaces number == " << clientInterfaces.GetN() << std::endl;
     Ptr<Ipv4StaticRouting> routing;
     routing = GetNodeStaticRoutingProtocol(A); // client
     routing->AddHostRouteTo(serverInterfaces.GetAddress(0), routerInterfaces.GetAddress(3), 1);
@@ -651,7 +643,6 @@ void CreateSimplestNetworkWithOtherTraffic (uint32_t packetSize,
 
     //void ns3::Ipv4StaticRouting::AddHostRouteTo	(Ipv4Address dest, Ipv4Address nextHop, uint32_t interface, uint32_t metric = 0)
     // Notice that the 0th interface is bound to 127.0.0.0, and interface outgoing is from 1st.
-    std::cout << "Hong jiaming 58: clientInterfaces == " << clientInterfaces.GetN() << std::endl;
     Ptr<Ipv4StaticRouting> routing;
     routing = GetNodeStaticRoutingProtocol(A); // client
     routing->AddHostRouteTo(serverInterfaces.GetAddress(0), routerInterfaces.GetAddress(1), 1);
@@ -796,12 +787,9 @@ void CreateClassicNetwork (uint32_t packetSize,
   // d_CD.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
   // d_CD.Get(1)->SetAttribute("ReceiveErrorModel", PointerValue (ptr_em));
 
-  std::cout << "Hong jiaming 58: clientInterfaces == " << clientInterfaces.GetN() << std::endl;
-
-
   // Ptr<Ipv4Interface> iface =  other_clients.Get(0)->GetObject<Ipv4>()->GetObject<Ipv4L3Protocol>()->GetInterface (2);
   // uint32_t address = iface->GetAddress(0).GetLocal().Get();
-  // cout << "--------Jiaming Hong Debug 2: node id: " << other_clients.Get(0)->GetId() << " ip: " << ((address >> 24) & 0xff) << "."
+  // cout << "--------Debug 2: node id: " << other_clients.Get(0)->GetId() << " ip: " << ((address >> 24) & 0xff) << "."
   //                          << ((address >> 16) & 0xff) << "."
   //                          << ((address >> 8) & 0xff) << "."
   //                          << ((address >> 0) & 0xff) << endl;
@@ -912,7 +900,7 @@ void CreateExtendedClassicNetwork (uint32_t packetSize,
 
   // Ptr<Ipv4Interface> iface =  other_clients.Get(0)->GetObject<Ipv4>()->GetObject<Ipv4L3Protocol>()->GetInterface (2);
   // uint32_t address = iface->GetAddress(0).GetLocal().Get();
-  // cout << "--------Jiaming Hong Debug 2: node id: " << other_clients.Get(0)->GetId() << " ip: " << ((address >> 24) & 0xff) << "."
+  // cout << "--------Debug 2: node id: " << other_clients.Get(0)->GetId() << " ip: " << ((address >> 24) & 0xff) << "."
   //                          << ((address >> 16) & 0xff) << "."
   //                          << ((address >> 8) & 0xff) << "."
   //                          << ((address >> 0) & 0xff) << endl;
