@@ -64,3 +64,5 @@ And this specific simulation can be regarded as IPhone use multiple subflows to 
 >
 >      HMAC-A = HMAC(Key=(Key-A+Key-B), Msg=(R-A+R-B))
 >      HMAC-B = HMAC(Key=(Key-B+Key-A), Msg=(R-B+R-A))
+
+P.S.有问题可以中文交流，对大家都方便。
