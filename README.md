@@ -66,3 +66,4 @@ And this specific simulation can be regarded as IPhone use multiple subflows to 
 >      HMAC-B = HMAC(Key=(Key-B+Key-A), Msg=(R-B+R-A))
 
 P.S.有问题可以中文交流，对大家都方便。
+P.P.S.这个ns3的mptcp模拟还是不完全的，我记忆中问题最大的一处是数据包选择链路A发送后是无法撤销然后选择链路B的。所以会导致当一条链路中断长时间时，整个传输会被卡住。我尝试解决但是最后还是放弃了（我重点放在了机器学习方面）。你们如果解决了请告诉我，谢谢！
